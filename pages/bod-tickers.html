@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy on Dip - All Tickers</title>
+    <style>
+        nav {
+            background-color: #f0f0f0;
+            padding: 10px;
+        }
+        nav a {
+            color: #0077cc;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        nav a:hover {
+            background-color: #0077cc;
+            color: #ffffff;
+        }
+        .chart-container {
+            margin-bottom: 2em;
+            border: 1px solid #eee;
+            padding: 1em;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .chart-title {
+            font-size: 1.2em;
+            margin-bottom: 0.5em;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="../index.html">Home</a> |
+        <a href="dca.html">DCA</a> |
+        <a href="bod.html">Buy on Dip</a> |
+        <a href="bod-tickers.html">Buy on Dip (All Tickers)</a> |
+        <a href="dca-tickers.html">DCA (All Tickers)</a>
+    </nav>
+    <h1>Buy on Dip Strategy - Per Ticker</h1>
+    <div id="charts-root"></div>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script>
+    function percentGain(value, invested) {
+        if (invested === 0 || invested == null || value == null) return '';
+        return ((value - invested) / invested * 100).toFixed(2) + '%';
+    }
+    // Fetch and parse CSV data
+    async function fetchData() {
+        const response = await fetch('../data/all_buy_on_dip.csv');
+        const text = await response.text();
+        const rows = text.split('\n').filter(Boolean);
+        const headers = rows[0].split(',');
+        const data = rows.slice(1).map(row => {
+            const values = row.split(',');
+            const obj = {};
+            headers.forEach((h, i) => obj[h.trim()] = values[i]);
+            return obj;
+        });
+        return data;
+    }
+    function getAllDates(data) {
+        return Array.from(new Set(data.map(row => row.Date_add))).sort();
+    }
+    function prepareSeries(data, ticker, allDates) {
+        const tickerData = data.filter(row => row.Symbol === ticker);
+        const valueMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Value'])]));
+        const investedMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Invested'])]));
+        return [
+            {
+                name: ticker + ' - Value',
+                type: 'line',
+                connectNulls: true,
+                data: allDates.map(date => valueMap[date] ?? null),
+                showSymbol: false
+            },
+            {
+                name: 'Invested',
+                type: 'line',
+                connectNulls: true,
+                data: allDates.map(date => investedMap[date] ?? null),
+                showSymbol: false,
+                lineStyle: { type: 'dashed' }
+            }
+        ];
+    }
+    async function renderAllCharts() {
+        const data = await fetchData();
+        let tickers = Array.from(new Set(data.map(row => row.Symbol)));
+        // Sort tickers by percent return (descending)
+        tickers = tickers.map(ticker => {
+            const tickerData = data.filter(row => row.Symbol === ticker);
+            let pct = -Infinity;
+            if (tickerData.length > 0) {
+                const last = tickerData[tickerData.length - 1];
+                const value = parseFloat(last['Cumulative Value']);
+                const invested = parseFloat(last['Cumulative Invested']);
+                pct = invested ? ((value - invested) / invested * 100) : -Infinity;
+            }
+            return { ticker, pct };
+        }).sort((a, b) => b.pct - a.pct).map(obj => obj.ticker);
+        const allDates = getAllDates(data);
+        const root = document.getElementById('charts-root');
+        root.innerHTML = '';
+        for (const ticker of tickers) {
+            // Create container
+            const container = document.createElement('div');
+            container.className = 'chart-container';
+            // Calculate overall percent return for this ticker
+            const tickerData = data.filter(row => row.Symbol === ticker);
+            let summary = '';
+            if (tickerData.length > 0) {
+                const last = tickerData[tickerData.length - 1];
+                const value = parseFloat(last['Cumulative Value']);
+                const invested = parseFloat(last['Cumulative Invested']);
+                const pct = percentGain(value, invested);
+                summary = `<span style="color:#007700;font-size:1rem;">${ticker} Overall % Gain: <b>${pct}</b></span>`;
+            }
+            // Title
+            const title = document.createElement('div');
+            title.className = 'chart-title';
+            title.innerHTML = `${ticker} Buy on Dip &nbsp; ${summary}`;
+            container.appendChild(title);
+            // Chart div
+            const chartDiv = document.createElement('div');
+            chartDiv.style.width = '100%';
+            chartDiv.style.height = '400px';
+            container.appendChild(chartDiv);
+            root.appendChild(container);
+            // Prepare series
+            const series = prepareSeries(data, ticker, allDates);
+            // Build lookup for percent gain
+            const gainLookup = {};
+            tickerData.forEach(row => {
+                gainLookup[row.Date_add] = {
+                    value: parseFloat(row['Cumulative Value']),
+                    invested: parseFloat(row['Cumulative Invested'])
+                };
+            });
+            // Render chart
+            const chart = echarts.init(chartDiv);
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' },
+                    formatter: function(params) {
+                        let html = params[0].axisValue + '<br/>';
+                        params.forEach(p => {
+                            let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
+                            html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
+                        });
+                        const key = params[0].axisValue;
+                        if (gainLookup[key]) {
+                            html += '<b>% Gain: ' + percentGain(gainLookup[key].value, gainLookup[key].invested) + '</b><br/>';
+                        }
+                        return html;
+                    }
+                },
+                legend: { data: series.map(s => s.name) },
+                xAxis: { type: 'category', data: allDates, name: 'Date' },
+                yAxis: { type: 'value', name: 'USD' },
+                series: series
+            };
+            chart.setOption(option);
+        }
+    }
+    renderAllCharts();
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# Ignore Python virtual environment
+.venv/
+
+# Ignore Node.js dependencies
+node_modules/
+
+# Ignore temporary files and folders
+temp/
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore data files
+data/
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+
+# Ignore package manager lock files
+package-lock.json
+
+# Ignore Jupyter Notebook checkpoints
+notebooks/.ipynb_checkpoints/
+

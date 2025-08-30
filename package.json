@@ -1,0 +1,17 @@
+{
+  "name": "py313",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "dayjs": "^1.11.18",
+    "yahoo-finance2": "^2.13.3"
+  }
+}
