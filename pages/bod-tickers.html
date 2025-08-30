@@ -51,7 +51,7 @@
     }
     // Fetch and parse CSV data
     async function fetchData() {
-        const response = await fetch('../data/all_buy_on_dip.csv');
+        const response = await fetch('data/all_buy_on_dip.csv');
         const text = await response.text();
         const rows = text.split('\n').filter(Boolean);
         const headers = rows[0].split(',');
