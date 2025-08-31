@@ -335,10 +335,6 @@
                     <div class="result-value" id="totalTrades">0</div>
                     <div class="result-label">Total Trades</div>
                 </div>
-                <div class="result-item">
-                    <div class="result-value" id="avgDecline">0%</div>
-                    <div class="result-label">Avg Decline at Purchase</div>
-                </div>
             </div>
         </div>
         
@@ -436,7 +432,6 @@
         let totalShares = 0;
         let totalInvested = 0;
         let totalTrades = 0;
-        let totalDeclineAtPurchase = 0;
         
         // Filter data for selected ticker and date range
         const tickerData = stockData.filter(row => {
@@ -509,8 +504,7 @@
                 gain: portfolioValue - totalInvested,
                 gainPercent: totalInvested > 0 ? ((portfolioValue - totalInvested) / totalInvested * 100) : 0,
                 tradesExecuted: tradesExecuted,
-                totalTrades: totalTrades,
-                avgDeclineAtPurchase: totalTrades > 0 ? totalDeclineAtPurchase / totalTrades : 0
+                totalTrades: totalTrades
             });
         }
         
@@ -530,7 +524,6 @@
         document.getElementById('returnPercent').textContent = `${lastResult.gainPercent.toFixed(2)}%`;
         document.getElementById('avgPrice').textContent = formatCurrency(avgPurchasePrice);
         document.getElementById('totalTrades').textContent = lastResult.totalTrades;
-        document.getElementById('avgDecline').textContent = `${lastResult.avgDeclineAtPurchase.toFixed(2)}%`;
         
         document.getElementById('results').style.display = 'block';
     }
@@ -642,7 +635,7 @@
         const headers = [
             'Date', 'Open', 'High', 'Low', 'Close', 'Previous Close',
             'Day Invested', 'Day Shares', 'Total Shares', 'Total Invested', 
-            'Portfolio Value', 'Gain', 'Gain %', 'Trades Executed', 'Avg Decline at Purchase'
+            'Portfolio Value', 'Gain', 'Gain %', 'Trades Executed'
         ];
         
         let csvContent = headers.join(',') + '\n';
@@ -666,8 +659,7 @@
                 row.portfolioValue.toFixed(2),
                 row.gain.toFixed(2),
                 row.gainPercent.toFixed(2),
-                `"${tradesDesc}"`,
-                row.avgDeclineAtPurchase.toFixed(2)
+                `"${tradesDesc}"`
             ];
             csvContent += values.join(',') + '\n';
         });
