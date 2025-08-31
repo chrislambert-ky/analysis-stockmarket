@@ -38,7 +38,7 @@
         }
 
         /* Navigation Bar Styles */
-        nav {
+        .main-nav {
             background: var(--light-gray);
             padding: 1rem 0;
             display: flex;
@@ -47,7 +47,7 @@
             border-bottom: 2px solid var(--blue);
         }
 
-        nav a {
+        .main-nav .nav-link {
             color: var(--blue);
             text-decoration: none;
             font-weight: bold;
@@ -57,8 +57,8 @@
             transition: background 0.2s, color 0.2s;
         }
 
-        nav a:hover,
-        nav a:focus {
+        .main-nav .nav-link:hover,
+        .main-nav .nav-link:focus {
             background: var(--blue);
             color: #fff;
             text-decoration: none;
@@ -70,6 +70,31 @@
             margin: 0 auto;
             padding: 20px;
         }
+        
+        h1 {
+            font-size: 2.1rem;
+            font-weight: bold;
+            color: var(--blue);
+            margin: 1rem 20px;
+            text-align: center;
+        }
+        
+        h2 {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--light-blue);
+            margin: 0.5rem 20px 0.5rem 20px;
+            text-align: center;
+        }
+        
+        .container > p {
+            font-size: 1rem;
+            line-height: 1.5;
+            margin: 0.5rem 20px;
+            text-align: center;
+            color: var(--dark-gray);
+        }
+        
         .controls {
             background-color: #f9f9f9;
             padding: 20px;
@@ -184,13 +209,13 @@
 
         /* Responsive Design for Navigation */
         @media (max-width: 700px) {
-            nav {
+            .main-nav {
                 flex-direction: column;
                 align-items: center;
                 gap: 0.5rem;
                 padding: 0.5rem 0;
             }
-            nav a {
+            .nav-link {
                 font-size: 1rem;
                 padding: 0.5rem 1rem;
                 width: 100%;
@@ -200,7 +225,7 @@
         }
 
         @media (max-width: 400px) {
-            nav a {
+            .nav-link {
                 font-size: 0.95rem;
                 padding: 0.5rem 0.5rem;
             }
@@ -208,20 +233,23 @@
     </style>
 </head>
 <body>
-    <nav>
-        <a href="../index.html">Home</a>
-        <a href="dca.html">Dollar Cost Averaging Analysis</a>
-        <a href="bod.html">Buy-on-Dip Analysis</a>
-        <a href="dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
-        <a href="bod-tickers.html">Buy-on-Dip (All Tickers)</a>
-        <a href="dca-strat.html">Advanced Dollar Cost Averaging</a>
-        <a href="bod-strat.html">Advanced Buy-on-Dip</a>
-        <a href="about.html">About</a>
+    <nav class="main-nav">
+        <a class="nav-link" href="../index.html">Home</a>
+        <a class="nav-link" href="dca.html">Dollar Cost Averaging Analysis</a>
+        <a class="nav-link" href="bod.html">Buy-on-Dip Analysis</a>
+        <a class="nav-link" href="dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
+        <a class="nav-link" href="bod-tickers.html">Buy-on-Dip (All Tickers)</a>
+        <a class="nav-link" href="dca-strat.html">Advanced Dollar Cost Averaging</a>
+        <a class="nav-link" href="bod-strat.html">Advanced Buy-on-Dip</a>
+        <a class="nav-link" href="about.html">About</a>
     </nav>
     
-    <div class="container">
+    <div>
         <h1>Advanced Buy-on-Dip Strategy</h1>
-        <p>Set up limit orders based on percentage declines from previous day's close and see real-time results.  Some tickers may be new and may not have enough historical data.</p>
+        <h2>Set up limit orders based on percentage declines from previous day's close and see real-time results. Some tickers may be new and may not have enough historical data.</h2>
+    </div>
+    
+    <div class="container">
 
         <div class="controls">
             <div class="input-group">
