@@ -64,6 +64,25 @@
             text-decoration: none;
         }
 
+        /* Heading Styles */
+        h1 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 2.1rem;
+            font-weight: bold;
+            color: var(--blue);
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        h2 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--light-blue);
+            margin: 0.5rem 0;
+            text-align: center;
+        }
+
         /* Responsive Design for Navigation */
         @media (max-width: 700px) {
             nav {
@@ -99,8 +118,9 @@
         <a href="dca-strat.html">Advanced Dollar Cost Averaging</a>
         <a href="bod-strat.html">Advanced Buy-on-Dip</a>
     </nav>
-    <h1>Buy on Dip Strategy - Cumulative Shares, Value, and Invested</h1>
-    <h2 id="bod-summary" style="font-size:1rem;color:#007700;"></h2>
+    <h1>Buy-on-Dip Strategy - Cumulative Shares, Value, and Invested</h1>
+    <h2>Simulating limit orders of 1 share for each percent drop, 1-5%</h2>
+    <h2 id="bod-summary"></h2>
     <label for="bod-ticker-select"><b>Show Ticker:</b></label>
     <select id="bod-ticker-select" style="margin-bottom:1em;">
         <option value="">-- Select Ticker --</option>

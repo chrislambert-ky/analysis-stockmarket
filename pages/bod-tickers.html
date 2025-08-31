@@ -77,6 +77,25 @@
             margin-bottom: 0.5em;
         }
 
+        /* Heading Styles */
+        h1 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 2.1rem;
+            font-weight: bold;
+            color: var(--blue);
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        h2 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--light-blue);
+            margin: 0.5rem 0;
+            text-align: center;
+        }
+
         /* Responsive Design for Navigation */
         @media (max-width: 700px) {
             nav {
@@ -112,7 +131,8 @@
         <a href="dca-strat.html">Advanced Dollar Cost Averaging</a>
         <a href="bod-strat.html">Advanced Buy-on-Dip</a>
     </nav>
-    <h1>Buy on Dip Strategy - Per Ticker</h1>
+    <h1>Buy-on-Dip Strategy - Per Ticker</h1>
+    <h2>Buying 1 share for each percent drop, 1-5% across all available tickers</h2>
     <div id="charts-root"></div>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
