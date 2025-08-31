@@ -52,10 +52,34 @@ def extract_data(ticker_symbol):
 # TRANSFORM (DCA)
 # =============================
 def transform_monthly(df):
-    """Generate monthly DCA purchase history at $100/month."""
-    first_trading_days = df.groupby(['Year', 'Month']).first().reset_index()
+    """Generate monthly DCA purchase history at $100/month on first Monday of each month."""
+    df_sorted = df.sort_values('Date').copy()
+    df_sorted['year_month'] = df_sorted['Date'].dt.strftime('%Y-%m')
+    
+    monthly_purchases = []
+    
+    # Group by year-month and find first Monday or closest trading day
+    for year_month, month_data in df_sorted.groupby('year_month'):
+        month_data = month_data.sort_values('Date')
+        
+        # Try to find the first Monday (weekday = 0) of the month
+        monday_data = month_data[month_data['Date'].dt.weekday == 0]
+        
+        if not monday_data.empty:
+            # Use the first Monday
+            selected_day = monday_data.iloc[0]
+        else:
+            # If no Monday, use the first trading day of the month
+            selected_day = month_data.iloc[0]
+        
+        monthly_purchases.append(selected_day)
+    
+    if not monthly_purchases:
+        return pd.DataFrame()
+    
+    purchases_df = pd.DataFrame(monthly_purchases)
 
-    purchases = first_trading_days[[
+    purchases = purchases_df[[
         'Date_add', 'Symbol', 'Open', 'High', 'Low', 'Close',
         'week_of_year', 'week_day', 'avg_daily_price'
     ]].copy()
@@ -75,10 +99,35 @@ def transform_monthly(df):
 
 
 def transform_weekly(df):
-    """Generate weekly DCA purchase history at $25/week."""
-    first_trading_days = df.groupby(['Year', 'Week']).first().reset_index()
-
-    purchases = first_trading_days[[
+    """Generate weekly DCA purchase history at $25/week on Mondays."""
+    # Filter for Mondays only, or closest trading day if Monday is a holiday
+    df_sorted = df.sort_values('Date').copy()
+    df_sorted['year_week'] = df_sorted['Date'].dt.strftime('%Y-%U')
+    
+    weekly_purchases = []
+    
+    # Group by year-week and find Monday or closest trading day
+    for year_week, week_data in df_sorted.groupby('year_week'):
+        week_data = week_data.sort_values('Date')
+        
+        # Try to find Monday (weekday = 0)
+        monday_data = week_data[week_data['Date'].dt.weekday == 0]
+        
+        if not monday_data.empty:
+            # Use Monday
+            selected_day = monday_data.iloc[0]
+        else:
+            # If no Monday, use the first trading day of the week
+            selected_day = week_data.iloc[0]
+        
+        weekly_purchases.append(selected_day)
+    
+    if not weekly_purchases:
+        return pd.DataFrame()
+    
+    purchases_df = pd.DataFrame(weekly_purchases)
+    
+    purchases = purchases_df[[
         'Date_add', 'Symbol', 'Open', 'High', 'Low', 'Close',
         'week_of_year', 'week_day', 'avg_daily_price'
     ]].copy()
