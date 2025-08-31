@@ -53,7 +53,7 @@
             <li>Python ETL Developer</li>
             <li>SQL Developer (Google BigQuery, Oracle)</li>
             <li>BI Dashboard Developer (Looker Studio, Tableau, PowerBI)</li>
-            <li>Investment Strategy Enthusiast</li>
+            <li>Stock Market Enthusiast</li>
         </ul>
     </section>
 
@@ -86,22 +86,37 @@
     <section>
         <h2>Investment Strategies Analyzed</h2>
         <ul>
-            <li><strong>Dollar Cost Averaging (DCA):</strong> Regular periodic investments of fixed dollar amounts regardless of market conditions. Default strategy invests $25 weekly.</li>
-            <li><strong>Buy-on-Dip (BOD):</strong> Purchase shares when stock price declines by specified percentages. Default strategy buys 1 share per 1-5% decline.</li>
-            <li><strong>Strategy Comparison:</strong> Side-by-side analysis of DCA vs BOD performance across different tickers and timeframes.</li>
-            <li><strong>Multi-Ticker Analysis:</strong> Compare strategy performance across multiple ETFs (QQQ, SPLG, XLG) simultaneously.</li>
-            <li><strong>Advanced Calculators:</strong> Customizable tools allowing users to test their own investment amounts, frequencies, and trigger conditions.</li>
+            <li><strong>Dollar Cost Averaging (DCA):</strong> Regular periodic investments of fixed dollar amounts regardless of market conditions. Default strategy invests $25 weekly with customizable investment days.</li>
+            <li><strong>Buy-on-Dip (BOD):</strong> Purchase shares when stock price declines by specified percentages from previous day's close. Default strategy buys 1 share per 1-5% decline with configurable decline thresholds.</li>
+            <li><strong>Strategy Comparison:</strong> Side-by-side analysis of DCA vs BOD performance across different tickers and timeframes with interactive visualizations.</li>
+            <li><strong>Multi-Ticker Analysis:</strong> Compare strategy performance across multiple ETFs (QQQ, SPLG, XLG) simultaneously with unified charting.</li>
+            <li><strong>Advanced Calculators:</strong> Fully customizable tools allowing users to test their own investment amounts, frequencies, decline percentages, and date ranges.</li>
+            <li><strong>Market Pattern Analysis:</strong> Advanced metrics including up/down day analysis, Monday-Friday success rates, and week-over-week profitability patterns.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Advanced Analytics Features</h2>
+        <ul>
+            <li><strong>Up Days vs Down Days:</strong> Analysis of daily market direction by comparing opening to closing prices, showing trend patterns.</li>
+            <li><strong>Monday-Friday Success Rate:</strong> Measures how often buying at Monday's close and selling at Friday's close would be profitable.</li>
+            <li><strong>Week-over-Week Profitability:</strong> For DCA strategies, shows success rate of investments held for one week; for BOD strategies, tracks trade profitability after one week.</li>
+            <li><strong>Customizable Parameters:</strong> DCA tools allow selection of investment day (Monday-Friday) and any investment amount; BOD tools support up to 10 different decline percentages with custom share quantities.</li>
+            <li><strong>Real-time Calculations:</strong> Instant strategy recalculation as users modify parameters, with live chart updates.</li>
+            <li><strong>Detailed Trade Tracking:</strong> Complete transaction history with precise purchase prices, decline percentages, and cumulative performance metrics.</li>
         </ul>
     </section>
 
     <section>
         <h2>Technical Implementation</h2>
         <ul>
-            <li><strong>Data Processing:</strong> Python ETL pipeline using pandas and yfinance for historical data collection and CSV generation.</li>
-            <li><strong>Frontend Framework:</strong> Responsive HTML/CSS/JavaScript with ECharts for interactive visualizations.</li>
-            <li><strong>Calculation Engine:</strong> JavaScript-based portfolio calculations with precise currency formatting and trade tracking.</li>
-            <li><strong>User Interface:</strong> Professional design system with mobile-responsive navigation and intuitive calculator interfaces.</li>
-            <li><strong>Analytics Integration:</strong> Google Analytics tracking for usage insights and performance monitoring.</li>
+            <li><strong>Data Processing:</strong> Python ETL pipeline using pandas and yfinance for historical data collection, with enhanced CSV generation including weekday analysis and price averaging.</li>
+            <li><strong>Frontend Framework:</strong> Responsive HTML/CSS/JavaScript with ECharts 5.x for interactive visualizations and professional design system.</li>
+            <li><strong>Calculation Engine:</strong> Advanced JavaScript-based portfolio calculations with precise currency formatting, trade tracking, and market pattern analysis.</li>
+            <li><strong>User Interface:</strong> Professional design system with CSS variables, mobile-responsive navigation, and intuitive calculator interfaces across 8 analysis pages.</li>
+            <li><strong>Analytics Integration:</strong> Google Analytics tracking (G-468B94S87K) for usage insights and performance monitoring.</li>
+            <li><strong>Advanced Metrics:</strong> Real-time calculation of market patterns including daily trends, weekly cycles, and short-term profitability analysis.</li>
+            <li><strong>Data Export:</strong> Comprehensive CSV export functionality with detailed transaction history, trade execution details, and performance metrics.</li>
         </ul>
     </section>
 
@@ -134,6 +149,38 @@
             <li><strong>Export Functionality:</strong> CSV download capability for detailed transaction history and further analysis.</li>
             <li><strong>Mobile Optimization:</strong> Responsive design ensuring accessibility across all device types.</li>
         </ul>
+    </section>
+
+    <section>
+        <h2>ETF & Stock Summary</h2>
+        <p>Below is an overview of selected ETFs and equities in our portfolio:</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <thead>
+                <tr style="background-color: var(--light-blue); color: white;">
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Ticker</th>
+                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Name & Strategy</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>TQQQ</strong></td><td style="padding: 8px; border: 1px solid #ddd;">ProShares UltraPro QQQ – 3× daily leveraged exposure to NASDAQ-100 (short-term use only).</td></tr>
+                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>UPRO</strong></td><td style="padding: 8px; border: 1px solid #ddd;">ProShares UltraPro S&P 500 – 3× daily leveraged exposure to the S&P 500 (short-term use only).</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>GGLL</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Direxion Daily GOOGL Bull 2× – Leverages Alphabet's daily returns.</td></tr>
+                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>MSFU</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Direxion Daily MSFT Bull – 2× (or possibly 1.5×) leveraged returns of Microsoft stock.</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>QQQ</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Invesco QQQ – Nasdaq-100 index fund; tech-heavy, low-cost, long-term exposure.</td></tr>
+                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>FBCG</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Fidelity Blue Chip Growth ETF – Actively managed large-cap growth equity ETF.</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>QTOP</strong></td><td style="padding: 8px; border: 1px solid #ddd;">iShares Nasdaq Top 30 ETF – Tracks top 30 NASDAQ-100 companies.</td></tr>
+                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>MGK</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Vanguard Mega Cap Growth ETF – Mega-cap U.S. growth stocks exposure.</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>VGT</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Vanguard Information Technology ETF – Broad tech-sector index fund across all market caps.</td></tr>
+                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>SPLG</strong></td><td style="padding: 8px; border: 1px solid #ddd;">SPDR Portfolio S&P 500 ETF – Low-cost S&P 500 index tracker.</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>XLG</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Invesco S&P 500 Top 50 ETF – Concentrated top-50 S&P 500 companies exposure.</td></tr>
+                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>TOPT</strong></td><td style="padding: 8px; border: 1px solid #ddd;">iShares Top 20 U.S. Stocks ETF – Focuses on the 20 largest U.S. companies.</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>MSFT</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Microsoft Corp – Large-cap tech and cloud services leader.</td></tr>
+                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>GOOGL</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Alphabet Inc. (Class A) – Parent of Google; ad and AI giant.</td></tr>
+                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>HSBC</strong></td><td style="padding: 8px; border: 1px solid #ddd;">HSBC Holdings plc – Global banking and financial services.</td></tr>
+                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>ALLY</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Ally Financial Inc. – Digital-first auto finance and banking services.</td></tr>
+            </tbody>
+        </table>
     </section>
 
     <section>
