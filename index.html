@@ -13,71 +13,214 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Market Analysis</title>
     <style>
+        /* Color Palette */
+        :root {
+            --blue: #003764;
+            --light-blue: #5EB3E4;
+            --golden-yellow: #FFC600;
+            --black: #000000;
+            --gray: #969595;
+            --light-gray: #E0E1E1;
+            --bright-green: #92D050;
+            --orange: #F25C05;
+            --purple: #AA2E9C;
+            --red: #C00000;
+            --dark-gray: #595959;
+        }
+
+        /* Base Styles */
+        body, html {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #fff;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 2.1rem;
+            font-weight: bold;
+            color: var(--blue);
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        h2 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--light-blue);
+            margin: 0.5rem 0;
+            text-align: center;
+        }
+
+        /* Navigation Bar Styles */
         nav {
-            background-color: #f0f0f0;
-            padding: 10px;
+            background: var(--light-gray);
+            padding: 1rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            border-bottom: 2px solid var(--blue);
         }
+
         nav a {
-            color: #0077cc;
+            color: var(--blue);
             text-decoration: none;
-            margin: 0 10px;
-            padding: 5px 10px;
-            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            transition: background 0.2s, color 0.2s;
         }
-        nav a:hover {
-            background-color: #0077cc;
-            color: #ffffff;
+
+        nav a:hover,
+        nav a:focus {
+            background: var(--blue);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        /* Investment Strategy Grid */
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            justify-items: center;
+            align-items: center;
+            margin: 3rem auto;
+            max-width: 1000px;
+        }
+
+        .strategy-grid a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--light-gray);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 1.5rem 1rem;
+            text-decoration: none;
+            transition: background 0.2s, box-shadow 0.2s;
+            width: 220px;
+            height: 240px;
+            justify-content: center;
+        }
+
+        .strategy-grid a:hover {
+            background: var(--light-gray);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        }
+
+        .strategy-grid img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 1rem;
+        }
+
+        .strategy-grid p {
+            color: var(--blue);
+            font-weight: bold;
+            text-align: center;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .strategy-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 700px) {
+            nav {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 0;
+            }
+            nav a {
+                font-size: 1rem;
+                padding: 0.5rem 1rem;
+                width: 100%;
+                text-align: center;
+                border-radius: 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .strategy-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .strategy-grid a {
+                width: 90vw;
+                height: 200px;
+                padding: 1rem 0.5rem;
+            }
+            .strategy-grid img {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            nav a {
+                font-size: 0.95rem;
+                padding: 0.5rem 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <nav>
-        <a href="index.html">Home</a> |
-        <a href="pages/dca.html">DCA Analysis</a> |
-        <a href="pages/bod.html">Buy on Dip Analysis</a> |
-        <a href="pages/dca-tickers.html">DCA (All Tickers)</a> |
-        <a href="pages/bod-tickers.html">BOD (All Tickers)</a> |
-        <a href="pages/dca-strat.html">Advanced Dollar Cost Average</a> |
+        <a href="index.html">Home</a>
+        <a href="pages/dca.html">Dollar Cost Averaging Analysis</a>
+        <a href="pages/bod.html">Buy-on-Dip Analysis</a>
+        <a href="pages/dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
+        <a href="pages/bod-tickers.html">Buy-on-Dip (All Tickers)</a>
+        <a href="pages/dca-strat.html">Advanced Dollar Cost Averaging</a>
         <a href="pages/bod-strat.html">Advanced Buy-on-Dip</a>
     </nav>
-    <h1>ETF Investment Strategies</h1>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-        <div style="text-align: center; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
-            <a href="pages/dca.html">
-                <img src="images/dca-line.svg" alt="DCA" style="width: 100%; max-width: 300px;">
-                <p>Dollar Cost Averaging</p>
-            </a>
-        </div>
-        <div style="text-align: center; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
-            <a href="pages/dca-tickers.html">
-                <img src="images/dca-tickers.svg" alt="DCA (All Tickers)" style="width: 100%; max-width: 300px;">
-                <p>DCA (All Tickers)</p>
-            </a>
-        </div>
-        <div style="text-align: center; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
-            <a href="pages/dca-strat.html">
-                <img src="images/dca-advanced.svg" alt="Advanced DCA" style="width: 100%; max-width: 300px;">
-                <p>Advanced Dollar Cost Average</p>
-            </a>
-        </div>
-        <div style="text-align: center; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
-            <a href="pages/bod.html">
-                <img src="images/bod-line.svg" alt="Buy on Dip" style="width: 100%; max-width: 300px;">
-                <p>Buy on Dip</p>
-            </a>
-        </div>
-        <div style="text-align: center; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
-            <a href="pages/bod-tickers.html">
-                <img src="images/bod-tickers.svg" alt="Buy on Dip (All Tickers)" style="width: 100%; max-width: 300px;">
-                <p>Buy on Dip (All Tickers)</p>
-            </a>
-        </div>
-        <div style="text-align: center; background-color: #f0f0f0; padding: 10px; border-radius: 5px;">
-            <a href="pages/bod-strat.html">
-                <img src="images/bod-advanced.svg" alt="Advanced BOD" style="width: 100%; max-width: 300px;">
-                <p>Advanced Buy-on-Dip</p>
-            </a>
-        </div>
+    <div>
+        <h1>Investment Strategies</h1>
+        <h2>Interactive tools for analyzing Dollar Cost Averaging and Buy-on-Dip strategies</h2>
+    </div>
+
+    <div class="strategy-grid">
+        <a href="pages/dca.html">
+            <img src="images/dca-line.svg" alt="Dollar Cost Averaging">
+            <p>Dollar Cost Averaging</p>
+        </a>
+        
+        <a href="pages/dca-tickers.html">
+            <img src="images/dca-tickers.svg" alt="Dollar Cost Averaging (All Tickers)">
+            <p>Dollar Cost Averaging <br> (All Tickers)</p>
+        </a>
+        
+        <a href="pages/dca-strat.html">
+            <img src="images/dca-advanced.svg" alt="Advanced Dollar Cost Averaging">
+            <p>Advanced <br> Dollar Cost Averaging</p>
+        </a>
+
+        <a href="pages/bod.html">
+            <img src="images/bod-line.svg" alt="Buy-on-Dip">
+            <p>Buy-on-Dip</p>
+        </a>
+        
+        <a href="pages/bod-tickers.html">
+            <img src="images/bod-tickers.svg" alt="Buy-on-Dip (All Tickers)">
+            <p>Buy-on-Dip <br> (All Tickers)</p>
+        </a>
+        
+        <a href="pages/bod-strat.html">
+            <img src="images/bod-advanced.svg" alt="Advanced Buy-on-Dip">
+            <p>Advanced <br> Buy-on-Dip</p>
+        </a>
     </div>
 </body>
 </html>

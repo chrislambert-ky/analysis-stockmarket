@@ -13,31 +13,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dollar Cost Averaging (DCA)</title>
     <style>
+        /* Color Palette */
+        :root {
+            --blue: #003764;
+            --light-blue: #5EB3E4;
+            --golden-yellow: #FFC600;
+            --black: #000000;
+            --gray: #969595;
+            --light-gray: #E0E1E1;
+            --bright-green: #92D050;
+            --orange: #F25C05;
+            --purple: #AA2E9C;
+            --red: #C00000;
+            --dark-gray: #595959;
+        }
+
+        /* Base Styles */
+        body, html {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #fff;
+            color: #000;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navigation Bar Styles */
         nav {
-            background-color: #f0f0f0;
-            padding: 10px;
+            background: var(--light-gray);
+            padding: 1rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            border-bottom: 2px solid var(--blue);
         }
+
         nav a {
-            color: #0077cc;
+            color: var(--blue);
             text-decoration: none;
-            margin: 0 10px;
-            padding: 5px 10px;
-            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            transition: background 0.2s, color 0.2s;
         }
-        nav a:hover {
-            background-color: #0077cc;
-            color: #ffffff;
+
+        nav a:hover,
+        nav a:focus {
+            background: var(--blue);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        /* Responsive Design for Navigation */
+        @media (max-width: 700px) {
+            nav {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 0;
+            }
+            nav a {
+                font-size: 1rem;
+                padding: 0.5rem 1rem;
+                width: 100%;
+                text-align: center;
+                border-radius: 0;
+            }
+        }
+
+        @media (max-width: 400px) {
+            nav a {
+                font-size: 0.95rem;
+                padding: 0.5rem 0.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <nav>
-        <a href="../index.html">Home</a> |
-        <a href="dca.html">DCA Analysis</a> |
-        <a href="bod.html">Buy on Dip Analysis</a> |
-        <a href="dca-tickers.html">DCA (All Tickers)</a> |
-        <a href="bod-tickers.html">BOD (All Tickers)</a> |
-        <a href="dca-strat.html">Advanced Dollar Cost Average</a> |
+        <a href="../index.html">Home</a>
+        <a href="dca.html">Dollar Cost Averaging Analysis</a>
+        <a href="bod.html">Buy-on-Dip Analysis</a>
+        <a href="dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
+        <a href="bod-tickers.html">Buy-on-Dip (All Tickers)</a>
+        <a href="dca-strat.html">Advanced Dollar Cost Averaging</a>
         <a href="bod-strat.html">Advanced Buy-on-Dip</a>
     </nav>
     <h1>Dollar Cost Averaging (DCA) - Cumulative Shares, Value, and Invested</h1>
