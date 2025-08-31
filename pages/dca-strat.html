@@ -511,29 +511,48 @@
         
         const mondayFridayPercent = mondayFridayTotal > 0 ? (mondayFridaySuccess / mondayFridayTotal * 100).toFixed(1) : 0;
         
-        // 3. Investment day week-over-week success
+        // 3. Week-over-week success rate (based on all available weeks in date range)
         let weekOverWeekSuccess = 0;
         let weekOverWeekTotal = 0;
         
-        // For each trade result, check if it would be profitable one week later
-        tradeResults.forEach((trade, index) => {
-            if (index < tradeResults.length - 1) {
-                const tradeDate = new Date(trade.actualDate);
-                const oneWeekLater = new Date(tradeDate);
-                oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+        // Group data by weeks to get all available weeks in the selected date range
+        const weeklyData = new Map();
+        
+        tickerData.forEach(row => {
+            const date = new Date(row.Date_add);
+            // Get Monday of the week (start of week)
+            const monday = new Date(date);
+            monday.setDate(date.getDate() - date.getDay() + 1);
+            const weekKey = monday.toISOString().split('T')[0];
+            
+            if (!weeklyData.has(weekKey)) {
+                weeklyData.set(weekKey, []);
+            }
+            weeklyData.get(weekKey).push(row);
+        });
+        
+        // Convert to array and sort by week
+        const sortedWeeks = Array.from(weeklyData.entries()).sort();
+        
+        // For each week, check if the next week had better performance
+        for (let i = 0; i < sortedWeeks.length - 1; i++) {
+            const currentWeekData = sortedWeeks[i][1];
+            const nextWeekData = sortedWeeks[i + 1][1];
+            
+            if (currentWeekData.length > 0 && nextWeekData.length > 0) {
+                // Use last trading day of each week for comparison
+                const currentWeekLast = currentWeekData[currentWeekData.length - 1];
+                const nextWeekLast = nextWeekData[nextWeekData.length - 1];
                 
-                // Find closest trading day data one week later
-                const laterData = findClosestTradingDay(tickerData, oneWeekLater.toISOString().split('T')[0]);
+                const currentWeekClose = parseFloat(currentWeekLast.Close);
+                const nextWeekClose = parseFloat(nextWeekLast.Close);
                 
-                if (laterData) {
-                    weekOverWeekTotal++;
-                    const laterClose = parseFloat(laterData.Close);
-                    if (laterClose > trade.avgPrice) {
-                        weekOverWeekSuccess++;
-                    }
+                weekOverWeekTotal++;
+                if (nextWeekClose > currentWeekClose) {
+                    weekOverWeekSuccess++;
                 }
             }
-        });
+        }
         
         const weekOverWeekPercent = weekOverWeekTotal > 0 ? (weekOverWeekSuccess / weekOverWeekTotal * 100).toFixed(1) : 0;
         

@@ -46,6 +46,16 @@
     </section>
 
     <section>
+        <h2>Recent Enhancements</h2>
+        <ul>
+            <li><strong>Advanced Market Analytics:</strong> Enhanced week-over-week analysis for DCA strategy now calculates success based on total weeks available in selected date range, providing more accurate market trend insights.</li>
+            <li><strong>Professional Design System:</strong> Implemented consistent CSS styling across all strategy pages with unified navigation classes (.main-nav, .nav-link) and standardized title/subtitle formatting.</li>
+            <li><strong>Precision Date Filtering:</strong> All analytics calculations now properly filter data within user-selected date ranges, ensuring accurate time-period analysis for all metrics.</li>
+            <li><strong>Enhanced User Experience:</strong> Improved mobile responsiveness and consistent styling patterns across all 8 analysis pages for seamless navigation.</li>
+        </ul>
+    </section>
+
+    <section>
         <h2>About Me</h2>
         <ul>
             <li>IT Project Manager</li>
@@ -98,11 +108,17 @@
     <section>
         <h2>Advanced Analytics Features</h2>
         <ul>
-            <li><strong>Up Days vs Down Days:</strong> Analysis of daily market direction by comparing opening to closing prices, showing trend patterns.</li>
-            <li><strong>Monday-Friday Success Rate:</strong> Measures how often buying at Monday's close and selling at Friday's close would be profitable.</li>
-            <li><strong>Week-over-Week Profitability:</strong> For DCA strategies, shows success rate of investments held for one week; for BOD strategies, tracks trade profitability after one week.</li>
+            <li><strong>Up Days vs Down Days:</strong> Analysis of daily market direction by comparing opening to closing prices within selected date ranges, showing trend patterns and market volatility.</li>
+            <li><strong>Monday-Friday Success Rate:</strong> Measures how often buying at Monday's close and selling at Friday's close would be profitable, revealing weekly market cycles and trading patterns.</li>
+            <li><strong>Week-over-Week Profitability:</strong> 
+                <ul>
+                    <li><strong>DCA Strategy:</strong> Analyzes market performance between consecutive weeks based on total weeks available in the selected date range, not just investment weeks.</li>
+                    <li><strong>BOD Strategy:</strong> Tracks individual trade profitability after one week from execution, measuring trade timing effectiveness.</li>
+                </ul>
+            </li>
+            <li><strong>Date Range Filtering:</strong> All metrics are calculated based on user-selected start and end dates, ensuring accurate analysis within chosen time periods.</li>
             <li><strong>Customizable Parameters:</strong> DCA tools allow selection of investment day (Monday-Friday) and any investment amount; BOD tools support up to 10 different decline percentages with custom share quantities.</li>
-            <li><strong>Real-time Calculations:</strong> Instant strategy recalculation as users modify parameters, with live chart updates.</li>
+            <li><strong>Real-time Calculations:</strong> Instant strategy recalculation as users modify parameters, with live chart updates and immediate metric refreshes.</li>
             <li><strong>Detailed Trade Tracking:</strong> Complete transaction history with precise purchase prices, decline percentages, and cumulative performance metrics.</li>
         </ul>
     </section>
@@ -113,8 +129,8 @@
             <li><strong>Data Processing:</strong> Python ETL pipeline using pandas and yfinance for historical data collection, with enhanced CSV generation including weekday analysis and price averaging.</li>
             <li><strong>Frontend Framework:</strong> Responsive HTML/CSS/JavaScript with ECharts 5.x for interactive visualizations and professional design system.</li>
             <li><strong>Calculation Engine:</strong> Advanced JavaScript-based portfolio calculations with precise currency formatting, trade tracking, and market pattern analysis.</li>
-            <li><strong>User Interface:</strong> Professional design system with CSS variables, mobile-responsive navigation, and intuitive calculator interfaces across 8 analysis pages.</li>
-            <li><strong>Analytics Integration:</strong> Google Analytics tracking (G-468B94S87K) for usage insights and performance monitoring.</li>
+            <li><strong>User Interface:</strong> Professional design system with unified CSS styling, consistent navigation classes (.main-nav, .nav-link), and standardized title/subtitle formatting across all 8 analysis pages for seamless user experience.</li>
+            <li><strong>Mobile Optimization:</strong> Responsive design ensuring accessibility across all device types with adaptive navigation and optimized layouts.</li>
             <li><strong>Advanced Metrics:</strong> Real-time calculation of market patterns including daily trends, weekly cycles, and short-term profitability analysis.</li>
             <li><strong>Data Export:</strong> Comprehensive CSV export functionality with detailed transaction history, trade execution details, and performance metrics.</li>
         </ul>

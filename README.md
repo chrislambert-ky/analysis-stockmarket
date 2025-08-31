@@ -4,6 +4,14 @@
 
 *This project provides interactive tools for analyzing investment strategies including Dollar Cost Averaging and Buy-on-Dip approaches. It includes various calculators and visualizations to help users understand different investment methodologies and their historical performance.*
 
+## 🆕 Recent Updates
+
+- **Enhanced Week-over-Week Analysis**: DCA strategy now calculates week-over-week success based on total weeks available in selected date range, providing more accurate market trend analysis
+- **CSS Design System**: Implemented consistent styling across all strategy pages with unified navigation classes and standardized title/subtitle formatting
+- **Professional Navigation**: Updated all pages with .main-nav and .nav-link classes for consistent user experience
+- **Improved Mobile Responsiveness**: Enhanced responsive design patterns for better mobile and tablet experience
+- **Advanced Metrics Precision**: All analytics calculations now properly filter data within user-selected date ranges for accurate time-period analysis
+
 ## 🚀 Live Demo
 
 [View the interactive analysis tools here](https://chrislambert-ky.github.io/analysis-stockmarket/) *(Update this URL when deployed)*
@@ -38,8 +46,9 @@
   - **Week-over-Week Success**: Short-term profitability tracking for investment timing optimization
 - **CSV Export**: Download detailed transaction history with trade execution details and comprehensive performance metrics
 - **Responsive Design**: Mobile-friendly interface that works seamlessly across all device types
-- **Professional UI**: Clean, modern design with intuitive navigation and real-time parameter adjustment
-- **Real-time Calculations**: Instant strategy recalculation as users modify parameters with live chart updates
+- **Professional UI**: Clean, modern design with intuitive navigation and real-time parameter adjustment featuring consistent styling across all pages
+- **CSS Design System**: Unified styling with professional navigation classes, consistent title/subtitle formatting, and responsive design patterns
+- **Cross-Platform Compatibility**: Mobile-friendly interface optimized for desktop, tablet, and mobile devices with adaptive layouts
 
 ## 🔧 Technical Implementation
 
@@ -93,12 +102,13 @@ analysis-stockmarket/
 
 ## � Advanced Analytics Features
 
-### Market Pattern Analysis
-- **Up Days vs Down Days**: Comprehensive analysis of daily market direction by comparing opening to closing prices, providing insights into overall trend patterns and market volatility
-- **Monday-Friday Success Rate**: Measures how often buying at Monday's closing price and selling at Friday's closing price would be profitable, revealing weekly market cycles
+### Market Pattern Analytics
+- **Up Days vs Down Days**: Comprehensive analysis of daily market direction by comparing opening to closing prices, providing insights into overall trend patterns and market volatility within selected date ranges
+- **Monday-Friday Success Rate**: Measures how often buying at Monday's closing price and selling at Friday's closing price would be profitable, revealing weekly market cycles and trading patterns
 - **Week-over-Week Profitability**: 
-  - **DCA Strategy**: Shows success rate of investments held for one week from the selected investment day
-  - **BOD Strategy**: Tracks individual trade profitability after one week from execution
+  - **DCA Strategy**: Analyzes market performance between consecutive weeks based on total weeks available in the selected date range, not just investment weeks
+  - **BOD Strategy**: Tracks individual trade profitability after one week from execution, measuring trade timing effectiveness
+- **Date Range Filtering**: All metrics are calculated based on user-selected start and end dates, ensuring accurate analysis within chosen time periods
 
 ### Customizable Strategy Parameters
 - **DCA Advanced Calculator**: 
