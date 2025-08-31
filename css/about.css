@@ -1,0 +1,181 @@
+/* 
+Stock Market Analysis About Page CSS
+Adapted from road closures project for investment analysis toolkit
+*/
+
+/* Color Palette - Using the professional design system */
+:root 
+{
+  --blue: #003764;
+  --light-blue: #5EB3E4;
+  --golden-yellow: #FFC600;
+  --black: #000000;
+  --gray: #969595;
+  --light-gray: #E0E1E1;
+  --bright-green: #92D050;
+  --orange: #F25C05;
+  --purple: #AA2E9C;
+  --red: #C00000;
+  --dark-gray: #595959;
+}
+
+/* Base Styles */
+body, html 
+{
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #fff;
+  color: #000;
+  margin: 0;
+  padding: 0;
+}
+
+h1
+{
+  font-size: 2.1rem;
+  font-weight: bold;
+  color: var(--blue);
+  margin: 1rem 20px;
+  text-align: center;
+}
+
+h2
+{
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--light-blue);
+  margin: 0.5rem 20px 0.5rem 20px;
+}
+
+p
+{
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0.5rem 20px;
+  text-align: center;
+}
+
+/* Navigation Bar Styles */
+.main-nav 
+{
+  background: var(--light-gray);
+  padding: 1rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  border-bottom: 2px solid var(--blue);
+}
+
+.main-nav .nav-link 
+{
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.main-nav .nav-link:hover,
+.main-nav .nav-link:focus 
+{
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Interactive Content Sections */
+section 
+{
+  margin: 1.5rem 20px;
+  padding: 1rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+section:hover 
+{
+  background-color: var(--light-gray);
+}
+
+/* Reduce top margin for h2 inside sections */
+section h2 {
+  margin-top: 0;
+}
+
+/* Add spacing between bullet points */
+li 
+{
+  margin-bottom: 0.25rem;
+}
+
+/* Social Links Styling */
+.social-links 
+{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0.5rem 20px 1.5rem 20px;
+  gap: 0.5rem;
+}
+
+.social-links a 
+{
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  color: var(--blue);
+  background: var(--light-gray);
+  border-radius: 6px;
+  padding: 0.4rem 1rem 0.4rem 0.5rem;
+  text-decoration: none;
+  font-size: 1.05rem;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.social-links a:hover, .social-links a:focus 
+{
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+/* Responsive Design */
+@media (max-width: 700px) 
+{
+  .main-nav 
+  {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+  }
+  
+  .main-nav .nav-link 
+  {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    text-align: center;
+    border-radius: 0;
+  }
+  section 
+  {
+    margin: 1.5rem 10px;
+  }
+}
+
+@media (max-width: 400px) 
+{
+  .main-nav .nav-link 
+  {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.5rem;
+  }
+  section 
+  {
+    margin: 1.5rem 5px;
+  }
+}
