@@ -33,10 +33,12 @@
 <body>
     <nav>
         <a href="../index.html">Home</a> |
-        <a href="dca.html">DCA</a> |
-        <a href="bod.html">Buy on Dip</a> |
-        <a href="bod-tickers.html">Buy on Dip (All Tickers)</a> |
-        <a href="dca-tickers.html">DCA (All Tickers)</a>
+        <a href="dca.html">DCA Analysis</a> |
+        <a href="bod.html">Buy on Dip Analysis</a> |
+        <a href="dca-tickers.html">DCA (All Tickers)</a> |
+        <a href="bod-tickers.html">BOD (All Tickers)</a> |
+        <a href="dca-strat.html">Advanced Dollar Cost Average</a> |
+        <a href="bod-strat.html">Advanced Buy-on-Dip</a>
     </nav>
     <h1>Buy on Dip Strategy - Cumulative Shares, Value, and Invested</h1>
     <h2 id="bod-summary" style="font-size:1rem;color:#007700;"></h2>
@@ -85,25 +87,46 @@
     }
     function prepareSeries(data, tickers, allDates) {
         const series = [];
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8', '#f7dc6f'];
+        let colorIndex = 0;
         tickers.forEach(ticker => {
             const tickerData = data.filter(row => row.Symbol === ticker);
+            
+            // Debug: log ticker data
+            console.log(`Ticker ${ticker}: ${tickerData.length} data points`);
+            if (tickerData.length > 0) {
+                const lastRow = tickerData[tickerData.length - 1];
+                console.log(`${ticker} final value: ${lastRow['Cumulative Value']}, invested: ${lastRow['Cumulative Invested']}`);
+            }
+            
             const valueMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Value'])]));
-            const investedMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Invested'])]));
+            const isMultipleTickers = tickers.length > 1;
+            const valueColor = isMultipleTickers ? colors[colorIndex % colors.length] : '#00aa00';
+            colorIndex++;
+            
+            const valueData = allDates.map(date => valueMap[date] ?? null);
+            
             series.push({
                 name: ticker + ' - Value',
                 type: 'line',
                 connectNulls: true,
-                data: allDates.map(date => valueMap[date] ?? null),
-                showSymbol: false
-            });
-            series.push({
-                name: ticker + ' - Invested',
-                type: 'line',
-                connectNulls: true,
-                data: allDates.map(date => investedMap[date] ?? null),
+                data: valueData,
                 showSymbol: false,
-                lineStyle: { type: 'dashed' }
+                lineStyle: { color: valueColor }
             });
+            
+            // Only show invested line for individual tickers
+            if (!isMultipleTickers) {
+                const investedMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Invested'])]));
+                series.push({
+                    name: ticker + ' - Invested',
+                    type: 'line',
+                    connectNulls: true,
+                    data: allDates.map(date => investedMap[date] ?? null),
+                    showSymbol: false,
+                    lineStyle: { type: 'dashed', color: '#0077cc' }
+                });
+            }
         });
         return series;
     }
@@ -113,6 +136,17 @@
         const tickers = (!selectedTicker || selectedTicker === 'ALL') ? allTickers : [selectedTicker];
         const allDates = getAllDates(data);
         const series = prepareSeries(data, tickers, allDates);
+        
+        // Debug logging
+        console.log('Selected ticker:', selectedTicker);
+        console.log('Tickers to display:', tickers);
+        console.log('Is multiple tickers:', tickers.length > 1);
+        console.log('Series count:', series.length);
+        console.log('Series names:', series.map(s => s.name));
+        series.forEach((s, i) => {
+            console.log(`Series ${i}: ${s.name}, color: ${s.lineStyle?.color || 'default'}, dashed: ${s.lineStyle?.type === 'dashed'}`);
+        });
+        
         // Build lookup for percent gain
         const gainLookup = {};
         data.forEach(row => {
@@ -145,7 +179,14 @@
                     return html;
                 }
             },
-            legend: { data: series.map(s => s.name) },
+            legend: { 
+                data: series.map(s => s.name),
+                selected: series.reduce((acc, s) => {
+                    acc[s.name] = true; // All series visible by default
+                    return acc;
+                }, {}),
+                type: 'scroll'
+            },
             xAxis: { type: 'category', data: allDates, name: 'Date' },
             yAxis: { type: 'value', name: 'USD' },
             series: series

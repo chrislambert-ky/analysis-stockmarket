@@ -9,10 +9,13 @@ output_folder = "data"
 os.makedirs(output_folder, exist_ok=True)
 
 etf_list = [
-    "TQQQ","UPRO","GGLL","MSFU","QQXL","QQUP",
-    "SPLG","QQQ","FBCG","XLG","TOPT","QTOP","MGK","VGT","FMAG",
+    "TQQQ","UPRO","GGLL","MSFU",
+    "QQQ","FBCG","QTOP","MGK","VGT",
+    "SPLG","XLG","TOPT","FMAG",
     "MSFT","GOOGL","HSBC","ALLY"
-    ]
+]
+
+
 
 monthly_investment = 100.0
 weekly_investment = 25.0
@@ -171,13 +174,14 @@ for ticker_symbol in etf_list:
         all_weekly.append(weekly_df)
     if not bod_df.empty:
         all_bod.append(bod_df)
+    # Collect all ticker data into a single DataFrame
+    all_history.append(df)
 
 # Consolidate and save each strategy
 consolidations = [
     (all_monthly, 'all_dca_monthly'),
     (all_weekly, 'all_dca_weekly'),
     (all_bod, 'all_buy_on_dip'),
-    (all_history, 'all_full_history'),
 ]
 
 def round_columns(df):
@@ -202,9 +206,6 @@ for df_list, name in consolidations:
     csv_name = os.path.join(output_folder, f'{name}.csv')
     df_all.to_csv(csv_name, index=False)
     print(f"Saved consolidated {name} to {csv_name}")
-
-# Collect all ticker data into a single DataFrame
-    all_history.append(df)
 
 # After the loop, concatenate all data and save to a single CSV
 if all_history:

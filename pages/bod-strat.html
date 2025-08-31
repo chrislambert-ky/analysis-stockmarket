@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-468B94S87K"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-468B94S87K');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Buy-on-Dip Strategy</title>
+    <style>
+        nav {
+            background-color: #f0f0f0;
+            padding: 10px;
+        }
+        nav a {
+            color: #0077cc;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        nav a:hover {
+            background-color: #0077cc;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .controls {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .input-group input, .input-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .decline-settings {
+            grid-column: 1 / -1;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .decline-settings h4 {
+            margin-top: 0;
+            color: #0077cc;
+        }
+        .decline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .decline-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .decline-item label {
+            font-weight: normal;
+            margin: 0;
+            font-size: 14px;
+        }
+        .decline-item input {
+            width: 60px;
+            padding: 4px;
+        }
+        .button-group {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #005aa3;
+        }
+        .results {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .result-item {
+            text-align: center;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .result-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0077cc;
+        }
+        .result-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        #chartContainer {
+            margin-top: 20px;
+            height: 500px;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="../index.html">Home</a> |
+        <a href="dca.html">DCA Analysis</a> |
+        <a href="bod.html">Buy on Dip Analysis</a> |
+        <a href="dca-tickers.html">DCA (All Tickers)</a> |
+        <a href="bod-tickers.html">BOD (All Tickers)</a> |
+        <a href="dca-strat.html">Advanced Dollar Cost Average</a> |
+        <a href="bod-strat.html">Advanced Buy-on-Dip</a>
+    </nav>
+    
+    <div class="container">
+        <h1>Advanced Buy-on-Dip Strategy</h1>
+        <p>Set up limit orders based on percentage declines from previous day's close and see real-time results</p>
+        
+        <div class="controls">
+            <div class="input-group">
+                <label for="tickerSelect">Ticker:</label>
+                <select id="tickerSelect">
+                    <option value="">-- Select Ticker --</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" value="2020-01-01">
+            </div>
+            
+            <div class="input-group">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" value="2024-12-31">
+            </div>
+            
+            <div class="decline-settings">
+                <h4>Limit Order Settings</h4>
+                <div class="help-text">Set number of shares to buy at each percentage decline from previous day's close</div>
+                <div class="decline-grid">
+                    <div class="decline-item">
+                        <label>-1%:</label>
+                        <input type="number" id="decline1" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-2%:</label>
+                        <input type="number" id="decline2" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-3%:</label>
+                        <input type="number" id="decline3" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-4%:</label>
+                        <input type="number" id="decline4" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-5%:</label>
+                        <input type="number" id="decline5" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-6%:</label>
+                        <input type="number" id="decline6" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-7%:</label>
+                        <input type="number" id="decline7" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-8%:</label>
+                        <input type="number" id="decline8" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-9%:</label>
+                        <input type="number" id="decline9" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-10%:</label>
+                        <input type="number" id="decline10" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                </div>
+                <div class="help-text">Example: If previous close was $100 and you set 10 shares at -2%, you'll buy 10 shares if the stock hits $98 or lower</div>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="calculateStrategy()">Calculate Strategy</button>
+                <button onclick="downloadCSV()" id="downloadBtn" style="display:none;">Download CSV</button>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <h3>Results Summary</h3>
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="result-value" id="totalInvested">$0</div>
+                    <div class="result-label">Total Invested</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="totalShares">0</div>
+                    <div class="result-label">Total Shares</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="portfolioValue">$0</div>
+                    <div class="result-label">Portfolio Value</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="totalReturn">$0</div>
+                    <div class="result-label">Total Return</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="returnPercent">0%</div>
+                    <div class="result-label">Return %</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="avgPrice">$0</div>
+                    <div class="result-label">Avg Purchase Price</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="totalTrades">0</div>
+                    <div class="result-label">Total Trades</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="avgDecline">0%</div>
+                    <div class="result-label">Avg Decline at Purchase</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="chartContainer"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script>
+    let stockData = [];
+    let calculationResults = [];
+
+    // Load stock data and populate ticker dropdown
+    async function loadStockData() {
+        try {
+            const response = await fetch('../data/history_tickers.csv');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            let text = await response.text();
+            text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const rows = text.split('\n').filter(r => r.trim().length > 0);
+            
+            if (rows.length === 0) return;
+            
+            const headers = rows[0].split(',').map(h => h.trim());
+            stockData = rows.slice(1).map(row => {
+                const values = row.split(',').map(v => (v ?? '').trim());
+                const obj = {};
+                headers.forEach((h, i) => obj[h] = values[i] ?? '');
+                return obj;
+            });
+            
+            // Populate ticker dropdown
+            const tickers = [...new Set(stockData.map(row => row.Symbol))].sort();
+            const select = document.getElementById('tickerSelect');
+            tickers.forEach(ticker => {
+                const option = document.createElement('option');
+                option.value = ticker;
+                option.textContent = ticker;
+                select.appendChild(option);
+            });
+            
+            console.log(`Loaded ${stockData.length} records for ${tickers.length} tickers`);
+        } catch (error) {
+            console.error('Error loading stock data:', error);
+        }
+    }
+
+    function calculateStrategy() {
+        const startDate = new Date(document.getElementById('startDate').value);
+        const endDate = new Date(document.getElementById('endDate').value);
+        const selectedTicker = document.getElementById('tickerSelect').value;
+        
+        if (!selectedTicker) {
+            alert('Please select a ticker');
+            return;
+        }
+        
+        if (startDate >= endDate) {
+            alert('End date must be after start date');
+            return;
+        }
+        
+        // Get decline settings
+        const declineSettings = {};
+        for (let i = 1; i <= 10; i++) {
+            const shares = parseInt(document.getElementById(`decline${i}`).value) || 0;
+            if (shares > 0) {
+                declineSettings[i] = shares;
+            }
+        }
+        
+        if (Object.keys(declineSettings).length === 0) {
+            alert('Please set at least one decline percentage with shares > 0');
+            return;
+        }
+        
+        calculationResults = calculateBuyOnDip(selectedTicker, startDate, endDate, declineSettings);
+        displayResults(calculationResults, declineSettings);
+        showChart(calculationResults, selectedTicker);
+        
+        document.getElementById('downloadBtn').style.display = 'inline-block';
+    }
+
+    function calculateBuyOnDip(ticker, startDate, endDate, declineSettings) {
+        const results = [];
+        let totalShares = 0;
+        let totalInvested = 0;
+        let totalTrades = 0;
+        let totalDeclineAtPurchase = 0;
+        
+        // Filter data for selected ticker and date range
+        const tickerData = stockData.filter(row => {
+            if (row.Symbol !== ticker) return false;
+            const rowDate = new Date(row.Date_add);
+            return rowDate >= startDate && rowDate <= endDate;
+        }).sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+        
+        if (tickerData.length === 0) {
+            alert('No data found for selected ticker and date range');
+            return [];
+        }
+        
+        // Process each trading day
+        for (let i = 1; i < tickerData.length; i++) {
+            const currentDay = tickerData[i];
+            const previousDay = tickerData[i - 1];
+            
+            const previousClose = parseFloat(previousDay.Close);
+            const currentLow = parseFloat(currentDay.Low);
+            const currentClose = parseFloat(currentDay.Close);
+            
+            let dayInvested = 0;
+            let dayShares = 0;
+            const tradesExecuted = [];
+            
+            // Check each decline percentage
+            Object.entries(declineSettings).forEach(([declinePercent, shares]) => {
+                const targetPrice = previousClose * (1 - declinePercent / 100);
+                
+                // If the low of the day hit our target price, execute the trade
+                if (currentLow <= targetPrice) {
+                    const purchasePrice = Math.min(targetPrice, currentLow);
+                    const cost = shares * purchasePrice;
+                    
+                    dayInvested += cost;
+                    dayShares += shares;
+                    totalTrades++;
+                    
+                    const actualDecline = ((previousClose - purchasePrice) / previousClose) * 100;
+                    totalDeclineAtPurchase += actualDecline;
+                    
+                    tradesExecuted.push({
+                        declinePercent: declinePercent,
+                        targetPrice: targetPrice,
+                        purchasePrice: purchasePrice,
+                        shares: shares,
+                        cost: cost,
+                        actualDecline: actualDecline
+                    });
+                }
+            });
+            
+            totalShares += dayShares;
+            totalInvested += dayInvested;
+            const portfolioValue = totalShares * currentClose;
+            
+            results.push({
+                date: currentDay.Date_add,
+                open: parseFloat(currentDay.Open),
+                high: parseFloat(currentDay.High),
+                low: currentLow,
+                close: currentClose,
+                previousClose: previousClose,
+                dayInvested: dayInvested,
+                dayShares: dayShares,
+                totalShares: totalShares,
+                totalInvested: totalInvested,
+                portfolioValue: portfolioValue,
+                gain: portfolioValue - totalInvested,
+                gainPercent: totalInvested > 0 ? ((portfolioValue - totalInvested) / totalInvested * 100) : 0,
+                tradesExecuted: tradesExecuted,
+                totalTrades: totalTrades,
+                avgDeclineAtPurchase: totalTrades > 0 ? totalDeclineAtPurchase / totalTrades : 0
+            });
+        }
+        
+        return results;
+    }
+
+    function displayResults(results, declineSettings) {
+        if (results.length === 0) return;
+        
+        const lastResult = results[results.length - 1];
+        const avgPurchasePrice = lastResult.totalInvested > 0 ? lastResult.totalInvested / lastResult.totalShares : 0;
+        
+        document.getElementById('totalInvested').textContent = `$${lastResult.totalInvested.toFixed(2)}`;
+        document.getElementById('totalShares').textContent = lastResult.totalShares.toFixed(4);
+        document.getElementById('portfolioValue').textContent = `$${lastResult.portfolioValue.toFixed(2)}`;
+        document.getElementById('totalReturn').textContent = `$${lastResult.gain.toFixed(2)}`;
+        document.getElementById('returnPercent').textContent = `${lastResult.gainPercent.toFixed(2)}%`;
+        document.getElementById('avgPrice').textContent = `$${avgPurchasePrice.toFixed(2)}`;
+        document.getElementById('totalTrades').textContent = lastResult.totalTrades;
+        document.getElementById('avgDecline').textContent = `${lastResult.avgDeclineAtPurchase.toFixed(2)}%`;
+        
+        document.getElementById('results').style.display = 'block';
+    }
+
+    function showChart(results, ticker) {
+        const chartContainer = document.getElementById('chartContainer');
+        chartContainer.innerHTML = '<div id="chart" style="width: 100%; height: 500px;"></div>';
+        
+        const dates = results.map(r => r.date);
+        const portfolioValues = results.map(r => r.portfolioValue);
+        const totalInvested = results.map(r => r.totalInvested);
+        const stockPrices = results.map(r => r.close);
+        
+        const chart = echarts.init(document.getElementById('chart'));
+        
+        const option = {
+            title: {
+                text: `Buy on Dip Strategy Results - ${ticker}`,
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'cross' },
+                formatter: function(params) {
+                    const index = params[0].dataIndex;
+                    const result = results[index];
+                    
+                    let tradesInfo = '';
+                    if (result.tradesExecuted && result.tradesExecuted.length > 0) {
+                        tradesInfo = '<br/><strong>Trades Executed:</strong><br/>';
+                        result.tradesExecuted.forEach(trade => {
+                            tradesInfo += `${trade.shares} shares @ $${trade.purchasePrice.toFixed(2)} (-${trade.actualDecline.toFixed(1)}%)<br/>`;
+                        });
+                    }
+                    
+                    return `
+                        Date: ${result.date}<br/>
+                        Portfolio Value: $${result.portfolioValue.toFixed(2)}<br/>
+                        Total Invested: $${result.totalInvested.toFixed(2)}<br/>
+                        Stock Price: $${result.close.toFixed(2)}<br/>
+                        Previous Close: $${result.previousClose.toFixed(2)}<br/>
+                        Shares Owned: ${result.totalShares.toFixed(4)}<br/>
+                        Gain: $${result.gain.toFixed(2)} (${result.gainPercent.toFixed(2)}%)
+                        ${tradesInfo}
+                    `;
+                }
+            },
+            legend: {
+                data: ['Portfolio Value', 'Total Invested', 'Stock Price'],
+                top: 30
+            },
+            xAxis: {
+                type: 'category',
+                data: dates,
+                name: 'Date'
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'Portfolio Value ($)',
+                    position: 'left'
+                },
+                {
+                    type: 'value',
+                    name: 'Stock Price ($)',
+                    position: 'right'
+                }
+            ],
+            series: [
+                {
+                    name: 'Portfolio Value',
+                    type: 'line',
+                    data: portfolioValues,
+                    yAxisIndex: 0,
+                    lineStyle: { color: '#00aa00', width: 2 }
+                },
+                {
+                    name: 'Total Invested',
+                    type: 'line',
+                    data: totalInvested,
+                    yAxisIndex: 0,
+                    lineStyle: { color: '#0077cc', type: 'dashed' }
+                },
+                {
+                    name: 'Stock Price',
+                    type: 'line',
+                    data: stockPrices,
+                    yAxisIndex: 1,
+                    lineStyle: { color: '#ff6b6b' }
+                }
+            ]
+        };
+        
+        chart.setOption(option);
+        
+        // Resize chart when window resizes
+        window.addEventListener('resize', () => {
+            chart.resize();
+        });
+    }
+
+    function downloadCSV() {
+        if (calculationResults.length === 0) {
+            alert('No results to download');
+            return;
+        }
+        
+        const ticker = document.getElementById('tickerSelect').value;
+        const headers = [
+            'Date', 'Open', 'High', 'Low', 'Close', 'Previous Close',
+            'Day Invested', 'Day Shares', 'Total Shares', 'Total Invested', 
+            'Portfolio Value', 'Gain', 'Gain %', 'Trades Executed', 'Avg Decline at Purchase'
+        ];
+        
+        let csvContent = headers.join(',') + '\n';
+        
+        calculationResults.forEach(row => {
+            const tradesDesc = row.tradesExecuted ? row.tradesExecuted.map(t => 
+                `${t.shares}@$${t.purchasePrice.toFixed(2)}(-${t.actualDecline.toFixed(1)}%)`
+            ).join(';') : '';
+            
+            const values = [
+                row.date,
+                row.open.toFixed(2),
+                row.high.toFixed(2),
+                row.low.toFixed(2),
+                row.close.toFixed(2),
+                row.previousClose.toFixed(2),
+                row.dayInvested.toFixed(2),
+                row.dayShares.toFixed(6),
+                row.totalShares.toFixed(6),
+                row.totalInvested.toFixed(2),
+                row.portfolioValue.toFixed(2),
+                row.gain.toFixed(2),
+                row.gainPercent.toFixed(2),
+                `"${tradesDesc}"`,
+                row.avgDeclineAtPurchase.toFixed(2)
+            ];
+            csvContent += values.join(',') + '\n';
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bod_strategy_${ticker}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    // Load data when page loads
+    document.addEventListener('DOMContentLoaded', loadStockData);
+    </script>
+</body>
+</html>

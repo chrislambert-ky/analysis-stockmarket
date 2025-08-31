@@ -33,12 +33,15 @@
 <body>
     <nav>
         <a href="../index.html">Home</a> |
-        <a href="dca.html">DCA</a> |
-        <a href="bod.html">Buy on Dip</a> |
-        <a href="bod-tickers.html">Buy on Dip (All Tickers)</a> |
-        <a href="dca-tickers.html">DCA (All Tickers)</a>
+        <a href="dca.html">DCA Analysis</a> |
+        <a href="bod.html">Buy on Dip Analysis</a> |
+        <a href="dca-tickers.html">DCA (All Tickers)</a> |
+        <a href="bod-tickers.html">BOD (All Tickers)</a> |
+        <a href="dca-strat.html">Advanced Dollar Cost Average</a> |
+        <a href="bod-strat.html">Advanced Buy-on-Dip</a>
     </nav>
     <h1>Dollar Cost Averaging (DCA) - Cumulative Shares, Value, and Invested</h1>
+    <h2 style="font-size:1rem;color:#007700;">Investing $25/week</h2>
     <h2 id="dca-summary" style="font-size:1rem;color:#007700;"></h2>
     <label for="dca-ticker-select"><b>Show Ticker:</b></label>
     <select id="dca-ticker-select" style="margin-bottom:1em;">
@@ -54,20 +57,28 @@
     }
     // Fetch and parse CSV data
     async function fetchData() {
-        const response = await fetch('../data/all_dca_monthly.csv');
-        const text = await response.text();
-        const rows = text.split('\n').filter(Boolean);
-        const headers = rows[0].split(',');
+        const url = '../data/all_dca_monthly.csv';
+        const response = await fetch(url + '?v=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) {
+            console.error('Failed to fetch CSV:', url, response.status, response.statusText);
+            return [];
+        }
+        let text = await response.text();
+        // Normalize line endings and trim
+        text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const rows = text.split('\n').filter(r => r.trim().length > 0);
+        if (rows.length === 0) return [];
+        const headers = rows[0].split(',').map(h => h.trim());
         const data = rows.slice(1).map(row => {
-            const values = row.split(',');
+            const values = row.split(',').map(v => (v ?? '').trim());
             const obj = {};
-            headers.forEach((h, i) => obj[h.trim()] = values[i]);
+            headers.forEach((h, i) => obj[h] = values[i] ?? '');
             return obj;
         });
         return data;
     }
     function getAllDates(data) {
-        return Array.from(new Set(data.map(row => row.Date_add))).sort();
+        return Array.from(new Set(data.map(row => (row.Date_add || '').trim()))).sort();
     }
     // Dynamically populate dropdown with all tickers from the CSV
     async function populateDcaTickerDropdown() {
@@ -83,27 +94,64 @@
             select.appendChild(opt);
         });
     }
-    function prepareSeries(data, tickers, allDates) {
+    function linearRegression(y) {
+        // y: array of numbers
+        const n = y.length;
+        if (n === 0) return [];
+        const x = Array.from({length: n}, (_, i) => i);
+        const sumX = x.reduce((a, b) => a + b, 0);
+        const sumY = y.reduce((a, b) => a + b, 0);
+        const sumXY = x.reduce((a, b, i) => a + b * y[i], 0);
+        const sumXX = x.reduce((a, b) => a + b * b, 0);
+        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+        return x.map(xi => slope * xi + intercept);
+    }
+    function prepareSeries(data, tickers, allDates, showPriceAndRegression) {
         const series = [];
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8', '#f7dc6f'];
+        let colorIndex = 0;
         tickers.forEach(ticker => {
             const tickerData = data.filter(row => row.Symbol === ticker);
             const valueMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Value'])]));
-            const investedMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Invested'])]));
+            const isMultipleTickers = tickers.length > 1;
+            const lineColor = isMultipleTickers ? colors[colorIndex % colors.length] : '#00aa00';
+            colorIndex++;
+            
             series.push({
                 name: ticker + ' - Value',
                 type: 'line',
                 connectNulls: true,
                 data: allDates.map(date => valueMap[date] ?? null),
-                showSymbol: false
-            });
-            series.push({
-                name: ticker + ' - Invested',
-                type: 'line',
-                connectNulls: true,
-                data: allDates.map(date => investedMap[date] ?? null),
                 showSymbol: false,
-                lineStyle: { type: 'dashed' }
+                yAxisIndex: 0,
+                lineStyle: { color: lineColor }
             });
+            if (showPriceAndRegression) {
+                // Price series
+                const priceMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Close'])]));
+                const priceArr = allDates.map(date => priceMap[date] ?? null);
+                // Linear regression on price
+                const regArr = linearRegression(priceArr.map(v => (typeof v === 'number' && !isNaN(v)) ? v : 0));
+                series.push({
+                    name: ticker + ' - Price',
+                    type: 'line',
+                    connectNulls: true,
+                    data: priceArr,
+                    showSymbol: false,
+                    yAxisIndex: 1,
+                    lineStyle: { color: '#0077cc' }
+                });
+                series.push({
+                    name: ticker + ' - Price Regression',
+                    type: 'line',
+                    connectNulls: true,
+                    data: regArr,
+                    showSymbol: false,
+                    yAxisIndex: 1,
+                    lineStyle: { type: 'dashed', color: '#ffaa00' }
+                });
+            }
         });
         return series;
     }
@@ -112,7 +160,8 @@
         const allTickers = Array.from(new Set(data.map(row => row.Symbol)));
         const tickers = (!selectedTicker || selectedTicker === 'ALL') ? allTickers : [selectedTicker];
         const allDates = getAllDates(data);
-        const series = prepareSeries(data, tickers, allDates);
+        const showPriceAndRegression = tickers.length === 1;
+        const series = prepareSeries(data, tickers, allDates, showPriceAndRegression);
         // Build lookup for percent gain
         const gainLookup = {};
         data.forEach(row => {
@@ -145,9 +194,21 @@
                     return html;
                 }
             },
-            legend: { data: series.map(s => s.name) },
+            legend: { 
+                data: series.map(s => s.name),
+                selected: series.reduce((acc, s) => {
+                    acc[s.name] = true; // All series visible by default
+                    return acc;
+                }, {}),
+                type: 'scroll'
+            },
             xAxis: { type: 'category', data: allDates, name: 'Date' },
-            yAxis: { type: 'value', name: 'USD' },
+            yAxis: showPriceAndRegression ? [
+                { type: 'value', name: 'USD Value' },
+                { type: 'value', name: 'Stock Price', position: 'right' }
+            ] : [
+                { type: 'value', name: 'USD Value' }
+            ],
             series: series
         };
         chart.setOption(option);
