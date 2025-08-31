@@ -336,6 +336,22 @@
                     <div class="result-value" id="totalTrades">0</div>
                     <div class="result-label">Total Trades</div>
                 </div>
+                <div class="result-item">
+                    <div class="result-value" id="upDays">0 (0%)</div>
+                    <div class="result-label">Up Days (Open→Close)</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="downDays">0 (0%)</div>
+                    <div class="result-label">Down Days (Open→Close)</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="mondayFridaySuccess">0 (0%)</div>
+                    <div class="result-label">Monday→Friday Success</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="tradeWeekSuccess">0 (0%)</div>
+                    <div class="result-label">Trade→Next Week Success</div>
+                </div>
             </div>
         </div>
         
@@ -423,7 +439,7 @@
         
         calculationResults = calculateBuyOnDip(selectedTicker, startDate, endDate, declineSettings);
         displayResults(calculationResults, declineSettings);
-        showChart(calculationResults, selectedTicker);
+        showChart(calculationResults.trades, selectedTicker);
         
         document.getElementById('downloadBtn').style.display = 'inline-block';
     }
@@ -473,7 +489,6 @@
                     totalTrades++;
                     
                     const actualDecline = ((previousClose - purchasePrice) / previousClose) * 100;
-                    totalDeclineAtPurchase += actualDecline;
                     
                     tradesExecuted.push({
                         declinePercent: declinePercent,
@@ -509,12 +524,127 @@
             });
         }
         
-        return results;
+        // Calculate additional metrics using the filtered ticker data
+        const additionalMetrics = calculateBODAdditionalMetrics(tickerData, results);
+        
+        return { trades: results, metrics: additionalMetrics };
     }
 
-    function displayResults(results, declineSettings) {
-        if (results.length === 0) return;
+    function calculateBODAdditionalMetrics(tickerData, tradeResults) {
+        // 1. Up days vs down days (open to close)
+        let upDays = 0;
+        let downDays = 0;
         
+        tickerData.forEach(row => {
+            const open = parseFloat(row.Open);
+            const close = parseFloat(row.Close);
+            if (close > open) {
+                upDays++;
+            } else if (close < open) {
+                downDays++;
+            }
+        });
+        
+        const totalDays = upDays + downDays;
+        const upDaysPercent = totalDays > 0 ? (upDays / totalDays * 100).toFixed(1) : 0;
+        const downDaysPercent = totalDays > 0 ? (downDays / totalDays * 100).toFixed(1) : 0;
+        
+        // 2. Monday to Friday success rate
+        let mondayFridaySuccess = 0;
+        let mondayFridayTotal = 0;
+        
+        // Find all Mondays using the Weekday column
+        const mondays = tickerData.filter(row => row.Weekday === 'Monday');
+        
+        // Find all Fridays using the Weekday column
+        const fridays = tickerData.filter(row => row.Weekday === 'Friday');
+        
+        // For each Monday, find the closest Friday after it
+        mondays.forEach(monday => {
+            const mondayDate = new Date(monday.Date_add);
+            let closestFriday = null;
+            let minDaysDiff = Infinity;
+            
+            fridays.forEach(friday => {
+                const fridayDate = new Date(friday.Date_add);
+                if (fridayDate > mondayDate) { // Friday must be after Monday
+                    const daysDiff = (fridayDate - mondayDate) / (1000 * 60 * 60 * 24);
+                    if (daysDiff < minDaysDiff && daysDiff <= 7) { // Within 7 days
+                        minDaysDiff = daysDiff;
+                        closestFriday = friday;
+                    }
+                }
+            });
+            
+            if (closestFriday) {
+                mondayFridayTotal++;
+                const mondayClose = parseFloat(monday.Close);
+                const fridayClose = parseFloat(closestFriday.Close);
+                if (fridayClose > mondayClose) {
+                    mondayFridaySuccess++;
+                }
+            }
+        });
+        
+        const mondayFridayPercent = mondayFridayTotal > 0 ? (mondayFridaySuccess / mondayFridayTotal * 100).toFixed(1) : 0;
+        
+        // 3. Trade to next week success (for BOD, check if trades would be profitable one week later)
+        let tradeWeekSuccess = 0;
+        let tradeWeekTotal = 0;
+        
+        tradeResults.forEach(trade => {
+            if (trade.tradesExecuted && trade.tradesExecuted.length > 0) {
+                trade.tradesExecuted.forEach(executedTrade => {
+                    const tradeDate = new Date(trade.date);
+                    const oneWeekLater = new Date(tradeDate);
+                    oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+                    
+                    // Find closest trading day data one week later
+                    const laterData = findClosestTradingDay(tickerData, oneWeekLater.toISOString().split('T')[0]);
+                    
+                    if (laterData) {
+                        tradeWeekTotal++;
+                        const laterClose = parseFloat(laterData.Close);
+                        if (laterClose > executedTrade.purchasePrice) {
+                            tradeWeekSuccess++;
+                        }
+                    }
+                });
+            }
+        });
+        
+        const tradeWeekPercent = tradeWeekTotal > 0 ? (tradeWeekSuccess / tradeWeekTotal * 100).toFixed(1) : 0;
+        
+        return {
+            upDays: { count: upDays, percent: upDaysPercent },
+            downDays: { count: downDays, percent: downDaysPercent },
+            mondayFriday: { success: mondayFridaySuccess, total: mondayFridayTotal, percent: mondayFridayPercent },
+            tradeWeek: { success: tradeWeekSuccess, total: tradeWeekTotal, percent: tradeWeekPercent }
+        };
+    }
+
+    function findClosestTradingDay(tickerData, targetDate) {
+        const target = new Date(targetDate);
+        let closest = null;
+        let minDiff = Infinity;
+        
+        for (const row of tickerData) {
+            const rowDate = new Date(row.Date_add);
+            const diff = Math.abs(rowDate - target);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closest = row;
+            }
+        }
+        
+        return closest;
+    }
+
+    function displayResults(calculationData, declineSettings) {
+        if (!calculationData || calculationData.trades.length === 0) return;
+        
+        const results = calculationData.trades;
+        const metrics = calculationData.metrics;
         const lastResult = results[results.length - 1];
         const avgPurchasePrice = lastResult.totalInvested > 0 ? lastResult.totalInvested / lastResult.totalShares : 0;
         
@@ -525,6 +655,12 @@
         document.getElementById('returnPercent').textContent = `${lastResult.gainPercent.toFixed(2)}%`;
         document.getElementById('avgPrice').textContent = formatCurrency(avgPurchasePrice);
         document.getElementById('totalTrades').textContent = lastResult.totalTrades;
+        
+        // Display new metrics
+        document.getElementById('upDays').textContent = `${metrics.upDays.count} (${metrics.upDays.percent}%)`;
+        document.getElementById('downDays').textContent = `${metrics.downDays.count} (${metrics.downDays.percent}%)`;
+        document.getElementById('mondayFridaySuccess').textContent = `${metrics.mondayFriday.success}/${metrics.mondayFriday.total} (${metrics.mondayFriday.percent}%)`;
+        document.getElementById('tradeWeekSuccess').textContent = `${metrics.tradeWeek.success}/${metrics.tradeWeek.total} (${metrics.tradeWeek.percent}%)`;
         
         document.getElementById('results').style.display = 'block';
     }
@@ -627,7 +763,7 @@
     }
 
     function downloadCSV() {
-        if (calculationResults.length === 0) {
+        if (!calculationResults || calculationResults.trades.length === 0) {
             alert('No results to download');
             return;
         }
@@ -641,7 +777,7 @@
         
         let csvContent = headers.join(',') + '\n';
         
-        calculationResults.forEach(row => {
+        calculationResults.trades.forEach(row => {
             const tradesDesc = row.tradesExecuted ? row.tradesExecuted.map(t => 
                 `${t.shares}@$${t.purchasePrice.toFixed(2)}(-${t.actualDecline.toFixed(1)}%)`
             ).join(';') : '';

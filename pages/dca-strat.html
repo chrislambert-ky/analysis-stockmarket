@@ -253,6 +253,22 @@
                     <div class="result-value" id="avgPrice">$0</div>
                     <div class="result-label">Avg Purchase Price</div>
                 </div>
+                <div class="result-item">
+                    <div class="result-value" id="upDays">0 (0%)</div>
+                    <div class="result-label">Up Days (Open→Close)</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="downDays">0 (0%)</div>
+                    <div class="result-label">Down Days (Open→Close)</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="mondayFridaySuccess">0 (0%)</div>
+                    <div class="result-label">Monday→Friday Success</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="weekOverWeekSuccess">0 (0%)</div>
+                    <div class="result-label">Week-over-Week Success</div>
+                </div>
             </div>
         </div>
         
@@ -333,7 +349,7 @@
         
         calculationResults = calculateDCA(selectedTicker, amount, startDate, endDate, investmentDay);
         displayResults(calculationResults);
-        showChart(calculationResults, selectedTicker);
+        showChart(calculationResults.trades, selectedTicker);
         
         document.getElementById('downloadBtn').style.display = 'inline-block';
     }
@@ -403,7 +419,102 @@
             currentDate.setDate(currentDate.getDate() + 7);
         }
         
-        return results;
+        // Calculate additional metrics using the filtered ticker data
+        const additionalMetrics = calculateAdditionalMetrics(tickerData, targetDay, results);
+        
+        return { trades: results, metrics: additionalMetrics };
+    }
+
+    function calculateAdditionalMetrics(tickerData, targetDay, tradeResults) {
+        // 1. Up days vs down days (open to close)
+        let upDays = 0;
+        let downDays = 0;
+        
+        tickerData.forEach(row => {
+            const open = parseFloat(row.Open);
+            const close = parseFloat(row.Close);
+            if (close > open) {
+                upDays++;
+            } else if (close < open) {
+                downDays++;
+            }
+        });
+        
+        const totalDays = upDays + downDays;
+        const upDaysPercent = totalDays > 0 ? (upDays / totalDays * 100).toFixed(1) : 0;
+        const downDaysPercent = totalDays > 0 ? (downDays / totalDays * 100).toFixed(1) : 0;
+        
+        // 2. Monday to Friday success rate
+        let mondayFridaySuccess = 0;
+        let mondayFridayTotal = 0;
+        
+        // Find all Mondays using the Weekday column
+        const mondays = tickerData.filter(row => row.Weekday === 'Monday');
+        
+        // Find all Fridays using the Weekday column  
+        const fridays = tickerData.filter(row => row.Weekday === 'Friday');
+        
+        // For each Monday, find the closest Friday after it
+        mondays.forEach(monday => {
+            const mondayDate = new Date(monday.Date_add);
+            let closestFriday = null;
+            let minDaysDiff = Infinity;
+            
+            fridays.forEach(friday => {
+                const fridayDate = new Date(friday.Date_add);
+                if (fridayDate > mondayDate) { // Friday must be after Monday
+                    const daysDiff = (fridayDate - mondayDate) / (1000 * 60 * 60 * 24);
+                    if (daysDiff < minDaysDiff && daysDiff <= 7) { // Within 7 days
+                        minDaysDiff = daysDiff;
+                        closestFriday = friday;
+                    }
+                }
+            });
+            
+            if (closestFriday) {
+                mondayFridayTotal++;
+                const mondayClose = parseFloat(monday.Close);
+                const fridayClose = parseFloat(closestFriday.Close);
+                if (fridayClose > mondayClose) {
+                    mondayFridaySuccess++;
+                }
+            }
+        });
+        
+        const mondayFridayPercent = mondayFridayTotal > 0 ? (mondayFridaySuccess / mondayFridayTotal * 100).toFixed(1) : 0;
+        
+        // 3. Investment day week-over-week success
+        let weekOverWeekSuccess = 0;
+        let weekOverWeekTotal = 0;
+        
+        // For each trade result, check if it would be profitable one week later
+        tradeResults.forEach((trade, index) => {
+            if (index < tradeResults.length - 1) {
+                const tradeDate = new Date(trade.actualDate);
+                const oneWeekLater = new Date(tradeDate);
+                oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+                
+                // Find closest trading day data one week later
+                const laterData = findClosestTradingDay(tickerData, oneWeekLater.toISOString().split('T')[0]);
+                
+                if (laterData) {
+                    weekOverWeekTotal++;
+                    const laterClose = parseFloat(laterData.Close);
+                    if (laterClose > trade.avgPrice) {
+                        weekOverWeekSuccess++;
+                    }
+                }
+            }
+        });
+        
+        const weekOverWeekPercent = weekOverWeekTotal > 0 ? (weekOverWeekSuccess / weekOverWeekTotal * 100).toFixed(1) : 0;
+        
+        return {
+            upDays: { count: upDays, percent: upDaysPercent },
+            downDays: { count: downDays, percent: downDaysPercent },
+            mondayFriday: { success: mondayFridaySuccess, total: mondayFridayTotal, percent: mondayFridayPercent },
+            weekOverWeek: { success: weekOverWeekSuccess, total: weekOverWeekTotal, percent: weekOverWeekPercent }
+        };
     }
 
     function findClosestTradingDay(tickerData, targetDate) {
@@ -423,9 +534,11 @@
         return closest;
     }
 
-    function displayResults(results) {
-        if (results.length === 0) return;
+    function displayResults(calculationData) {
+        if (!calculationData || calculationData.trades.length === 0) return;
         
+        const results = calculationData.trades;
+        const metrics = calculationData.metrics;
         const lastResult = results[results.length - 1];
         const avgPurchasePrice = lastResult.totalInvested / lastResult.totalShares;
         
@@ -435,6 +548,12 @@
         document.getElementById('totalReturn').textContent = formatCurrency(lastResult.gain);
         document.getElementById('returnPercent').textContent = `${lastResult.gainPercent.toFixed(2)}%`;
         document.getElementById('avgPrice').textContent = formatCurrency(avgPurchasePrice);
+        
+        // Display new metrics
+        document.getElementById('upDays').textContent = `${metrics.upDays.count} (${metrics.upDays.percent}%)`;
+        document.getElementById('downDays').textContent = `${metrics.downDays.count} (${metrics.downDays.percent}%)`;
+        document.getElementById('mondayFridaySuccess').textContent = `${metrics.mondayFriday.success}/${metrics.mondayFriday.total} (${metrics.mondayFriday.percent}%)`;
+        document.getElementById('weekOverWeekSuccess').textContent = `${metrics.weekOverWeek.success}/${metrics.weekOverWeek.total} (${metrics.weekOverWeek.percent}%)`;
         
         document.getElementById('results').style.display = 'block';
     }
@@ -521,7 +640,7 @@
     }
 
     function downloadCSV() {
-        if (calculationResults.length === 0) {
+        if (!calculationResults || calculationResults.trades.length === 0) {
             alert('No results to download');
             return;
         }
@@ -535,7 +654,7 @@
         
         let csvContent = headers.join(',') + '\n';
         
-        calculationResults.forEach(row => {
+        calculationResults.trades.forEach(row => {
             const values = [
                 row.date,
                 row.actualDate,
