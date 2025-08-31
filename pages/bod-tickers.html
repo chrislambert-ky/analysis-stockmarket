@@ -55,6 +55,14 @@
     <div id="charts-root"></div>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
+    // Helper function to format currency with commas
+    function formatCurrency(amount) {
+        return '$' + amount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+    
     function percentGain(value, invested) {
         if (invested === 0 || invested == null || value == null) return '';
         return ((value - invested) / invested * 100).toFixed(2) + '%';
@@ -161,6 +169,9 @@
                         let html = params[0].axisValue + '<br/>';
                         params.forEach(p => {
                             let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
+                            if (typeof val === 'number' && (p.seriesName.includes('Value') || p.seriesName.includes('Invested'))) {
+                                val = formatCurrency(val);
+                            }
                             html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
                         });
                         const key = params[0].axisValue;

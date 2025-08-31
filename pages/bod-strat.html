@@ -289,6 +289,14 @@
     let stockData = [];
     let calculationResults = [];
 
+    // Helper function to format currency with commas
+    function formatCurrency(amount) {
+        return '$' + amount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
     // Load stock data and populate ticker dropdown
     async function loadStockData() {
         try {
@@ -454,12 +462,12 @@
         const lastResult = results[results.length - 1];
         const avgPurchasePrice = lastResult.totalInvested > 0 ? lastResult.totalInvested / lastResult.totalShares : 0;
         
-        document.getElementById('totalInvested').textContent = `$${lastResult.totalInvested.toFixed(2)}`;
+        document.getElementById('totalInvested').textContent = formatCurrency(lastResult.totalInvested);
         document.getElementById('totalShares').textContent = lastResult.totalShares.toFixed(4);
-        document.getElementById('portfolioValue').textContent = `$${lastResult.portfolioValue.toFixed(2)}`;
-        document.getElementById('totalReturn').textContent = `$${lastResult.gain.toFixed(2)}`;
+        document.getElementById('portfolioValue').textContent = formatCurrency(lastResult.portfolioValue);
+        document.getElementById('totalReturn').textContent = formatCurrency(lastResult.gain);
         document.getElementById('returnPercent').textContent = `${lastResult.gainPercent.toFixed(2)}%`;
-        document.getElementById('avgPrice').textContent = `$${avgPurchasePrice.toFixed(2)}`;
+        document.getElementById('avgPrice').textContent = formatCurrency(avgPurchasePrice);
         document.getElementById('totalTrades').textContent = lastResult.totalTrades;
         document.getElementById('avgDecline').textContent = `${lastResult.avgDeclineAtPurchase.toFixed(2)}%`;
         
@@ -493,18 +501,18 @@
                     if (result.tradesExecuted && result.tradesExecuted.length > 0) {
                         tradesInfo = '<br/><strong>Trades Executed:</strong><br/>';
                         result.tradesExecuted.forEach(trade => {
-                            tradesInfo += `${trade.shares} shares @ $${trade.purchasePrice.toFixed(2)} (-${trade.actualDecline.toFixed(1)}%)<br/>`;
+                            tradesInfo += `${trade.shares} shares @ ${formatCurrency(trade.purchasePrice)} (-${trade.actualDecline.toFixed(1)}%)<br/>`;
                         });
                     }
                     
                     return `
                         Date: ${result.date}<br/>
-                        Portfolio Value: $${result.portfolioValue.toFixed(2)}<br/>
-                        Total Invested: $${result.totalInvested.toFixed(2)}<br/>
-                        Stock Price: $${result.close.toFixed(2)}<br/>
-                        Previous Close: $${result.previousClose.toFixed(2)}<br/>
+                        Portfolio Value: ${formatCurrency(result.portfolioValue)}<br/>
+                        Total Invested: ${formatCurrency(result.totalInvested)}<br/>
+                        Stock Price: ${formatCurrency(result.close)}<br/>
+                        Previous Close: ${formatCurrency(result.previousClose)}<br/>
                         Shares Owned: ${result.totalShares.toFixed(4)}<br/>
-                        Gain: $${result.gain.toFixed(2)} (${result.gainPercent.toFixed(2)}%)
+                        Gain: ${formatCurrency(result.gain)} (${result.gainPercent.toFixed(2)}%)
                         ${tradesInfo}
                     `;
                 }
