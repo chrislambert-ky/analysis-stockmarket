@@ -100,18 +100,99 @@
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
+        }
+        
+        .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: auto 1fr auto 1fr auto 1fr;
             gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .form-row label {
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+        
+        .form-row input, .form-row select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-row-dates {
+            display: grid;
+            grid-template-columns: auto auto 1fr auto 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .form-row-dates label {
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+        
+        .form-row-dates input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* Period Selection Styles */
+        .period-selection {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: flex-start;
+        }
+        
+        .period-selection-label {
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .period-btn {
+            background-color: var(--gray);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .period-btn:hover {
+            background-color: var(--blue);
+            transform: translateY(-1px);
+        }
+
+        .period-btn.active {
+            background-color: var(--orange);
+            color: white;
         }
         .input-group {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
         }
         .input-group label {
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 0;
+            margin-right: 5px;
             color: #333;
+            white-space: nowrap;
+            min-width: fit-content;
         }
         .input-group input, .input-group select {
             padding: 8px;
@@ -155,6 +236,26 @@
             background-color: white;
             border-radius: 5px;
             border: 1px solid #ddd;
+        }
+        .ticker-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .ticker-metric-item {
+            text-align: center;
+            padding: 10px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .disclaimer {
+            font-size: 0.85em;
+            color: var(--gray);
+            text-align: center;
+            margin-bottom: 15px;
+            font-style: italic;
         }
         .result-value {
             font-size: 1.5em;
@@ -215,14 +316,13 @@
     <div class="container">
 
         <div class="controls">
-            <div class="input-group">
+            <!-- Row 1: Ticker, Investment Day, Investment Amount -->
+            <div class="form-row">
                 <label for="tickerSelect">Ticker:</label>
                 <select id="tickerSelect">
                     <option value="">-- Select Ticker --</option>
                 </select>
-            </div>
-            
-            <div class="input-group">
+                
                 <label for="investmentDay">Investment Day:</label>
                 <select id="investmentDay">
                     <option value="1" selected>Monday</option>
@@ -231,21 +331,25 @@
                     <option value="4">Thursday</option>
                     <option value="5">Friday</option>
                 </select>
-            </div>
-            
-            <div class="input-group">
-                <label for="startDate">Start Date:</label>
-                <input type="date" id="startDate" value="2020-01-01">
-            </div>
-            
-            <div class="input-group">
-                <label for="endDate">End Date:</label>
-                <input type="date" id="endDate" value="2024-12-31">
-            </div>
-            
-            <div class="input-group">
+                
                 <label for="investmentAmount">Investment Amount ($):</label>
                 <input type="number" id="investmentAmount" value="10" min="1" step="1">
+            </div>
+            
+            <!-- Row 2: Quick Pick Buttons, Begin Date, End Date -->
+            <div class="form-row-dates">
+                <div class="period-selection">
+                    <button id="ytd-btn" class="period-btn">YTD</button>
+                    <button id="5y-btn" class="period-btn">5Y</button>
+                    <button id="10y-btn" class="period-btn">10Y</button>
+                    <button id="20y-btn" class="period-btn">20Y</button>
+                </div>
+                
+                <label for="startDate">Begin Date:</label>
+                <input type="date" id="startDate" value="2025-01-01">
+                
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" value="2025-09-01">
             </div>
             
             <div class="button-group">
@@ -255,7 +359,30 @@
         </div>
         
         <div class="results" id="results">
-            <h3>Results Summary</h3>
+            <!-- General Ticker Metrics -->
+            <div class="disclaimer">
+                Up Days, Down Days, Mon-Fri, and Week-over-week are general metrics for the selected ticker and date range. These values reflect the stock's overall performance during the chosen period, independent of your strategy settings.
+            </div>
+            <div class="ticker-metrics">
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="upDays">0 (0%)</div>
+                    <div class="result-label">Up Days (Open→Close)</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="downDays">0 (0%)</div>
+                    <div class="result-label">Down Days (Open→Close)</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="mondayFridaySuccess">0 (0%)</div>
+                    <div class="result-label">Monday→Friday Success</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="weekOverWeekSuccess">0 (0%)</div>
+                    <div class="result-label">Week-over-Week Success</div>
+                </div>
+            </div>
+
+            <!-- Strategy-Specific Results -->
             <div class="results-grid">
                 <div class="result-item">
                     <div class="result-value" id="totalInvested">$0</div>
@@ -280,22 +407,6 @@
                 <div class="result-item">
                     <div class="result-value" id="avgPrice">$0</div>
                     <div class="result-label">Avg Purchase Price</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="upDays">0 (0%)</div>
-                    <div class="result-label">Up Days (Open→Close)</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="downDays">0 (0%)</div>
-                    <div class="result-label">Down Days (Open→Close)</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="mondayFridaySuccess">0 (0%)</div>
-                    <div class="result-label">Monday→Friday Success</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="weekOverWeekSuccess">0 (0%)</div>
-                    <div class="result-label">Week-over-Week Success</div>
                 </div>
             </div>
         </div>
@@ -412,13 +523,14 @@
             const closestData = findClosestTradingDay(tickerData, dateStr);
             
             if (closestData) {
-                // Use closing price for DCA purchases (consistent with other DCA pages)
-                const purchasePrice = parseFloat(closestData.Close);
+                // Use average daily price for DCA purchases (consistent with other DCA pages)
+                const purchasePrice = parseFloat(closestData.avg_daily_price);
+                const closingPrice = parseFloat(closestData.Close);
                 
                 const shares = weeklyAmount / purchasePrice;
                 totalShares += shares;
                 totalInvested += weeklyAmount;
-                const portfolioValue = totalShares * parseFloat(closestData.Close);
+                const portfolioValue = totalShares * closingPrice;
                 
                 results.push({
                     date: dateStr,
@@ -726,8 +838,64 @@
         window.URL.revokeObjectURL(url);
     }
 
+    // Period quick pick functions
+    function updatePeriodButtonStates(activeButtonId) {
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if (activeButtonId) {
+            document.getElementById(activeButtonId).classList.add('active');
+        }
+    }
+
+    function setDatePeriod(yearsBack) {
+        const endDate = new Date();
+        const startDate = new Date();
+        
+        if (yearsBack === 'YTD') {
+            // Year to date - start from January 1st of current year
+            startDate.setFullYear(endDate.getFullYear(), 0, 1);
+        } else {
+            // Calculate years back from current date
+            startDate.setFullYear(endDate.getFullYear() - yearsBack);
+        }
+        
+        // Format dates for input fields (YYYY-MM-DD)
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
+        
+        document.getElementById('startDate').value = startDateStr;
+        document.getElementById('endDate').value = endDateStr;
+    }
+
     // Load data when page loads
-    document.addEventListener('DOMContentLoaded', loadStockData);
+    document.addEventListener('DOMContentLoaded', function() {
+        loadStockData();
+        
+        // Add period button event listeners
+        document.getElementById('ytd-btn').addEventListener('click', function() {
+            setDatePeriod('YTD');
+            updatePeriodButtonStates('ytd-btn');
+        });
+
+        document.getElementById('5y-btn').addEventListener('click', function() {
+            setDatePeriod(5);
+            updatePeriodButtonStates('5y-btn');
+        });
+
+        document.getElementById('10y-btn').addEventListener('click', function() {
+            setDatePeriod(10);
+            updatePeriodButtonStates('10y-btn');
+        });
+
+        document.getElementById('20y-btn').addEventListener('click', function() {
+            setDatePeriod(20);
+            updatePeriodButtonStates('20y-btn');
+        });
+        
+        // Set YTD as default active button since start date defaults to 2025-01-01
+        updatePeriodButtonStates('ytd-btn');
+    });
     </script>
 </body>
 </html>

@@ -82,6 +82,67 @@
             margin-left: 0.5em;
         }
 
+        /* Period Selection Styles */
+        .period-selection {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .period-btn {
+            background-color: var(--gray);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .period-btn:hover {
+            background-color: var(--blue);
+            transform: translateY(-1px);
+        }
+
+        .period-btn.active {
+            background-color: var(--orange);
+            color: white;
+        }
+
+        /* Loading Progress Styles */
+        .loading-container {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 80%;
+            max-width: 500px;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            margin: 10px auto;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--light-blue), var(--blue));
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--blue);
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
         /* Heading Styles */
         h1 {
             font-family: Arial, Helvetica, sans-serif;
@@ -139,6 +200,24 @@
     </nav>
     <h1>Dollar Cost Averaging Strategy - Per Ticker</h1>
     <h2>Investing $25/week (first trading day of each week at average daily price) across all available tickers</h2>
+    
+    <!-- Period Selection -->
+    <div class="period-selection">
+        <button id="ytd-btn" class="period-btn active">YTD</button>
+        <button id="5y-btn" class="period-btn">5 Years</button>
+        <button id="10y-btn" class="period-btn">10 Years</button>
+        <button id="15y-btn" class="period-btn">15 Years</button>
+        <button id="20y-btn" class="period-btn">20 Years</button>
+    </div>
+
+    <!-- Loading Progress -->
+    <div id="loading" class="loading-container">
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <div id="progress-text" class="progress-text">Loading...</div>
+    </div>
+    
     <div id="charts-root"></div>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
@@ -153,6 +232,21 @@
     function percentGain(value, invested) {
         if (invested === 0 || invested == null || value == null) return '';
         return ((value - invested) / invested * 100).toFixed(2) + '%';
+    }
+
+    // Loading progress functions
+    function showLoading() {
+        document.getElementById('loading').style.display = 'block';
+        updateProgress(0, 'Starting...');
+    }
+
+    function hideLoading() {
+        document.getElementById('loading').style.display = 'none';
+    }
+
+    function updateProgress(percent, message) {
+        document.getElementById('progress-fill').style.width = percent + '%';
+        document.getElementById('progress-text').textContent = message;
     }
     // Fetch and parse CSV data
     async function fetchData() {
@@ -177,12 +271,19 @@
         return data;
     }
 
-    // Calculate weekly DCA strategy for a specific ticker (defaults to 10 years, first day of week, $25)
-    function calculateWeeklyDCA(tickerData) {
-        // Calculate 10 years back from current date
+    // Calculate weekly DCA strategy for a specific ticker
+    function calculateWeeklyDCA(tickerData, yearsBack = 'YTD') {
         const endDate = new Date();
-        const startDate = new Date();
-        startDate.setFullYear(endDate.getFullYear() - 10);
+        let startDate;
+        
+        if (yearsBack === 'YTD') {
+            // Year to date - start from January 1st of current year
+            startDate = new Date(endDate.getFullYear(), 0, 1);
+        } else {
+            // Calculate years back from current date
+            startDate = new Date();
+            startDate.setFullYear(endDate.getFullYear() - yearsBack);
+        }
         
         // Filter data by date range
         const filteredData = tickerData
@@ -260,6 +361,9 @@
         return closest;
     }
 
+    // Global variable to track current period
+    let currentSelectedPeriod = 'YTD';
+
     function getAllDates(processedData) {
         const allDates = new Set();
         Object.values(processedData).forEach(tickerResults => {
@@ -293,11 +397,15 @@
         ];
     }
 
-    async function renderAllCharts() {
+    async function renderAllCharts(period = 'YTD') {
+        showLoading();
+        
         try {
+            updateProgress(10, 'Loading historical data...');
             const rawData = await fetchData();
             console.log('Historical data loaded:', rawData.length, 'rows');
             
+            updateProgress(25, 'Processing ticker data...');
             // Group data by ticker
             const tickerGroups = {};
             rawData.forEach(row => {
@@ -308,12 +416,26 @@
                 tickerGroups[ticker].push(row);
             });
 
+            // Convert period to yearsBack parameter
+            const yearsBack = period === 'YTD' ? 'YTD' : parseInt(period.replace('Y', ''));
+
+            updateProgress(40, 'Calculating DCA strategies...');
             // Calculate DCA results for each ticker
             const processedData = {};
-            Object.keys(tickerGroups).forEach(ticker => {
-                processedData[ticker] = calculateWeeklyDCA(tickerGroups[ticker]);
-            });
+            const allTickers = Object.keys(tickerGroups);
+            let processed = 0;
             
+            for (const ticker of allTickers) {
+                processedData[ticker] = calculateWeeklyDCA(tickerGroups[ticker], yearsBack);
+                processed++;
+                const progress = 40 + (processed / allTickers.length) * 30;
+                updateProgress(progress, `Processing ${ticker}... (${processed}/${allTickers.length})`);
+                
+                // Add small delay to show progress
+                await new Promise(resolve => setTimeout(resolve, 20));
+            }
+            
+            updateProgress(75, 'Sorting tickers by performance...');
             // Get tickers with data and sort by performance
             let tickers = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
             console.log('Tickers with DCA data:', tickers);
@@ -331,10 +453,12 @@
                 return { ticker, pct };
             }).sort((a, b) => b.pct - a.pct).map(obj => obj.ticker);
 
+            updateProgress(80, 'Rendering charts...');
             const allDates = getAllDates(processedData);
             const root = document.getElementById('charts-root');
             root.innerHTML = '';
 
+            let chartsRendered = 0;
             for (const ticker of tickers) {
                 const tickerResults = processedData[ticker];
                 
@@ -362,7 +486,7 @@
                 // Title
                 const title = document.createElement('div');
                 title.className = 'chart-title';
-                title.innerHTML = `Ticker: <span id="ticker-symbol">${ticker}</span> <span class="ticker-label">Growth of $25/week on Mondays</span><br/>${summary}`;
+                title.innerHTML = `Ticker: <span id="ticker-symbol">${ticker}</span> <span class="ticker-label">Growth of $25/week (first available trading day)</span><br/>${summary}`;
                 container.appendChild(title);
                 
                 // Chart div
@@ -412,13 +536,71 @@
                     series: series
                 };
                 chart.setOption(option);
+                
+                // Update progress for chart rendering
+                chartsRendered++;
+                const chartProgress = 80 + (chartsRendered / tickers.length) * 15;
+                updateProgress(chartProgress, `Rendering charts... (${chartsRendered}/${tickers.length})`);
+                
+                // Add small delay to show progress
+                await new Promise(resolve => setTimeout(resolve, 10));
             }
+            
+            updateProgress(100, 'Complete!');
+            
+            // Hide loading after a brief delay
+            setTimeout(() => {
+                hideLoading();
+            }, 500);
+            
         } catch (error) {
             console.error('Error rendering charts:', error);
             document.getElementById('charts-root').innerHTML = '<p>Error loading data: ' + error.message + '</p>';
+            hideLoading();
         }
     }
-    renderAllCharts();
+
+    // Function to update period button states
+    function updatePeriodButtonStates(activeButtonId) {
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(activeButtonId).classList.add('active');
+    }
+
+    // Period button event listeners
+    document.getElementById('ytd-btn').addEventListener('click', function() {
+        currentSelectedPeriod = 'YTD';
+        updatePeriodButtonStates('ytd-btn');
+        renderAllCharts(currentSelectedPeriod);
+    });
+
+    document.getElementById('5y-btn').addEventListener('click', function() {
+        currentSelectedPeriod = '5Y';
+        updatePeriodButtonStates('5y-btn');
+        renderAllCharts(currentSelectedPeriod);
+    });
+
+    document.getElementById('10y-btn').addEventListener('click', function() {
+        currentSelectedPeriod = '10Y';
+        updatePeriodButtonStates('10y-btn');
+        renderAllCharts(currentSelectedPeriod);
+    });
+
+    document.getElementById('15y-btn').addEventListener('click', function() {
+        currentSelectedPeriod = '15Y';
+        updatePeriodButtonStates('15y-btn');
+        renderAllCharts(currentSelectedPeriod);
+    });
+
+    document.getElementById('20y-btn').addEventListener('click', function() {
+        currentSelectedPeriod = '20Y';
+        updatePeriodButtonStates('20y-btn');
+        renderAllCharts(currentSelectedPeriod);
+    });
+
+    // Initialize with YTD
+    renderAllCharts('YTD');
     </script>
 </body>
 </html>
