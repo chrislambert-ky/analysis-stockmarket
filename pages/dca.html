@@ -399,6 +399,12 @@
     function selectTicker(ticker) {
         currentSelectedTicker = ticker;
         
+        // If selecting a specific ticker (not ALL), automatically set to YTD and analyze
+        if (ticker !== 'ALL') {
+            currentSelectedPeriod = 'YTD';
+            updatePeriodButtonStates('ytd-btn');
+        }
+        
         // Update visual selection
         document.querySelectorAll('.ticker-box').forEach(box => {
             box.classList.remove('selected');
@@ -420,6 +426,11 @@
         
         // Reset download button
         document.getElementById('download-analysis-btn').disabled = true;
+        
+        // If selecting a specific ticker, automatically analyze with YTD
+        if (ticker !== 'ALL') {
+            analyzeSelection();
+        }
     }
     
     // Function to handle period + ticker analysis
