@@ -46,6 +46,14 @@ h2
   margin: 0.5rem 20px 0.5rem 20px;
 }
 
+h3
+{
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--orange);
+  margin: 0.5rem 20px 0.5rem 20px;
+}
+
 p
 {
   font-size: 1rem;

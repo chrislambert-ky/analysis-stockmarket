@@ -138,7 +138,7 @@
         <a href="about.html">About</a>
     </nav>
     <h1>Dollar Cost Averaging Strategy - Per Ticker</h1>
-    <h2>Investing $25/week across all available tickers</h2>
+    <h2>Investing $25/week (first trading day of each week at average daily price) across all available tickers</h2>
     <div id="charts-root"></div>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
@@ -156,32 +156,131 @@
     }
     // Fetch and parse CSV data
     async function fetchData() {
-        const response = await fetch('../data/all_dca_weekly.csv');
-        const text = await response.text();
-        const rows = text.split('\n').filter(Boolean);
-        const headers = rows[0].split(',');
+        const url = '../data/history_tickers.csv';
+        const response = await fetch(url + '?v=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) {
+            console.error('Failed to fetch CSV:', url, response.status, response.statusText);
+            return [];
+        }
+        let text = await response.text();
+        // Normalize line endings and trim
+        text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const rows = text.split('\n').filter(r => r.trim().length > 0);
+        if (rows.length === 0) return [];
+        const headers = rows[0].split(',').map(h => h.trim());
         const data = rows.slice(1).map(row => {
-            const values = row.split(',');
+            const values = row.split(',').map(v => (v ?? '').trim());
             const obj = {};
-            headers.forEach((h, i) => obj[h.trim()] = values[i]);
+            headers.forEach((h, i) => obj[h] = values[i] ?? '');
             return obj;
         });
         return data;
     }
-    function getAllDates(data) {
-        return Array.from(new Set(data.map(row => row.Date_add))).sort();
+
+    // Calculate weekly DCA strategy for a specific ticker (defaults to 10 years, first day of week, $25)
+    function calculateWeeklyDCA(tickerData) {
+        // Calculate 10 years back from current date
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setFullYear(endDate.getFullYear() - 10);
+        
+        // Filter data by date range
+        const filteredData = tickerData
+            .filter(row => {
+                const rowDate = new Date(row.Date_add);
+                return rowDate >= startDate && rowDate <= endDate;
+            })
+            .sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+        
+        if (filteredData.length === 0) {
+            return [];
+        }
+        
+        let cumulativeShares = 0;
+        let cumulativeInvested = 0;
+        const weeklyInvestment = 25;
+        const results = [];
+        
+        // Generate weekly target dates (Mondays)
+        let currentDate = new Date(startDate);
+        // Find first Monday on or after start date
+        while (currentDate.getDay() !== 1) { // 1 = Monday
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        while (currentDate <= endDate) {
+            const targetDateStr = currentDate.toISOString().split('T')[0];
+            
+            // Find closest trading day to this Monday
+            const closestTradingDay = findClosestTradingDay(filteredData, targetDateStr);
+            
+            if (closestTradingDay) {
+                const avgDailyPrice = parseFloat(closestTradingDay.avg_daily_price);
+                const closingPrice = parseFloat(closestTradingDay.Close);
+                const sharesThisWeek = weeklyInvestment / avgDailyPrice;
+                
+                cumulativeShares += sharesThisWeek;
+                cumulativeInvested += weeklyInvestment;
+                
+                results.push({
+                    date: closestTradingDay.Date_add,
+                    weekday: closestTradingDay.Weekday,
+                    close: closingPrice,
+                    avgDailyPrice: avgDailyPrice,
+                    sharesThisWeek: sharesThisWeek,
+                    investedThisWeek: weeklyInvestment,
+                    cumulativeShares: cumulativeShares,
+                    cumulativeInvested: cumulativeInvested,
+                    cumulativeValue: cumulativeShares * closingPrice
+                });
+            }
+            
+            // Move to next Monday
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
+
+        return results;
     }
-    function prepareSeries(data, ticker, allDates) {
-        const tickerData = data.filter(row => row.Symbol === ticker);
-        const valueMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Value'])]));
-        const investedMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Invested'])]));
+    
+    // Helper function to find closest trading day to a target date
+    function findClosestTradingDay(tickerData, targetDate) {
+        const target = new Date(targetDate);
+        let closest = null;
+        let minDiff = Infinity;
+        
+        for (const row of tickerData) {
+            const rowDate = new Date(row.Date_add);
+            const diff = Math.abs(rowDate - target);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closest = row;
+            }
+        }
+        
+        return closest;
+    }
+
+    function getAllDates(processedData) {
+        const allDates = new Set();
+        Object.values(processedData).forEach(tickerResults => {
+            tickerResults.forEach(result => allDates.add(result.date));
+        });
+        return Array.from(allDates).sort();
+    }
+
+    function prepareSeries(processedData, ticker, allDates) {
+        const tickerResults = processedData[ticker] || [];
+        const valueMap = Object.fromEntries(tickerResults.map(result => [result.date, result.cumulativeValue]));
+        const investedMap = Object.fromEntries(tickerResults.map(result => [result.date, result.cumulativeInvested]));
+        
         return [
             {
                 name: ticker + ' - Value',
                 type: 'line',
                 connectNulls: true,
                 data: allDates.map(date => valueMap[date] ?? null),
-                showSymbol: false
+                showSymbol: false,
+                lineStyle: { color: '#00aa00', width: 2 }
             },
             {
                 name: 'Invested',
@@ -189,91 +288,134 @@
                 connectNulls: true,
                 data: allDates.map(date => investedMap[date] ?? null),
                 showSymbol: false,
-                lineStyle: { type: 'dashed' }
+                lineStyle: { color: '#ff4444', type: 'dashed', width: 2 }
             }
         ];
     }
+
     async function renderAllCharts() {
-        const data = await fetchData();
-        let tickers = Array.from(new Set(data.map(row => row.Symbol)));
-        // Sort tickers by percent return (descending)
-        tickers = tickers.map(ticker => {
-            const tickerData = data.filter(row => row.Symbol === ticker);
-            let pct = -Infinity;
-            if (tickerData.length > 0) {
-                const last = tickerData[tickerData.length - 1];
-                const value = parseFloat(last['Cumulative Value']);
-                const invested = parseFloat(last['Cumulative Invested']);
-                pct = invested ? ((value - invested) / invested * 100) : -Infinity;
-            }
-            return { ticker, pct };
-        }).sort((a, b) => b.pct - a.pct).map(obj => obj.ticker);
-        const allDates = getAllDates(data);
-        const root = document.getElementById('charts-root');
-        root.innerHTML = '';
-        for (const ticker of tickers) {
-            // Create container
-            const container = document.createElement('div');
-            container.className = 'chart-container';
-            // Calculate overall percent return for this ticker
-            const tickerData = data.filter(row => row.Symbol === ticker);
-            let summary = '';
-            if (tickerData.length > 0) {
-                const last = tickerData[tickerData.length - 1];
-                const value = parseFloat(last['Cumulative Value']);
-                const invested = parseFloat(last['Cumulative Invested']);
-                const pct = percentGain(value, invested);
-                summary = `<span style=\"color:#007700;font-size:1rem;\">${ticker} Overall % Gain: <b>${pct}</b></span>`;
-            }
-            // Title
-            const title = document.createElement('div');
-            title.className = 'chart-title';
-            title.innerHTML = `Ticker: <span id="ticker-symbol">${ticker}</span> ${summary} <span class="ticker-label">Growth of $25/week</span>`;
-            container.appendChild(title);
-            // Chart div
-            const chartDiv = document.createElement('div');
-            chartDiv.style.width = '100%';
-            chartDiv.style.height = '400px';
-            container.appendChild(chartDiv);
-            root.appendChild(container);
-            // Prepare series
-            const series = prepareSeries(data, ticker, allDates);
-            // Build lookup for percent gain
-            const gainLookup = {};
-            tickerData.forEach(row => {
-                gainLookup[row.Date_add] = {
-                    value: parseFloat(row['Cumulative Value']),
-                    invested: parseFloat(row['Cumulative Invested'])
-                };
+        try {
+            const rawData = await fetchData();
+            console.log('Historical data loaded:', rawData.length, 'rows');
+            
+            // Group data by ticker
+            const tickerGroups = {};
+            rawData.forEach(row => {
+                const ticker = row.Symbol;
+                if (!tickerGroups[ticker]) {
+                    tickerGroups[ticker] = [];
+                }
+                tickerGroups[ticker].push(row);
             });
-            // Render chart
-            const chart = echarts.init(chartDiv);
-            const option = {
-                tooltip: {
-                    trigger: 'axis',
-                    axisPointer: { type: 'cross' },
-                    formatter: function(params) {
-                        let html = params[0].axisValue + '<br/>';
-                        params.forEach(p => {
-                            let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
-                            if (typeof val === 'number' && (p.seriesName.includes('Value') || p.seriesName.includes('Invested'))) {
-                                val = formatCurrency(val);
+
+            // Calculate DCA results for each ticker
+            const processedData = {};
+            Object.keys(tickerGroups).forEach(ticker => {
+                processedData[ticker] = calculateWeeklyDCA(tickerGroups[ticker]);
+            });
+            
+            // Get tickers with data and sort by performance
+            let tickers = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
+            console.log('Tickers with DCA data:', tickers);
+            
+            // Sort tickers by percent return (descending)
+            tickers = tickers.map(ticker => {
+                const tickerResults = processedData[ticker];
+                let pct = -Infinity;
+                if (tickerResults.length > 0) {
+                    const last = tickerResults[tickerResults.length - 1];
+                    const value = last.cumulativeValue;
+                    const invested = last.cumulativeInvested;
+                    pct = invested ? ((value - invested) / invested * 100) : -Infinity;
+                }
+                return { ticker, pct };
+            }).sort((a, b) => b.pct - a.pct).map(obj => obj.ticker);
+
+            const allDates = getAllDates(processedData);
+            const root = document.getElementById('charts-root');
+            root.innerHTML = '';
+
+            for (const ticker of tickers) {
+                const tickerResults = processedData[ticker];
+                
+                // Create container
+                const container = document.createElement('div');
+                container.className = 'chart-container';
+                
+                // Calculate overall metrics for this ticker
+                let summary = '';
+                let weeksCount = 0;
+                let totalInvested = 0;
+                let totalValue = 0;
+                let totalShares = 0;
+                
+                if (tickerResults.length > 0) {
+                    const last = tickerResults[tickerResults.length - 1];
+                    weeksCount = tickerResults.length;
+                    totalInvested = last.cumulativeInvested;
+                    totalValue = last.cumulativeValue;
+                    totalShares = last.cumulativeShares;
+                    const pct = percentGain(totalValue, totalInvested);
+                    summary = `<span style="color:#007700;font-size:1rem;">${ticker} Overall % Gain: <b>${pct}</b> | Weeks: ${weeksCount} | Shares: ${totalShares.toFixed(4)} | Invested: ${formatCurrency(totalInvested)} | Value: ${formatCurrency(totalValue)}</span>`;
+                }
+                
+                // Title
+                const title = document.createElement('div');
+                title.className = 'chart-title';
+                title.innerHTML = `Ticker: <span id="ticker-symbol">${ticker}</span> <span class="ticker-label">Growth of $25/week on Mondays</span><br/>${summary}`;
+                container.appendChild(title);
+                
+                // Chart div
+                const chartDiv = document.createElement('div');
+                chartDiv.style.width = '100%';
+                chartDiv.style.height = '400px';
+                container.appendChild(chartDiv);
+                root.appendChild(container);
+
+                // Prepare series
+                const series = prepareSeries(processedData, ticker, allDates);
+                
+                // Build lookup for percent gain
+                const gainLookup = {};
+                tickerResults.forEach(result => {
+                    gainLookup[result.date] = {
+                        value: result.cumulativeValue,
+                        invested: result.cumulativeInvested
+                    };
+                });
+
+                // Render chart
+                const chart = echarts.init(chartDiv);
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: { type: 'cross' },
+                        formatter: function(params) {
+                            let html = params[0].axisValue + '<br/>';
+                            params.forEach(p => {
+                                let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
+                                if (typeof val === 'number' && (p.seriesName.includes('Value') || p.seriesName.includes('Invested'))) {
+                                    val = formatCurrency(val);
+                                }
+                                html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
+                            });
+                            const key = params[0].axisValue;
+                            if (gainLookup[key]) {
+                                html += '<b>% Gain: ' + percentGain(gainLookup[key].value, gainLookup[key].invested) + '</b><br/>';
                             }
-                            html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
-                        });
-                        const key = params[0].axisValue;
-                        if (gainLookup[key]) {
-                            html += '<b>% Gain: ' + percentGain(gainLookup[key].value, gainLookup[key].invested) + '</b><br/>';
+                            return html;
                         }
-                        return html;
-                    }
-                },
-                legend: { data: series.map(s => s.name) },
-                xAxis: { type: 'category', data: allDates, name: 'Date' },
-                yAxis: { type: 'value', name: 'USD' },
-                series: series
-            };
-            chart.setOption(option);
+                    },
+                    legend: { data: series.map(s => s.name) },
+                    xAxis: { type: 'category', data: allDates, name: 'Date' },
+                    yAxis: { type: 'value', name: 'USD' },
+                    series: series
+                };
+                chart.setOption(option);
+            }
+        } catch (error) {
+            console.error('Error rendering charts:', error);
+            document.getElementById('charts-root').innerHTML = '<p>Error loading data: ' + error.message + '</p>';
         }
     }
     renderAllCharts();

@@ -505,11 +505,11 @@
             
             // Check each decline percentage
             Object.entries(declineSettings).forEach(([declinePercent, shares]) => {
-                const targetPrice = previousClose * (1 - declinePercent / 100);
+                const limitOrderPrice = previousClose * (1 - declinePercent / 100);
                 
-                // If the low of the day hit our target price, execute the trade
-                if (currentLow <= targetPrice) {
-                    const purchasePrice = Math.min(targetPrice, currentLow);
+                // If the low of the day hit our limit order price, execute the trade at the limit price
+                if (currentLow <= limitOrderPrice) {
+                    const purchasePrice = limitOrderPrice; // Limit orders execute at the limit price
                     const cost = shares * purchasePrice;
                     
                     dayInvested += cost;
@@ -520,7 +520,7 @@
                     
                     tradesExecuted.push({
                         declinePercent: declinePercent,
-                        targetPrice: targetPrice,
+                        targetPrice: limitOrderPrice,
                         purchasePrice: purchasePrice,
                         shares: shares,
                         cost: cost,

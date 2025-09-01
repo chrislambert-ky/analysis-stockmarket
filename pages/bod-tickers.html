@@ -77,6 +77,48 @@
             margin-bottom: 0.5em;
         }
 
+        /* Metrics Grid Styles */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e0e1e1;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 1px solid #e0e1e1;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .metric-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--blue);
+        }
+
+        .metric-value.positive {
+            color: var(--bright-green);
+        }
+
+        .metric-value.negative {
+            color: var(--red);
+        }
+
         /* Heading Styles */
         h1 {
             font-family: Arial, Helvetica, sans-serif;
@@ -133,7 +175,7 @@
         <a href="about.html">About</a>
     </nav>
     <h1>Buy-on-Dip Strategy - Per Ticker</h1>
-    <h2>Buying 1 share for each percent drop, 1-5% across all available tickers</h2>
+    <h2>Buying 1 share for each percent drop (1-5%) using limit orders at predetermined prices</h2>
     <div id="charts-root"></div>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
@@ -149,9 +191,75 @@
         if (invested === 0 || invested == null || value == null) return '';
         return ((value - invested) / invested * 100).toFixed(2) + '%';
     }
+
+    // Calculate detailed metrics for a specific ticker
+    function calculateDetailedMetrics(processedData, ticker, rawTickerData) {
+        const tickerResults = processedData[ticker] || [];
+        
+        if (tickerResults.length === 0) {
+            return {
+                totalWeeks: 0,
+                totalDips: 0,
+                totalInvested: 0,
+                totalValue: 0,
+                gainLoss: 0
+            };
+        }
+
+        // Calculate total weeks using the raw ticker data date range
+        const dates = rawTickerData.map(row => new Date(row.Date_add)).sort((a, b) => a - b);
+        const startDate = dates[0];
+        const endDate = dates[dates.length - 1];
+        const totalWeeks = Math.ceil((endDate - startDate) / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+        const lastResult = tickerResults[tickerResults.length - 1];
+        const totalDips = lastResult.cumulativeShares;
+        const totalInvested = lastResult.cumulativeInvested;
+        const totalValue = lastResult.cumulativeValue;
+        const gainLoss = totalValue - totalInvested;
+
+        return {
+            totalWeeks,
+            totalDips,
+            totalInvested,
+            totalValue,
+            gainLoss
+        };
+    }
+
+    // Display detailed metrics in a grid format
+    function displayDetailedMetrics(metrics) {
+        const isPositive = metrics.gainLoss >= 0;
+        const gainLossClass = isPositive ? 'positive' : 'negative';
+        
+        return `
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Weeks</div>
+                    <div class="metric-value">${metrics.totalWeeks}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Dips/Purchases</div>
+                    <div class="metric-value">${metrics.totalDips}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Invested</div>
+                    <div class="metric-value">${formatCurrency(metrics.totalInvested)}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Value</div>
+                    <div class="metric-value">${formatCurrency(metrics.totalValue)}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Gain/Loss</div>
+                    <div class="metric-value ${gainLossClass}">${formatCurrency(metrics.gainLoss)}</div>
+                </div>
+            </div>
+        `;
+    }
     // Fetch and parse CSV data
     async function fetchData() {
-        const response = await fetch('../data/all_buy_on_dip.csv');
+        const response = await fetch('../data/history_tickers.csv');
         const text = await response.text();
         const rows = text.split('\n').filter(Boolean);
         const headers = rows[0].split(',');
@@ -163,13 +271,70 @@
         });
         return data;
     }
-    function getAllDates(data) {
-        return Array.from(new Set(data.map(row => row.Date_add))).sort();
+
+    // Calculate buy-on-dip strategy for a specific ticker
+    function calculateBuyOnDip(tickerData) {
+        // Sort by date
+        const sortedData = tickerData.sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+        
+        let cumulativeShares = 0;
+        let cumulativeInvested = 0;
+        const results = [];
+
+        for (let i = 1; i < sortedData.length; i++) {
+            const today = sortedData[i];
+            const yesterday = sortedData[i - 1];
+            
+            const todayLow = parseFloat(today.Low);
+            const todayClose = parseFloat(today.Close);
+            const yesterdayClose = parseFloat(yesterday.Close);
+            
+            let dayShares = 0;
+            let dayInvested = 0;
+
+            // Check for dips at 1%, 2%, 3%, 4%, 5% levels
+            // We set limit orders at previous close * (1 - dip_percentage)
+            for (let dipLevel = 1; dipLevel <= 5; dipLevel++) {
+                const limitOrderPrice = yesterdayClose * (1 - dipLevel / 100);
+                
+                // Check if today's low reached our limit order price
+                if (todayLow <= limitOrderPrice) {
+                    dayShares += 1;
+                    dayInvested += limitOrderPrice;
+                }
+            }
+
+            if (dayShares > 0) {
+                cumulativeShares += dayShares;
+                cumulativeInvested += dayInvested;
+                
+                results.push({
+                    date: today.Date_add,
+                    close: todayClose,
+                    sharesThisDay: dayShares,
+                    investedThisDay: dayInvested,
+                    cumulativeShares: cumulativeShares,
+                    cumulativeInvested: cumulativeInvested,
+                    cumulativeValue: cumulativeShares * todayClose
+                });
+            }
+        }
+
+        return results;
     }
-    function prepareSeries(data, ticker, allDates) {
-        const tickerData = data.filter(row => row.Symbol === ticker);
-        const valueMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Value'])]));
-        const investedMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Invested'])]));
+    function getAllDates(processedData) {
+        const allDates = new Set();
+        Object.values(processedData).forEach(tickerResults => {
+            tickerResults.forEach(result => allDates.add(result.date));
+        });
+        return Array.from(allDates).sort();
+    }
+
+    function prepareSeries(processedData, ticker, allDates) {
+        const tickerResults = processedData[ticker] || [];
+        const valueMap = Object.fromEntries(tickerResults.map(result => [result.date, result.cumulativeValue]));
+        const investedMap = Object.fromEntries(tickerResults.map(result => [result.date, result.cumulativeInvested]));
+        
         return [
             {
                 name: ticker + ' - Value',
@@ -189,58 +354,88 @@
         ];
     }
     async function renderAllCharts() {
-        const data = await fetchData();
-        let tickers = Array.from(new Set(data.map(row => row.Symbol)));
-        // Sort tickers by percent return (descending)
+        const rawData = await fetchData();
+        
+        // Group data by ticker
+        const tickerGroups = {};
+        rawData.forEach(row => {
+            const ticker = row.Symbol;
+            if (!tickerGroups[ticker]) {
+                tickerGroups[ticker] = [];
+            }
+            tickerGroups[ticker].push(row);
+        });
+
+        // Calculate buy-on-dip results for each ticker
+        const processedData = {};
+        Object.keys(tickerGroups).forEach(ticker => {
+            processedData[ticker] = calculateBuyOnDip(tickerGroups[ticker]);
+        });
+
+        // Get tickers and sort by percent return (descending)
+        let tickers = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
+        
         tickers = tickers.map(ticker => {
-            const tickerData = data.filter(row => row.Symbol === ticker);
+            const results = processedData[ticker];
             let pct = -Infinity;
-            if (tickerData.length > 0) {
-                const last = tickerData[tickerData.length - 1];
-                const value = parseFloat(last['Cumulative Value']);
-                const invested = parseFloat(last['Cumulative Invested']);
-                pct = invested ? ((value - invested) / invested * 100) : -Infinity;
+            if (results.length > 0) {
+                const last = results[results.length - 1];
+                pct = last.cumulativeInvested ? ((last.cumulativeValue - last.cumulativeInvested) / last.cumulativeInvested * 100) : -Infinity;
             }
             return { ticker, pct };
         }).sort((a, b) => b.pct - a.pct).map(obj => obj.ticker);
-        const allDates = getAllDates(data);
+
+        const allDates = getAllDates(processedData);
         const root = document.getElementById('charts-root');
         root.innerHTML = '';
+
         for (const ticker of tickers) {
             // Create container
             const container = document.createElement('div');
             container.className = 'chart-container';
+            
+            // Calculate detailed metrics for this ticker
+            const metrics = calculateDetailedMetrics(processedData, ticker, tickerGroups[ticker]);
+            
             // Calculate overall percent return for this ticker
-            const tickerData = data.filter(row => row.Symbol === ticker);
+            const tickerResults = processedData[ticker];
             let summary = '';
-            if (tickerData.length > 0) {
-                const last = tickerData[tickerData.length - 1];
-                const value = parseFloat(last['Cumulative Value']);
-                const invested = parseFloat(last['Cumulative Invested']);
-                const pct = percentGain(value, invested);
+            if (tickerResults.length > 0) {
+                const last = tickerResults[tickerResults.length - 1];
+                const pct = percentGain(last.cumulativeValue, last.cumulativeInvested);
                 summary = `<span style="color:#007700;font-size:1rem;">${ticker} Overall % Gain: <b>${pct}</b></span>`;
             }
+            
             // Title
             const title = document.createElement('div');
             title.className = 'chart-title';
             title.innerHTML = `${ticker} Buy on Dip &nbsp; ${summary}`;
             container.appendChild(title);
+            
+            // Add detailed metrics
+            const metricsDiv = document.createElement('div');
+            metricsDiv.innerHTML = displayDetailedMetrics(metrics);
+            container.appendChild(metricsDiv);
+            
             // Chart div
             const chartDiv = document.createElement('div');
             chartDiv.style.width = '100%';
             chartDiv.style.height = '400px';
             container.appendChild(chartDiv);
             root.appendChild(container);
+
             // Prepare series
-            const series = prepareSeries(data, ticker, allDates);
+            const series = prepareSeries(processedData, ticker, allDates);
+            
             // Build lookup for percent gain
             const gainLookup = {};
-            tickerData.forEach(row => {
-                gainLookup[row.Date_add] = {
-                    value: parseFloat(row['Cumulative Value']),
-                    invested: parseFloat(row['Cumulative Invested'])
+            tickerResults.forEach(result => {
+                gainLookup[result.date] = {
+                    value: result.cumulativeValue,
+                    invested: result.cumulativeInvested
                 };
             });
+
             // Render chart
             const chart = echarts.init(chartDiv);
             const option = {

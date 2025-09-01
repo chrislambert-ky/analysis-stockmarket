@@ -83,6 +83,151 @@
             text-align: center;
         }
 
+        h3 {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1.0rem;
+            font-weight: bold;
+            color: var(--light-blue);
+            margin: 0.5rem 0;
+            text-align: center;
+        }
+
+        /* Button Styles */
+        #download-analysis-btn, #calculate-btn, .period-btn {
+            transition: all 0.3s ease;
+        }
+
+        .period-btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: var(--bright-green);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .period-btn:hover:not(:disabled) {
+            background-color: #7dd35e !important;
+            transform: translateY(-1px);
+        }
+
+        .period-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            background-color: var(--gray) !important;
+        }
+
+        .period-btn.active {
+            background-color: var(--orange) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        #download-analysis-btn:hover:not(:disabled) {
+            background-color: var(--light-blue) !important;
+            transform: translateY(-1px);
+        }
+        
+        #calculate-btn:hover:not(:disabled) {
+            background-color: #7dd35e !important;
+            transform: translateY(-1px);
+        }
+
+        #download-analysis-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        #calculate-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            background-color: var(--gray) !important;
+        }
+
+        /* Ticker Metrics Grid */
+        .ticker-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* Responsive breakpoints for ticker grid */
+        @media (max-width: 1024px) {
+            .ticker-metrics-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ticker-metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .ticker-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid var(--light-blue);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 55px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .ticker-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            border-color: var(--blue);
+        }
+
+        .clickable-ticker {
+            cursor: pointer;
+        }
+
+        .clickable-ticker:hover {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+
+        .ticker-box.selected {
+            background: linear-gradient(135deg, var(--bright-green) 0%, #7bc143 100%);
+            border-color: var(--bright-green);
+            color: white;
+        }
+
+        .ticker-box.selected .ticker-symbol,
+        .ticker-box.selected .ticker-gain {
+            color: white;
+        }
+
+        .ticker-symbol {
+            font-size: 1.0rem;
+            font-weight: bold;
+            color: var(--blue);
+            margin-bottom: 3px;
+        }
+
+        .ticker-gain {
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+
+        .ticker-gain.positive {
+            color: var(--bright-green);
+        }
+
+        .ticker-gain.negative {
+            color: var(--red);
+        }
+
         /* Responsive Design for Navigation */
         @media (max-width: 700px) {
             nav {
@@ -120,16 +265,306 @@
         <a href="about.html">About</a>
     </nav>
     <h1>Dollar Cost Averaging (DCA) - Cumulative Shares, Value, and Invested</h1>
-    <h2>Simulating a $25/week Investment</h2>
-    <h2 id="dca-summary"></h2>
-    <label for="dca-ticker-select"><b>Show Ticker:</b></label>
-    <select id="dca-ticker-select" style="margin-bottom:1em;">
-        <option value="">-- Select Ticker --</option>
-        <option value="ALL">All</option>
-    </select>
-    <div id="main" style="width: 100%; height: 500px;"></div>
+    <h2>Simulating a $25/week Investment (first trading day of each week at average daily price)</h2>
+    
+    <!-- Ticker Metrics Grid -->
+    <div id="ticker-metrics-grid" class="ticker-metrics-grid" style="display: none;">
+        <!-- Ticker boxes will be populated here by JavaScript -->
+    </div>
+    
+    <!-- Selected Ticker Display and Period Selection -->
+    <div id="ticker-selection-area" style="text-align: center; margin: 15px 0; display: none;">
+        <!-- Compact layout: Selection, Period buttons, and Download all on same line -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
+            <h3 id="selected-ticker-display" style="color: var(--blue); margin: 0;">Selected: ALL Tickers</h3>
+            <div>
+                <button id="ytd-btn" class="period-btn">YTD</button>
+                <button id="5y-btn" class="period-btn">5 Years</button>
+                <button id="10y-btn" class="period-btn">10 Years</button>
+                <button id="15y-btn" class="period-btn">15 Years</button>
+                <button id="20y-btn" class="period-btn">20 Years</button>
+            </div>
+            <button id="download-analysis-btn" style="padding: 8px 16px; background-color: var(--purple); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;" disabled>
+                Download CSV
+            </button>
+        </div>
+    </div>
+    
+    <!-- Loading indicator -->
+    <div id="loading-container" style="display: none; text-align: center; margin: 20px 0;">
+        <div style="color: var(--blue); font-weight: bold; margin-bottom: 10px;">Calculating DCA Strategy...</div>
+        <div id="progress-bar" style="width: 300px; height: 20px; background-color: #f0f0f0; border-radius: 10px; margin: 0 auto; overflow: hidden;">
+            <div id="progress-fill" style="height: 100%; background-color: var(--bright-green); width: 0%; transition: width 0.3s ease; border-radius: 10px;"></div>
+        </div>
+        <div id="progress-text" style="color: var(--gray); font-size: 0.9em; margin-top: 5px;">Preparing calculation...</div>
+    </div>
+    
+    <!-- Detailed Metrics Section -->
+    <div id="detailed-metrics" style="display: none; margin: 20px auto; max-width: 1000px; background-color: #f0f8ff; padding: 20px; border-radius: 8px;">
+        <h3 style="text-align: center; color: var(--blue); margin-bottom: 20px;">Detailed Investment Metrics</h3>
+        <div id="metrics-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;"></div>
+    </div>
+    
+    <div id="main" style="width: 100%; height: 500px; margin: 20px auto; display: block;"></div>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
+    // Loading indicator functions
+    function showLoading() {
+        document.getElementById('loading-container').style.display = 'block';
+        document.getElementById('detailed-metrics').style.display = 'none';
+        updateProgress(0, 'Fetching historical data...');
+    }
+    
+    function hideLoading() {
+        document.getElementById('loading-container').style.display = 'none';
+        document.getElementById('main').style.display = 'block';
+    }
+    
+    function updateProgress(percent, text) {
+        document.getElementById('progress-fill').style.width = percent + '%';
+        document.getElementById('progress-text').textContent = text;
+    }
+    
+    // Function to populate ticker metrics boxes
+    function populateTickerBoxes(processedData, period) {
+        const tickerGrid = document.getElementById('ticker-metrics-grid');
+        
+        // Calculate summary data for each ticker
+        const summaryArr = Object.keys(processedData).map(ticker => {
+            const tickerResults = processedData[ticker] || [];
+            if (tickerResults.length > 0) {
+                const last = tickerResults[tickerResults.length - 1];
+                const pct = percentGain(last.cumulativeValue, last.cumulativeInvested);
+                const pctFloat = parseFloat(pct);
+                return { 
+                    ticker, 
+                    pct: pctFloat, 
+                    pctStr: pct
+                };
+            }
+            return null;
+        }).filter(Boolean);
+        
+        // Sort by performance (best to worst)
+        summaryArr.sort((a, b) => b.pct - a.pct);
+        
+        // Clear existing boxes
+        tickerGrid.innerHTML = '';
+        
+        // Add ALL box first
+        const allBox = document.createElement('div');
+        allBox.className = 'ticker-box clickable-ticker';
+        allBox.dataset.ticker = 'ALL';
+        allBox.innerHTML = `
+            <div class="ticker-symbol">ALL</div>
+            <div class="ticker-gain" style="color: var(--blue);">View All</div>
+        `;
+        tickerGrid.appendChild(allBox);
+        
+        // Create individual ticker boxes
+        summaryArr.forEach(item => {
+            const box = document.createElement('div');
+            box.className = 'ticker-box clickable-ticker';
+            box.dataset.ticker = item.ticker;
+            
+            const isPositive = item.pct >= 0;
+            const gainClass = isPositive ? 'positive' : 'negative';
+            
+            box.innerHTML = `
+                <div class="ticker-symbol">${item.ticker}</div>
+                <div class="ticker-gain ${gainClass}">${item.pctStr}</div>
+            `;
+            
+            tickerGrid.appendChild(box);
+        });
+        
+        // Show the grid and selection area
+        tickerGrid.style.display = 'grid';
+        document.getElementById('ticker-selection-area').style.display = 'block';
+        
+        // Add click handlers to all ticker boxes
+        document.querySelectorAll('.clickable-ticker').forEach(box => {
+            box.addEventListener('click', function() {
+                const ticker = this.dataset.ticker;
+                selectTicker(ticker);
+            });
+        });
+    }
+    
+    // Global variables to track selection
+    let currentSelectedTicker = 'ALL';
+    let currentSelectedPeriod = 'YTD';
+    
+    // Function to handle ticker selection
+    function selectTicker(ticker) {
+        currentSelectedTicker = ticker;
+        
+        // Update visual selection
+        document.querySelectorAll('.ticker-box').forEach(box => {
+            box.classList.remove('selected');
+        });
+        document.querySelector(`.ticker-box[data-ticker="${ticker}"]`).classList.add('selected');
+        
+        // Update selected ticker display
+        const displayName = ticker === 'ALL' ? 'ALL Tickers' : ticker;
+        document.getElementById('selected-ticker-display').textContent = `Selected: ${displayName}`;
+        
+        // Clear any existing chart
+        const chartDom = document.getElementById('main');
+        if (echarts.getInstanceByDom(chartDom)) {
+            echarts.getInstanceByDom(chartDom).dispose();
+        }
+        
+        // Hide detailed metrics
+        document.getElementById('detailed-metrics').style.display = 'none';
+        
+        // Reset download button
+        document.getElementById('download-analysis-btn').disabled = true;
+    }
+    
+    // Function to handle period + ticker analysis
+    function analyzeSelection() {
+        if (currentSelectedTicker === 'ALL') {
+            renderPeriodAnalysis(currentSelectedPeriod);
+        } else {
+            renderChart(currentSelectedTicker, currentSelectedPeriod);
+        }
+    }
+    
+    // Quick period analysis function
+    async function renderPeriodAnalysis(period) {
+        // Clear active states
+        document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(period.toLowerCase() + '-btn').classList.add('active');
+        
+        showLoading();
+        
+        try {
+            updateProgress(20, 'Loading historical data...');
+            const rawData = await fetchData();
+            
+            updateProgress(40, 'Processing ticker data...');
+            // Group data by ticker
+            const tickerGroups = {};
+            rawData.forEach(row => {
+                const ticker = row.Symbol;
+                if (!tickerGroups[ticker]) {
+                    tickerGroups[ticker] = [];
+                }
+                tickerGroups[ticker].push(row);
+            });
+
+            updateProgress(60, 'Calculating DCA strategies...');
+            // Calculate DCA results for all tickers with specified period
+            const processedData = {};
+            const allTickers = Object.keys(tickerGroups);
+            
+            let processed = 0;
+            const yearsBack = period === 'YTD' ? 'YTD' : parseInt(period.replace('Y', ''));
+            
+            for (const ticker of allTickers) {
+                processedData[ticker] = calculateWeeklyDCA(tickerGroups[ticker], yearsBack);
+                processed++;
+                const progress = 60 + (processed / allTickers.length) * 25;
+                updateProgress(progress, `Processing ${ticker}... (${processed}/${allTickers.length})`);
+                
+                // Add small delay to show progress
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+
+            updateProgress(90, 'Rendering chart...');
+            const validTickers = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
+            const allDates = getAllDates(processedData);
+            const series = prepareSeries(processedData, validTickers, allDates, false);
+            
+            // Build lookup for percent gain
+            const gainLookup = {};
+            Object.keys(processedData).forEach(ticker => {
+                processedData[ticker].forEach(result => {
+                    gainLookup[ticker + '_' + result.date] = {
+                        value: result.cumulativeValue,
+                        invested: result.cumulativeInvested
+                    };
+                });
+            });
+
+            const chartDom = document.getElementById('main');
+            if (echarts.getInstanceByDom(chartDom)) {
+                echarts.getInstanceByDom(chartDom).dispose();
+            }
+            const chart = echarts.init(chartDom);
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' },
+                    formatter: function(params) {
+                        let html = params[0].axisValue + '<br/>';
+                        params.forEach(p => {
+                            let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
+                            if (typeof val === 'number' && (p.seriesName.includes('Value') || p.seriesName.includes('Invested'))) {
+                                val = formatCurrency(val);
+                            }
+                            html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
+                        });
+                        validTickers.forEach(ticker => {
+                            const key = ticker + '_' + params[0].axisValue;
+                            if (gainLookup[key]) {
+                                html += '<b>' + ticker + ' % Gain: ' + percentGain(gainLookup[key].value, gainLookup[key].invested) + '</b><br/>';
+                            }
+                        });
+                        return html;
+                    }
+                },
+                legend: { 
+                    data: series.map(s => s.name),
+                    selected: series.reduce((acc, s) => {
+                        acc[s.name] = true;
+                        return acc;
+                    }, {}),
+                    type: 'scroll'
+                },
+                xAxis: { type: 'category', data: allDates, name: 'Date' },
+                yAxis: { type: 'value', name: 'USD Value' },
+                series: series
+            };
+            chart.setOption(option);
+            
+            updateProgress(100, 'Complete!');
+            
+            // Calculate overall percent return for each ticker (last value)
+            let summaryArr = validTickers.map(ticker => {
+                const tickerResults = processedData[ticker] || [];
+                if (tickerResults.length > 0) {
+                    const last = tickerResults[tickerResults.length - 1];
+                    const pct = percentGain(last.cumulativeValue, last.cumulativeInvested);
+                    return { ticker, pct: parseFloat(pct), pctStr: pct };
+                }
+                return null;
+            }).filter(Boolean);
+            
+            summaryArr.sort((a, b) => b.pct - a.pct);
+            
+            // Populate ticker boxes instead of summary text
+            populateTickerBoxes(processedData, period);
+            
+            // Hide individual ticker metrics, enable download analysis
+            document.getElementById('detailed-metrics').style.display = 'none';
+            document.getElementById('download-analysis-btn').disabled = false;
+            
+            // Store processed data for download functionality
+            window.currentProcessedData = processedData;
+            window.currentPeriod = period;
+            
+        } catch (error) {
+            console.error('Error during calculation:', error);
+            // Show error in loading container but keep ticker grid visible
+            document.getElementById('loading-container').style.display = 'block';
+            document.getElementById('progress-text').innerHTML = '<span style="color: red;">Error calculating DCA analysis. Please try again.</span>';
+        } finally {
+            hideLoading();
+        }
+    }
+    
     // Helper function to format currency with commas
     function formatCurrency(amount) {
         return '$' + amount.toLocaleString('en-US', {
@@ -142,9 +577,189 @@
         if (invested === 0 || invested == null || value == null) return '';
         return ((value - invested) / invested * 100).toFixed(2) + '%';
     }
+
+    // Generate CSV content for download
+    function generateCSVContent(processedData, selectedTicker) {
+        const headers = [
+            'Date',
+            'Weekday', 
+            'Symbol',
+            'Strategy',
+            'Buy_Price',
+            'Dollars_Invested',
+            'Shares_Purchased',
+            'Cumulative_Shares',
+            'Cumulative_Invested',
+            'Cumulative_Value',
+            'Close_Price'
+        ];
+        
+        let csvContent = headers.join(',') + '\n';
+        
+        const tickerResults = processedData[selectedTicker] || [];
+        
+        tickerResults.forEach(result => {
+            const rowData = [
+                result.date,
+                result.weekday,
+                selectedTicker,
+                'DCA_Weekly',
+                result.avgDailyPrice.toFixed(2),
+                result.investedThisWeek.toFixed(2),
+                result.sharesThisWeek.toFixed(8),
+                result.cumulativeShares.toFixed(8),
+                result.cumulativeInvested.toFixed(2),
+                result.cumulativeValue.toFixed(2),
+                result.close.toFixed(2)
+            ];
+            csvContent += rowData.join(',') + '\n';
+        });
+        
+        return csvContent;
+    }
+
+    // Download CSV file
+    function downloadCSV(selectedTicker, processedData) {
+        const csvContent = generateCSVContent(processedData, selectedTicker);
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        const filename = `dca_${selectedTicker}_weekly_trades.csv`;
+        
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    }
+    
+    // Download analysis CSV for all tickers
+    function downloadAnalysisCSV(processedData, period) {
+        let csvContent = 'Ticker,Total Invested,Final Value,Total Return,Percent Gain,Number of Purchases,First Purchase Date,Last Purchase Date\n';
+        
+        const allTickers = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
+        
+        allTickers.forEach(ticker => {
+            const tickerResults = processedData[ticker];
+            if (tickerResults.length > 0) {
+                const firstResult = tickerResults[0];
+                const lastResult = tickerResults[tickerResults.length - 1];
+                
+                const totalInvested = lastResult.cumulativeInvested;
+                const finalValue = lastResult.cumulativeValue;
+                const totalReturn = finalValue - totalInvested;
+                const percentGainVal = ((finalValue - totalInvested) / totalInvested * 100).toFixed(2);
+                
+                csvContent += `${ticker},${totalInvested.toFixed(2)},${finalValue.toFixed(2)},${totalReturn.toFixed(2)},${percentGainVal}%,${tickerResults.length},${firstResult.date},${lastResult.date}\n`;
+            }
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `dca_analysis_${period}_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    }
+    
+    // Calculate detailed metrics for selected ticker(s)
+    function calculateDetailedMetrics(processedData, tickers) {
+        const metrics = [];
+        
+        tickers.forEach(ticker => {
+            const tickerResults = processedData[ticker] || [];
+            
+            if (tickerResults.length === 0) return;
+            
+            // Get final values from last result
+            const lastResult = tickerResults[tickerResults.length - 1];
+            const mondaysCount = tickerResults.length; // Each result represents a Monday investment
+            const totalInvested = lastResult.cumulativeInvested;
+            const totalEndValue = lastResult.cumulativeValue;
+            const totalShares = lastResult.cumulativeShares;
+            const gainAmount = totalEndValue - totalInvested;
+            const gainPercent = ((totalEndValue - totalInvested) / totalInvested * 100).toFixed(2);
+            
+            metrics.push({
+                ticker: ticker,
+                weeksMondays: mondaysCount,
+                totalInvested: totalInvested,
+                totalEndValue: totalEndValue,
+                totalShares: totalShares,
+                gainAmount: gainAmount,
+                gainPercent: gainPercent
+            });
+        });
+        
+        return metrics;
+    }
+    
+    // Display detailed metrics
+    function displayDetailedMetrics(metrics) {
+        const container = document.getElementById('metrics-container');
+        container.innerHTML = '';
+        
+        if (metrics.length === 0) {
+            document.getElementById('detailed-metrics').style.display = 'none';
+            return;
+        }
+        
+        metrics.forEach(metric => {
+            const metricDiv = document.createElement('div');
+            metricDiv.style.cssText = `
+                background: white;
+                padding: 15px;
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                margin-bottom: 15px;
+            `;
+            
+            const gainColor = metric.gainAmount >= 0 ? '#28a745' : '#dc3545';
+            
+            metricDiv.innerHTML = `
+                <h4 style="margin: 0 0 10px 0; color: var(--blue); font-size: 1.2rem; text-align: center;">${metric.ticker}</h4>
+                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; text-align: center;">
+                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${metric.weeksMondays}</div>
+                        <div style="font-size: 0.9em; color: #666;">Weeks/Mondays</div>
+                    </div>
+                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${formatCurrency(metric.totalInvested)}</div>
+                        <div style="font-size: 0.9em; color: #666;">Total Invested</div>
+                    </div>
+                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${formatCurrency(metric.totalEndValue)}</div>
+                        <div style="font-size: 0.9em; color: #666;">Total End Value</div>
+                    </div>
+                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${metric.totalShares.toFixed(4)}</div>
+                        <div style="font-size: 0.9em; color: #666;">Total Shares</div>
+                    </div>
+                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: ${gainColor};">${formatCurrency(metric.gainAmount)}</div>
+                        <div style="font-size: 0.9em; color: #666;">Gain/Loss</div>
+                    </div>
+                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: ${gainColor};">${metric.gainPercent}%</div>
+                        <div style="font-size: 0.9em; color: #666;">Return %</div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(metricDiv);
+        });
+        
+        document.getElementById('detailed-metrics').style.display = 'block';
+    }
+    
     // Fetch and parse CSV data
     async function fetchData() {
-        const url = '../data/all_dca_monthly.csv';
+        const url = '../data/history_tickers.csv';
         const response = await fetch(url + '?v=' + Date.now(), { cache: 'no-store' });
         if (!response.ok) {
             console.error('Failed to fetch CSV:', url, response.status, response.statusText);
@@ -164,8 +779,98 @@
         });
         return data;
     }
-    function getAllDates(data) {
-        return Array.from(new Set(data.map(row => (row.Date_add || '').trim()))).sort();
+
+    // Calculate weekly DCA strategy for a specific ticker with custom date range
+    function calculateWeeklyDCA(tickerData, yearsBack = 10, startDate = null, endDate = null) {
+        // Use provided dates or calculate based on yearsBack
+        const finalEndDate = endDate || new Date();
+        let finalStartDate;
+        
+        if (startDate) {
+            finalStartDate = startDate;
+        } else if (yearsBack === 'YTD') {
+            // Year to date - start from January 1st of current year
+            finalStartDate = new Date(finalEndDate.getFullYear(), 0, 1);
+        } else {
+            // Calculate years back from end date
+            finalStartDate = new Date(finalEndDate);
+            finalStartDate.setFullYear(finalEndDate.getFullYear() - yearsBack);
+        }
+        
+        // Filter data by date range
+        const filteredData = tickerData
+            .filter(row => {
+                const rowDate = new Date(row.Date_add);
+                return rowDate >= finalStartDate && rowDate <= finalEndDate;
+            })
+            .sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+        
+        if (filteredData.length === 0) {
+            return [];
+        }
+        
+        let cumulativeShares = 0;
+        let cumulativeInvested = 0;
+        const weeklyInvestment = 25;
+        const results = [];
+        
+        // Generate weekly target dates (Mondays)
+        let currentDate = new Date(finalStartDate);
+        // Find first Monday on or after start date
+        while (currentDate.getDay() !== 1) { // 1 = Monday
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        while (currentDate <= finalEndDate) {
+            const targetDateStr = currentDate.toISOString().split('T')[0];
+            
+            // Find closest trading day to this Monday
+            const closestTradingDay = findClosestTradingDay(filteredData, targetDateStr);
+            
+            if (closestTradingDay) {
+                const avgDailyPrice = parseFloat(closestTradingDay.avg_daily_price);
+                const closingPrice = parseFloat(closestTradingDay.Close);
+                const sharesThisWeek = weeklyInvestment / avgDailyPrice;
+                
+                cumulativeShares += sharesThisWeek;
+                cumulativeInvested += weeklyInvestment;
+                
+                results.push({
+                    date: closestTradingDay.Date_add,
+                    weekday: closestTradingDay.Weekday,
+                    close: closingPrice,
+                    avgDailyPrice: avgDailyPrice,
+                    sharesThisWeek: sharesThisWeek,
+                    investedThisWeek: weeklyInvestment,
+                    cumulativeShares: cumulativeShares,
+                    cumulativeInvested: cumulativeInvested,
+                    cumulativeValue: cumulativeShares * closingPrice
+                });
+            }
+            
+            // Move to next Monday
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
+
+        return results;
+    }
+    
+    // Helper function to find closest trading day to a target date
+    function findClosestTradingDay(tickerData, targetDate) {
+        const target = new Date(targetDate);
+        let closest = null;
+        let minDiff = Infinity;
+        
+        for (const row of tickerData) {
+            const rowDate = new Date(row.Date_add);
+            const diff = Math.abs(rowDate - target);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closest = row;
+            }
+        }
+        
+        return closest;
     }
     // Dynamically populate dropdown with all tickers from the CSV
     async function populateDcaTickerDropdown() {
@@ -181,26 +886,23 @@
             select.appendChild(opt);
         });
     }
-    function linearRegression(y) {
-        // y: array of numbers
-        const n = y.length;
-        if (n === 0) return [];
-        const x = Array.from({length: n}, (_, i) => i);
-        const sumX = x.reduce((a, b) => a + b, 0);
-        const sumY = y.reduce((a, b) => a + b, 0);
-        const sumXY = x.reduce((a, b, i) => a + b * y[i], 0);
-        const sumXX = x.reduce((a, b) => a + b * b, 0);
-        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-        const intercept = (sumY - slope * sumX) / n;
-        return x.map(xi => slope * xi + intercept);
+    function getAllDates(processedData) {
+        const allDates = new Set();
+        Object.values(processedData).forEach(tickerResults => {
+            tickerResults.forEach(result => allDates.add(result.date));
+        });
+        return Array.from(allDates).sort();
     }
-    function prepareSeries(data, tickers, allDates, showPriceAndRegression) {
+
+    function prepareSeries(processedData, tickers, allDates, showPriceAndRegression) {
         const series = [];
         const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8', '#f7dc6f'];
         let colorIndex = 0;
+        
         tickers.forEach(ticker => {
-            const tickerData = data.filter(row => row.Symbol === ticker);
-            const valueMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Value'])]));
+            const tickerResults = processedData[ticker] || [];
+            const valueMap = Object.fromEntries(tickerResults.map(result => [result.date, result.cumulativeValue]));
+            const investedMap = Object.fromEntries(tickerResults.map(result => [result.date, result.cumulativeInvested]));
             const isMultipleTickers = tickers.length > 1;
             const lineColor = isMultipleTickers ? colors[colorIndex % colors.length] : '#00aa00';
             colorIndex++;
@@ -211,123 +913,252 @@
                 connectNulls: true,
                 data: allDates.map(date => valueMap[date] ?? null),
                 showSymbol: false,
-                yAxisIndex: 0,
-                lineStyle: { color: lineColor }
+                lineStyle: { color: lineColor, width: 2 }
             });
-            if (showPriceAndRegression) {
-                // Price series
-                const priceMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Close'])]));
-                const priceArr = allDates.map(date => priceMap[date] ?? null);
-                // Linear regression on price
-                const regArr = linearRegression(priceArr.map(v => (typeof v === 'number' && !isNaN(v)) ? v : 0));
+
+            // Add invested line only for single ticker
+            if (!isMultipleTickers) {
                 series.push({
-                    name: ticker + ' - Price',
+                    name: 'Invested',
                     type: 'line',
                     connectNulls: true,
-                    data: priceArr,
+                    data: allDates.map(date => investedMap[date] ?? null),
                     showSymbol: false,
-                    yAxisIndex: 1,
-                    lineStyle: { color: '#0077cc' }
-                });
-                series.push({
-                    name: ticker + ' - Price Regression',
-                    type: 'line',
-                    connectNulls: true,
-                    data: regArr,
-                    showSymbol: false,
-                    yAxisIndex: 1,
-                    lineStyle: { type: 'dashed', color: '#ffaa00' }
+                    lineStyle: { color: '#ff4444', type: 'dashed', width: 2 }
                 });
             }
         });
+        
         return series;
     }
-    async function renderChart(selectedTicker) {
-        const data = await fetchData();
-        const allTickers = Array.from(new Set(data.map(row => row.Symbol)));
-        const tickers = (!selectedTicker || selectedTicker === 'ALL') ? allTickers : [selectedTicker];
-        const allDates = getAllDates(data);
-        const showPriceAndRegression = tickers.length === 1;
-        const series = prepareSeries(data, tickers, allDates, showPriceAndRegression);
-        // Build lookup for percent gain
-        const gainLookup = {};
-        data.forEach(row => {
-            gainLookup[row.Symbol + '_' + row.Date_add] = {
-                value: parseFloat(row['Cumulative Value']),
-                invested: parseFloat(row['Cumulative Invested'])
-            };
-        });
-        const chartDom = document.getElementById('main');
-        if (echarts.getInstanceByDom(chartDom)) {
-            echarts.getInstanceByDom(chartDom).dispose();
-        }
-        const chart = echarts.init(chartDom);
-        const option = {
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: { type: 'cross' },
-                formatter: function(params) {
-                    let html = params[0].axisValue + '<br/>';
-                    params.forEach(p => {
-                        let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
-                        if (typeof val === 'number' && p.seriesName.includes('Value') || p.seriesName.includes('Invested')) {
-                            val = formatCurrency(val);
-                        }
-                        html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
-                    });
-                    tickers.forEach(ticker => {
-                        const key = ticker + '_' + params[0].axisValue;
-                        if (gainLookup[key]) {
-                            html += '<b>' + ticker + ' % Gain: ' + percentGain(gainLookup[key].value, gainLookup[key].invested) + '</b><br/>';
-                        }
-                    });
-                    return html;
-                }
-            },
-            legend: { 
-                data: series.map(s => s.name),
-                selected: series.reduce((acc, s) => {
-                    acc[s.name] = true; // All series visible by default
-                    return acc;
-                }, {}),
-                type: 'scroll'
-            },
-            xAxis: { type: 'category', data: allDates, name: 'Date' },
-            yAxis: showPriceAndRegression ? [
-                { type: 'value', name: 'USD Value' },
-                { type: 'value', name: 'Stock Price', position: 'right' }
-            ] : [
-                { type: 'value', name: 'USD Value' }
-            ],
-            series: series
-        };
-        chart.setOption(option);
-        // Calculate overall percent return for each ticker (last value)
-        let summaryArr = tickers.map(ticker => {
-            const tickerData = data.filter(row => row.Symbol === ticker);
-            if (tickerData.length > 0) {
-                const last = tickerData[tickerData.length - 1];
-                const value = parseFloat(last['Cumulative Value']);
-                const invested = parseFloat(last['Cumulative Invested']);
-                const pct = percentGain(value, invested);
-                return { ticker, pct: parseFloat(pct), pctStr: pct };
+    async function renderChart(selectedTicker, period = 'YTD') {
+        if (!selectedTicker || selectedTicker === '') {
+            // No ticker selected - clear chart and hide components
+            const chartDom = document.getElementById('main');
+            if (echarts.getInstanceByDom(chartDom)) {
+                echarts.getInstanceByDom(chartDom).dispose();
             }
-            return null;
-        }).filter(Boolean);
-        if (tickers.length > 1) {
-            summaryArr.sort((a, b) => b.pct - a.pct);
+            document.getElementById('detailed-metrics').style.display = 'none';
+            document.getElementById('download-analysis-btn').disabled = true;
+            return;
         }
-        let summary = summaryArr.map(s => `<b>${s.ticker}:</b> ${s.pctStr} &nbsp;`).join('');
-        document.getElementById('dca-summary').innerHTML = summary;
+        
+        showLoading();
+        
+        try {
+            updateProgress(20, 'Loading historical data...');
+            const rawData = await fetchData();
+            
+            updateProgress(40, 'Processing ticker data...');
+            // Group data by ticker
+            const tickerGroups = {};
+            rawData.forEach(row => {
+                const ticker = row.Symbol;
+                if (!tickerGroups[ticker]) {
+                    tickerGroups[ticker] = [];
+                }
+                tickerGroups[ticker].push(row);
+            });
+
+            updateProgress(60, 'Calculating DCA strategies...');
+            // Calculate DCA results for each ticker
+            const processedData = {};
+            const allTickers = Object.keys(tickerGroups);
+            const tickersToProcess = (selectedTicker === 'ALL') ? allTickers : [selectedTicker];
+            
+            // Convert period to yearsBack parameter
+            const yearsBack = period === 'YTD' ? 'YTD' : parseInt(period.replace('Y', ''));
+            
+            let processed = 0;
+            for (const ticker of tickersToProcess) {
+                processedData[ticker] = calculateWeeklyDCA(tickerGroups[ticker], yearsBack);
+                processed++;
+                const progress = 60 + (processed / tickersToProcess.length) * 30;
+                updateProgress(progress, `Processing ${ticker}... (${processed}/${tickersToProcess.length})`);
+                
+                // Add small delay to show progress for fast calculations
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            updateProgress(95, 'Rendering chart...');
+            const validTickers = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
+            const tickers = (selectedTicker === 'ALL') ? validTickers : [selectedTicker];
+            const allDates = getAllDates(processedData);
+            const showPriceAndRegression = tickers.length === 1;
+            const series = prepareSeries(processedData, tickers, allDates, showPriceAndRegression);
+            
+            // Build lookup for percent gain
+            const gainLookup = {};
+            Object.keys(processedData).forEach(ticker => {
+                processedData[ticker].forEach(result => {
+                    gainLookup[ticker + '_' + result.date] = {
+                        value: result.cumulativeValue,
+                        invested: result.cumulativeInvested
+                    };
+                });
+            });
+
+            const chartDom = document.getElementById('main');
+            if (echarts.getInstanceByDom(chartDom)) {
+                echarts.getInstanceByDom(chartDom).dispose();
+            }
+            const chart = echarts.init(chartDom);
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'cross' },
+                    formatter: function(params) {
+                        let html = params[0].axisValue + '<br/>';
+                        params.forEach(p => {
+                            let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
+                            if (typeof val === 'number' && (p.seriesName.includes('Value') || p.seriesName.includes('Invested'))) {
+                                val = formatCurrency(val);
+                            }
+                            html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
+                        });
+                        tickers.forEach(ticker => {
+                            const key = ticker + '_' + params[0].axisValue;
+                            if (gainLookup[key]) {
+                                html += '<b>' + ticker + ' % Gain: ' + percentGain(gainLookup[key].value, gainLookup[key].invested) + '</b><br/>';
+                            }
+                        });
+                        return html;
+                    }
+                },
+                legend: { 
+                    data: series.map(s => s.name),
+                    selected: series.reduce((acc, s) => {
+                        acc[s.name] = true; // All series visible by default
+                        return acc;
+                    }, {}),
+                    type: 'scroll'
+                },
+                xAxis: { type: 'category', data: allDates, name: 'Date' },
+                yAxis: { type: 'value', name: 'USD' },
+                series: series
+            };
+            chart.setOption(option);
+            
+            updateProgress(100, 'Complete!');
+            
+            // Calculate overall percent return for each ticker (last value)
+            let summaryArr = tickers.map(ticker => {
+                const tickerResults = processedData[ticker] || [];
+                if (tickerResults.length > 0) {
+                    const last = tickerResults[tickerResults.length - 1];
+                    const pct = percentGain(last.cumulativeValue, last.cumulativeInvested);
+                    return { ticker, pct: parseFloat(pct), pctStr: pct };
+                }
+                return null;
+            }).filter(Boolean);
+            
+            if (tickers.length > 1) {
+                summaryArr.sort((a, b) => b.pct - a.pct);
+            }
+            
+            // For custom analysis, don't show ticker grid - detailed metrics will be shown instead
+            
+            // Calculate and display detailed metrics
+            if (selectedTicker && selectedTicker !== 'ALL' && selectedTicker !== '') {
+                // Single ticker selected - show detailed metrics
+                const detailedMetrics = calculateDetailedMetrics(processedData, [selectedTicker]);
+                displayDetailedMetrics(detailedMetrics);
+                
+                // Enable download button for individual ticker
+                const downloadBtn = document.getElementById('download-analysis-btn');
+                downloadBtn.disabled = false;
+                downloadBtn.style.opacity = '1';
+            } else if (selectedTicker === 'ALL') {
+                // All tickers selected - hide individual metrics, enable analysis download
+                document.getElementById('detailed-metrics').style.display = 'none';
+                
+                // Enable download button for ALL tickers analysis
+                const downloadBtn = document.getElementById('download-analysis-btn');
+                downloadBtn.disabled = false;
+                downloadBtn.style.opacity = '1';
+            } else {
+                // No ticker selected - hide metrics and disable download
+                document.getElementById('detailed-metrics').style.display = 'none';
+                
+                // Disable download button
+                const downloadBtn = document.getElementById('download-analysis-btn');
+                downloadBtn.disabled = true;
+                downloadBtn.style.opacity = '0.5';
+            }
+            
+            // Store processed data for download functionality
+            window.currentProcessedData = processedData;
+            
+        } catch (error) {
+            console.error('Error during calculation:', error);
+            // Hide ticker grid and show error in loading container
+            // Show error in loading container but keep ticker grid visible
+            document.getElementById('loading-container').style.display = 'block';
+            document.getElementById('progress-text').innerHTML = '<span style="color: red;">Error calculating DCA strategy. Please try again.</span>';
+        } finally {
+            hideLoading();
+        }
     }
-    // Dropdown event
-    document.getElementById('dca-ticker-select').addEventListener('change', function() {
-        const selected = this.value;
-        renderChart(selected);
+
+    
+    // Period analysis button event listeners
+    document.getElementById('ytd-btn').addEventListener('click', function() {
+        currentSelectedPeriod = 'YTD';
+        updatePeriodButtonStates('ytd-btn');
+        analyzeSelection();
     });
-    // Initial setup: populate dropdown, but do not render chart until user selects
-    populateDcaTickerDropdown();
-    renderChart('');
+    
+    document.getElementById('5y-btn').addEventListener('click', function() {
+        currentSelectedPeriod = '5Y';
+        updatePeriodButtonStates('5y-btn');
+        analyzeSelection();
+    });
+    
+    document.getElementById('10y-btn').addEventListener('click', function() {
+        currentSelectedPeriod = '10Y';
+        updatePeriodButtonStates('10y-btn');
+        analyzeSelection();
+    });
+    
+    document.getElementById('15y-btn').addEventListener('click', function() {
+        currentSelectedPeriod = '15Y';
+        updatePeriodButtonStates('15y-btn');
+        analyzeSelection();
+    });
+    
+    document.getElementById('20y-btn').addEventListener('click', function() {
+        currentSelectedPeriod = '20Y';
+        updatePeriodButtonStates('20y-btn');
+        analyzeSelection();
+    });
+    
+    // Function to update period button visual states
+    function updatePeriodButtonStates(activeButtonId) {
+        document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(activeButtonId).classList.add('active');
+    }
+    
+    // Download analysis CSV button
+    document.getElementById('download-analysis-btn').addEventListener('click', function() {
+        if (window.currentProcessedData) {
+            if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
+                // Download individual ticker trades
+                downloadCSV(currentSelectedTicker, window.currentProcessedData);
+            } else if (currentSelectedTicker === 'ALL' && window.currentPeriod) {
+                // Download analysis for all tickers
+                downloadAnalysisCSV(window.currentProcessedData, window.currentPeriod);
+            }
+        }
+    });
+    
+    // Initial setup: load YTD analysis for all tickers by default
+    setTimeout(() => {
+        renderPeriodAnalysis('YTD');
+        // Set initial selection state
+        selectTicker('ALL');
+        updatePeriodButtonStates('ytd-btn');
+    }, 500);
+    
     </script>
 </body>
 </html>

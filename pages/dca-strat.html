@@ -412,15 +412,10 @@
             const closestData = findClosestTradingDay(tickerData, dateStr);
             
             if (closestData) {
-                // Calculate average price (open, high, low, close)
-                const avgPrice = (
-                    parseFloat(closestData.Open) + 
-                    parseFloat(closestData.High) + 
-                    parseFloat(closestData.Low) + 
-                    parseFloat(closestData.Close)
-                ) / 4;
+                // Use closing price for DCA purchases (consistent with other DCA pages)
+                const purchasePrice = parseFloat(closestData.Close);
                 
-                const shares = weeklyAmount / avgPrice;
+                const shares = weeklyAmount / purchasePrice;
                 totalShares += shares;
                 totalInvested += weeklyAmount;
                 const portfolioValue = totalShares * parseFloat(closestData.Close);
@@ -432,7 +427,7 @@
                     high: parseFloat(closestData.High),
                     low: parseFloat(closestData.Low),
                     close: parseFloat(closestData.Close),
-                    avgPrice: avgPrice,
+                    purchasePrice: purchasePrice,
                     invested: weeklyAmount,
                     shares: shares,
                     totalShares: totalShares,
@@ -631,6 +626,7 @@
                         Date: ${result.actualDate}<br/>
                         Portfolio Value: ${formatCurrency(result.portfolioValue)}<br/>
                         Total Invested: ${formatCurrency(result.totalInvested)}<br/>
+                        Purchase Price: ${formatCurrency(result.purchasePrice)}<br/>
                         Stock Price: ${formatCurrency(result.close)}<br/>
                         Shares Owned: ${result.totalShares.toFixed(4)}<br/>
                         Gain: ${formatCurrency(result.gain)} (${result.gainPercent.toFixed(2)}%)
@@ -694,7 +690,7 @@
         
         const ticker = document.getElementById('tickerSelect').value;
         const headers = [
-            'Date', 'Actual Date', 'Open', 'High', 'Low', 'Close', 'Avg Price',
+            'Date', 'Actual Date', 'Open', 'High', 'Low', 'Close', 'Purchase Price',
             'Invested', 'Shares', 'Total Shares', 'Total Invested', 
             'Portfolio Value', 'Gain', 'Gain %'
         ];
@@ -709,7 +705,7 @@
                 row.high.toFixed(2),
                 row.low.toFixed(2),
                 row.close.toFixed(2),
-                row.avgPrice.toFixed(2),
+                row.purchasePrice.toFixed(2),
                 row.invested.toFixed(2),
                 row.shares.toFixed(6),
                 row.totalShares.toFixed(6),
