@@ -48,12 +48,12 @@
     <!-- About Me (moved up) -->
     <section>
         <h2>About Me</h2>
-        <p>I'm an IT Project Manager and Data Analyst with experience building ETL pipelines, financial data models, and interactive dashboards. Below is a short resume-style summary.</p>
         <ul>
-            <li><strong>Role:</strong> IT Project Manager / Data Analyst</li>
-            <li><strong>Skills:</strong> Python (pandas), SQL (BigQuery, Oracle), ETL design, JavaScript, ECharts, HTML/CSS, BI tools (Tableau, Looker Studio, PowerBI)</li>
-            <li><strong>Experience:</strong> Design and delivery of data pipelines, and production dashboards for analytics teams.</li>
-            <li><strong>Intent:</strong> This project is an educational portfolio piece showcasing data engineering, financial analytics, and frontend visualization skills.</li>
+            <li>IT Project Manager</li>
+            <li>Data Analyst</li>
+            <li>Python ETL Developer</li>
+            <li>SQL Developer (Google BigQuery, Oracle)</li>
+            <li>BI Dashboard Developer (Looker Studio, Tableau, PowerBI)</li>
         </ul>
 
         <div class="social-links" style="margin-top:12px;">
@@ -73,19 +73,6 @@
                 GitHub
             </a>
         </div>
-    </section>
-
-    <section>
-        <h2>How calculations are produced</h2>
-        <p>
-        This project separates heavy transforms (ETL) from interactive visualizations. The Python ETL precomputes and normalizes historical price series into <code>data/history_tickers.csv</code> and (optionally) trade-level events into <code>data/all_buy_on_dip.csv</code>. The frontend pages load those CSVs, parse rows, and then compute period-limited totals on the client so users can choose arbitrary date ranges without re-running server-side jobs. Key points:
-        </p>
-        <ul>
-            <li><strong>ETL outputs:</strong> per-day OHLC rows, weekday metadata, and optional precomputed buy-on-dip events (executed price and executed level) for provenance and faster UI responses. (OHLC = Open, High, Low, Close — the standard per-day price fields used in time-series financial analysis.)</li>
-            <li><strong>Client-side calculations:</strong> For accuracy the pages sum per-row "Shares Purchased" and "Dollars Invested" within the selected timeframe and recompute portfolio value = cumulative shares × close price for each day in the period.</li>
-            <li><strong>Fast-paths and fallbacks:</strong> If <code>all_buy_on_dip.csv</code> exists the advanced BOD page will use those events; otherwise it simulates limit fills by comparing intraday lows to target prices derived from previous close.</li>
-            <li><strong>Reproducibility:</strong> CSV downloads include recorded purchase prices and decline levels so you can reproduce the results in a spreadsheet or run independent validation scripts.</li>
-        </ul>
     </section>
 
     <section>
