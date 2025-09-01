@@ -10,10 +10,8 @@ output_folder = "data"
 os.makedirs(output_folder, exist_ok=True)
 
 etf_list = [
-    "TQQQ","UPRO","GGLL","MSFU",
     "QQQ","FBCG","QTOP","MGK","VGT",
-    "SPLG","XLG","TOPT","FMAG",
-    "MSFT","GOOGL","HSBC","ALLY"
+    "SPLG","XLG","TOPT","FMAG"
 ]
 
 weekly_investment = 25.0
@@ -122,8 +120,9 @@ def extract_all_historical_data():
         low_vs_prev = ((low_price - prev_close) / prev_close) * 100
         close_vs_prev = ((close_price - prev_close) / prev_close) * 100
         
-        # Maximum decline during the day (most negative point)
-        max_decline = min(open_vs_prev, low_vs_prev, close_vs_prev)
+        # Maximum decline during the day - specifically comparing Previous_Close to Low
+        # This represents the deepest dip during the trading day
+        max_decline = low_vs_prev
         
         return pd.Series({
             'Daily_Gain_Loss_Pct': round(daily_gain_loss, 2),
