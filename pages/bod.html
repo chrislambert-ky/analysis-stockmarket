@@ -83,21 +83,7 @@
             text-align: center;
         }
 
-        /* Button Styles */
-        #calculate-btn {
-            transition: all 0.3s ease;
-        }
-        
-        #calculate-btn:hover:not(:disabled) {
-            background-color: #7dd35e !important;
-            transform: translateY(-1px);
-        }
-
-        #calculate-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-            background-color: var(--gray) !important;
-        }
+    /* Button Styles (Calculate button removed; period buttons used to execute strategy) */
 
         /* Responsive Design for Navigation */
         @media (max-width: 700px) {
@@ -122,7 +108,44 @@
                 padding: 0.5rem 0.5rem;
             }
         }
+        /* Ticker Metrics Grid (copied from dca for matching look) */
+        .ticker-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        @media (max-width: 1024px) {
+            .ticker-metrics-grid { grid-template-columns: repeat(5, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .ticker-metrics-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .ticker-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid var(--light-blue);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 55px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .ticker-box:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-color: var(--blue); }
+        .ticker-box.selected { background: linear-gradient(135deg, var(--bright-green) 0%, #7bc143 100%); border-color: var(--bright-green); color: white; }
+        .ticker-symbol { font-size: 1.0rem; font-weight: bold; color: var(--blue); margin-bottom: 3px; }
+        .ticker-count { font-size: 1.1rem; font-weight: bold; color: var(--dark-gray); }
+        .period-btn { padding: 10px 20px; margin: 0 5px; background-color: var(--bright-green); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.95em; }
+        .period-btn.active { background-color: var(--orange) !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
     </style>
+    <!-- PapaParse for robust CSV parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
     <nav>
@@ -137,19 +160,31 @@
     </nav>
     <h1>Buy-on-Dip Strategy - Cumulative Shares, Value, and Invested</h1>
     <h2>Simulating limit orders of 1 share for each percent drop (1-5%), purchased at average daily price</h2>
-    <h2 id="bod-summary"></h2>
-    <label for="bod-ticker-select"><b>Show Ticker:</b></label>
-    <select id="bod-ticker-select" style="margin-bottom:1em;">
-        <option value="">-- Select Ticker --</option>
-        <option value="ALL">All</option>
-    </select>
-    
-    <button id="calculate-btn" style="margin-left: 10px; padding: 8px 16px; background-color: var(--bright-green); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-        Calculate BOD Strategy
-    </button>
+    <!-- Calculate button removed: period buttons execute the strategy -->
+    <!-- Ticker grid to match DCA look -->
+    <div id="ticker-metrics-grid" class="ticker-metrics-grid" style="display: grid;">
+        <!-- ticker boxes populated by JS -->
+    </div>
+
+    <!-- Period buttons and download CSV -->
+    <div id="ticker-selection-area" style="text-align:center; margin:15px 0; display: block;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:20px; flex-wrap:wrap;">
+            <h3 id="selected-ticker-display" style="color: var(--blue); margin:0;">Selected: ALL</h3>
+            <div>
+                <button id="ytd-btn" class="period-btn">YTD</button>
+                <button id="5y-btn" class="period-btn">5 Years</button>
+                <button id="10y-btn" class="period-btn">10 Years</button>
+                <button id="15y-btn" class="period-btn">15 Years</button>
+                <button id="20y-btn" class="period-btn">20 Years</button>
+            </div>
+            <button id="download-analysis-btn" style="padding: 8px 16px; background-color: var(--purple); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;" disabled>
+                Download CSV
+            </button>
+        </div>
+    </div>
     
     <!-- Loading indicator -->
-    <div id="loading-container" style="display: none; text-align: center; margin: 20px 0;">
+    <div id="loading-container" role="status" aria-live="polite" style="display: none; text-align: center; margin: 20px 0;">
         <div style="color: var(--blue); font-weight: bold; margin-bottom: 10px;">Calculating Buy-on-Dip Strategy...</div>
         <div id="progress-bar" style="width: 300px; height: 20px; background-color: #f0f0f0; border-radius: 10px; margin: 0 auto; overflow: hidden;">
             <div id="progress-fill" style="height: 100%; background-color: var(--bright-green); width: 0%; transition: width 0.3s ease; border-radius: 10px;"></div>
@@ -166,19 +201,50 @@
     <div id="main" style="width: 100%; height: 500px;"></div>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
+    // Cached precomputed BOD data (loaded from data/all_buy_on_dip.csv)
+    let cachedBodData = null;
+    // Global selected ticker from the grid (default ALL)
+    let selectedTickerGlobal = 'ALL';
+    // Active period (e.g. 'YTD', '5Y', '10Y', etc.)
+    let activePeriod = null;
+
+    // Helper: format Date object as YYYY-MM-DD
+    function formatDateToYMD(d) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // Helper: given a period name and an endDate string (YYYY-MM-DD), return {startDate, endDate}
+    function getPeriodRange(periodName, endDateStr) {
+        if (!periodName) return { startDate: null, endDate: null };
+        const endDate = endDateStr ? new Date(endDateStr) : new Date();
+        let startDate = new Date(endDate);
+        if (periodName === 'YTD') {
+            startDate = new Date(endDate.getFullYear(), 0, 1);
+        } else if (periodName === '5Y') {
+            startDate.setFullYear(endDate.getFullYear() - 5);
+        } else if (periodName === '10Y') {
+            startDate.setFullYear(endDate.getFullYear() - 10);
+        } else if (periodName === '15Y') {
+            startDate.setFullYear(endDate.getFullYear() - 15);
+        } else if (periodName === '20Y') {
+            startDate.setFullYear(endDate.getFullYear() - 20);
+        }
+        return { startDate: formatDateToYMD(startDate), endDate: formatDateToYMD(endDate) };
+    }
+
+    // (ISO week helper removed - weeks are not shown in the UI per user request)
     // Loading indicator functions
     function showLoading() {
         document.getElementById('loading-container').style.display = 'block';
         document.getElementById('detailed-metrics').style.display = 'none';
-        document.getElementById('calculate-btn').disabled = true;
-        document.getElementById('calculate-btn').textContent = 'Calculating...';
         updateProgress(0, 'Fetching historical data...');
     }
     
     function hideLoading() {
         document.getElementById('loading-container').style.display = 'none';
-        document.getElementById('calculate-btn').disabled = false;
-        document.getElementById('calculate-btn').textContent = 'Calculate BOD Strategy';
     }
     
     function updateProgress(percent, text) {
@@ -194,9 +260,11 @@
         });
     }
     
+    // Return numeric percent (e.g. 12.34), or null when not computable
     function percentGain(value, invested) {
-        if (invested === 0 || invested == null || value == null) return '';
-        return ((value - invested) / invested * 100).toFixed(2) + '%';
+        if (value == null || invested == null) return null;
+        if (invested === 0) return null; // avoid infinite/NaN
+        return (value - invested) / invested * 100;
     }
     
     // Calculate detailed metrics for selected ticker(s)
@@ -207,25 +275,19 @@
             const tickerData = data.filter(row => row.Symbol === ticker);
             
             if (tickerData.length === 0) return;
-            
-            // Count total weeks (assuming data is daily, so approximate weeks)
-            const totalWeeks = Math.round(tickerData.length / 5); // Approximate trading weeks
-            
-            // Get final values from last row
-            const lastRow = tickerData[tickerData.length - 1];
-            const totalShares = parseFloat(lastRow['Cumulative Shares']);
-            const totalInvested = parseFloat(lastRow['Cumulative Invested']);
-            const totalValue = parseFloat(lastRow['Cumulative Value']);
-            
-            // Calculate total dips/purchases - this should equal total shares since we buy 1 share per dip
-            const totalDipsPurchases = totalShares; // Each share represents one dip purchase
-            
-            const gainAmount = totalValue - totalInvested;
-            const gainPercent = totalInvested > 0 ? ((totalValue - totalInvested) / totalInvested * 100).toFixed(2) : '0.00';
+            // Compute totals from per-row data (so callers can pass filtered period data)
+            const totalShares = tickerData.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares Purchased'] ?? 1) || 0), 0);
+            const totalInvested = tickerData.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars Invested'] ?? r['Buy_Price']) || 0), 0);
+            const lastClose = tickerData.length ? Number(tickerData[tickerData.length - 1].Close) : null;
+            const totalValue = (lastClose != null) ? totalShares * lastClose : null;
+
+            const totalDipsPurchases = totalShares;
+            const gainAmount = (totalValue != null && totalInvested != null) ? (totalValue - totalInvested) : null;
+            const gainPercent = (totalInvested > 0 && gainAmount != null) ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
             
             metrics.push({
                 ticker: ticker,
-                totalWeeks: totalWeeks,
+                // totalWeeks removed
                 totalDipsPurchases: totalDipsPurchases,
                 totalShares: totalShares,
                 totalInvested: totalInvested,
@@ -263,10 +325,7 @@
             metricDiv.innerHTML = `
                 <h4 style="margin: 0 0 10px 0; color: var(--blue); font-size: 1.2rem; text-align: center;">${metric.ticker}</h4>
                 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; text-align: center;">
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${metric.totalWeeks}</div>
-                        <div style="font-size: 0.9em; color: #666;">Total Weeks</div>
-                    </div>
+                    <!-- Total Weeks removed -->
                     <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
                         <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${metric.totalDipsPurchases}</div>
                         <div style="font-size: 0.9em; color: #666;">Total Dips/Purchases</div>
@@ -292,19 +351,75 @@
         document.getElementById('detailed-metrics').style.display = 'block';
     }
     
-    // Fetch and parse historical ticker data
+    // Fetch and parse precomputed all_buy_on_dip CSV (robustly with PapaParse)
     async function fetchHistoricalData() {
-        const response = await fetch('../data/history_tickers.csv');
-        const text = await response.text();
-        const rows = text.split('\n').filter(Boolean);
-        const headers = rows[0].split(',');
-        const data = rows.slice(1).map(row => {
-            const values = row.split(',');
-            const obj = {};
-            headers.forEach((h, i) => obj[h.trim()] = values[i]);
-            return obj;
-        });
-        return data;
+        if (cachedBodData) return cachedBodData;
+        try {
+            const res = await fetch('../data/all_buy_on_dip.csv');
+            if (!res.ok) throw new Error('Failed to fetch CSV: ' + res.status);
+            const text = await res.text();
+            const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+            if (parsed.errors && parsed.errors.length) console.warn('CSV parse warnings:', parsed.errors);
+
+            // Normalize rows and ensure numeric fields
+            cachedBodData = parsed.data.map(row => {
+                // Support possible header name variants and ensure keys exist
+                const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'] ?? row['Date_add'];
+                // Normalize to YYYY-MM-DD for consistent comparisons
+                let Date_add = null;
+                try {
+                    Date_add = rawDate ? formatDateToYMD(new Date(rawDate)) : null;
+                } catch (e) {
+                    Date_add = rawDate;
+                }
+                return {
+                    Date_add: Date_add,
+                    Weekday: row['Weekday'] ?? row['weekday'] ?? '',
+                    Symbol: row['Symbol'] ?? row['symbol'] ?? '',
+                    Strategy: row['Strategy'] ?? row['strategy'] ?? 'Buy_on_Dip',
+                    'Buy_Price': row['Buy_Price'] != null ? Number(row['Buy_Price']) : null,
+                    'Buy_Level': row['Buy_Level'] ?? row['Buy_Level'] ?? '',
+                    'Shares Purchased': row['Shares Purchased'] != null ? Number(row['Shares Purchased']) : 1,
+                    'Dollars Invested': row['Dollars Invested'] != null ? Number(row['Dollars Invested']) : null,
+                    'Cumulative Shares': row['Cumulative Shares'] != null ? Number(row['Cumulative Shares']) : null,
+                    'Cumulative Invested': row['Cumulative Invested'] != null ? Number(row['Cumulative Invested']) : null,
+                    'Cumulative Value': row['Cumulative Value'] != null ? Number(row['Cumulative Value']) : null,
+                    'Close': row['Close'] != null ? Number(row['Close']) : null,
+                    'Previous_Close': row['Previous_Close'] != null ? Number(row['Previous_Close']) : null
+                };
+            }).filter(r => r && r.Date_add);
+
+            return cachedBodData;
+        } catch (err) {
+            console.error('Error fetching/parsing BOD CSV:', err);
+            throw err;
+        }
+    }
+
+    // Fetch and parse full price history CSV (history_tickers.csv) used to compute available weeks
+    let cachedHistoryData = null;
+    async function fetchHistoryData() {
+        if (cachedHistoryData) return cachedHistoryData;
+        try {
+            const res = await fetch('../data/history_tickers.csv');
+            if (!res.ok) throw new Error('Failed to fetch history CSV: ' + res.status);
+            const text = await res.text();
+            const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+            cachedHistoryData = parsed.data.map(row => {
+                const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'] ?? row['Date_add'];
+                let Date_add = null;
+                try { Date_add = rawDate ? formatDateToYMD(new Date(rawDate)) : null; } catch (e) { Date_add = rawDate; }
+                return {
+                    Date_add: Date_add,
+                    Symbol: row['Symbol'] ?? row['symbol'] ?? '',
+                    Close: row['Close'] != null ? Number(row['Close']) : null
+                };
+            }).filter(r => r && r.Date_add);
+            return cachedHistoryData;
+        } catch (err) {
+            console.error('Error fetching/parsing history CSV:', err);
+            throw err;
+        }
     }
     
     // Calculate Buy-on-Dip strategy for a specific ticker
@@ -361,41 +476,191 @@
         return results;
     }
     
-    // Dynamically populate dropdown with all tickers from historical data
+    // Dynamically populate grid with all tickers from precomputed BOD data
     async function populateBodTickerDropdown() {
-        const historicalData = await fetchHistoricalData();
-        const tickers = Array.from(new Set(historicalData.map(row => row.Symbol))).sort();
-        const select = document.getElementById('bod-ticker-select');
-        // Remove all except the first two options
-        while (select.options.length > 2) select.remove(2);
-        tickers.forEach(ticker => {
-            const opt = document.createElement('option');
-            opt.value = ticker;
-            opt.textContent = ticker;
-            select.appendChild(opt);
-        });
+        try {
+            const historicalData = await fetchHistoricalData();
+            // Default period is YTD so the grid shows YTD counts on load
+            if (!activePeriod) activePeriod = 'YTD';
+            // Build ticker grid similar to DCA page (buildTickerGrid will compute counts using activePeriod)
+            await buildTickerGrid(historicalData);
+            document.getElementById('ticker-metrics-grid').style.display = '';
+            document.getElementById('ticker-selection-area').style.display = '';
+            // Enable download
+            document.getElementById('download-analysis-btn').disabled = false;
+        } catch (err) {
+            console.error(err);
+        }
     }
+
+    // Build ticker grid UI showing ticker and number of orders executed within the active timeframe
+    async function buildTickerGrid(historicalData) {
+        const grid = document.getElementById('ticker-metrics-grid');
+        grid.innerHTML = '';
+
+        // Determine reference end date from history so period ranges align with chart
+        let referenceEnd = new Date().toISOString().slice(0,10);
+        try {
+            const historyAll = await fetchHistoryData();
+            const historyDates = Array.from(new Set(historyAll.map(r => r.Date_add))).sort();
+            referenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : referenceEnd;
+        } catch (e) {
+            // fallback to today if history not available
+        }
+
+        const tickers = Array.from(new Set(historicalData.map(row => row.Symbol))).sort();
+        const range = getPeriodRange(activePeriod || 'YTD', referenceEnd);
+
+        tickers.forEach(ticker => {
+            // Count rows for this ticker within the selected timeframe
+            let count = historicalData.filter(r => r.Symbol === ticker).length;
+            if (range.startDate && range.endDate) {
+                count = historicalData.filter(r => r.Symbol === ticker && r.Date_add >= range.startDate && r.Date_add <= range.endDate).length;
+            }
+
+            const box = document.createElement('div');
+            box.className = 'ticker-box clickable-ticker';
+            box.dataset.ticker = ticker;
+            // Show only the ticker symbol (no counts) to keep grid lightweight
+            box.innerHTML = `<div class="ticker-symbol">${ticker}</div>`;
+            box.addEventListener('click', () => {
+                // Toggle selection
+                document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
+                box.classList.add('selected');
+                selectedTickerGlobal = ticker;
+                document.getElementById('selected-ticker-display').textContent = 'Selected: ' + ticker;
+                // Default behavior: auto-run YTD when a ticker is selected so user sees initial results immediately
+                setPeriod('YTD');
+                renderChart(selectedTickerGlobal);
+            });
+            grid.appendChild(box);
+        });
+
+        // Add an ALL box that shows total count within the timeframe
+        const allBox = document.createElement('div');
+        allBox.className = 'ticker-box clickable-ticker';
+        allBox.dataset.ticker = 'ALL';
+        let totalCount = historicalData.length;
+        if (range.startDate && range.endDate) {
+            totalCount = historicalData.filter(r => r.Date_add >= range.startDate && r.Date_add <= range.endDate).length;
+        }
+    allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
+        allBox.addEventListener('click', () => {
+            document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
+            allBox.classList.add('selected');
+            selectedTickerGlobal = 'ALL';
+            document.getElementById('selected-ticker-display').textContent = 'Selected: ALL';
+            // Default behavior: auto-run YTD when ALL is selected
+            setPeriod('YTD');
+            renderChart('ALL');
+        });
+        grid.insertBefore(allBox, grid.firstChild);
+
+        // Center grid when there are fewer than 7 boxes
+        try {
+            const visibleBoxes = grid.children.length;
+            if (visibleBoxes > 0 && visibleBoxes < 7) {
+                grid.style.gridTemplateColumns = `repeat(${visibleBoxes}, 1fr)`;
+                grid.style.justifyContent = 'center';
+            } else {
+                grid.style.gridTemplateColumns = '';
+                grid.style.justifyContent = '';
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    // Period buttons handling
+    const periodButtons = ['ytd-btn','5y-btn','10y-btn','15y-btn','20y-btn'];
+    function clearPeriodActive() { periodButtons.forEach(id=>document.getElementById(id).classList.remove('active')); }
+    function setPeriod(name) {
+    clearPeriodActive();
+    if (name === 'YTD') document.getElementById('ytd-btn').classList.add('active');
+    if (name === '5Y') document.getElementById('5y-btn').classList.add('active');
+    if (name === '10Y') document.getElementById('10y-btn').classList.add('active');
+    if (name === '15Y') document.getElementById('15y-btn').classList.add('active');
+    if (name === '20Y') document.getElementById('20y-btn').classList.add('active');
+    // Store active period so renderChart and downloads can filter by timeframe
+    activePeriod = name;
+    }
+
+    document.getElementById('ytd-btn').addEventListener('click', ()=>{ setPeriod('YTD'); renderChart(selectedTickerGlobal); });
+    document.getElementById('5y-btn').addEventListener('click', ()=>{ setPeriod('5Y'); renderChart(selectedTickerGlobal); });
+    document.getElementById('10y-btn').addEventListener('click', ()=>{ setPeriod('10Y'); renderChart(selectedTickerGlobal); });
+    document.getElementById('15y-btn').addEventListener('click', ()=>{ setPeriod('15Y'); renderChart(selectedTickerGlobal); });
+    document.getElementById('20y-btn').addEventListener('click', ()=>{ setPeriod('20Y'); renderChart(selectedTickerGlobal); });
+
+    // Download CSV - will download currently displayed all_buy_on_dip filtered by selection
+    function downloadCSVForSelection() {
+    const selected = selectedTickerGlobal || 'ALL';
+    const rowsBase = cachedBodData.filter(r => selected === 'ALL' || r.Symbol === selected);
+    let rows = rowsBase;
+    if (activePeriod && rowsBase.length) {
+        const sorted = rowsBase.map(r => r.Date_add).filter(Boolean).sort();
+        const referenceEnd = sorted.length ? sorted[sorted.length - 1] : new Date().toISOString().slice(0,10);
+        const range = getPeriodRange(activePeriod, referenceEnd);
+        if (range.startDate && range.endDate) {
+            rows = rowsBase.filter(r => r.Date_add >= range.startDate && r.Date_add <= range.endDate);
+        }
+    }
+        if (!rows || rows.length === 0) return;
+        const headers = Object.keys(rows[0]);
+        const csv = [headers.join(',')].concat(rows.map(r => headers.map(h => JSON.stringify(r[h] ?? '')).join(','))).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `all_buy_on_dip_${selected}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('download-analysis-btn').addEventListener('click', downloadCSVForSelection);
     function prepareSeries(data, tickers, allDates) {
+        // Build cumulative series from raw per-date rows (Dollars Invested and Shares Purchased)
         const series = [];
         const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8', '#f7dc6f'];
         let colorIndex = 0;
+
+        // Pre-index rows by ticker+date for fast lookup
+        const rowsByTickerDate = {};
+        data.forEach(r => {
+            const key = r.Symbol + '|' + r.Date_add;
+            if (!rowsByTickerDate[key]) rowsByTickerDate[key] = [];
+            rowsByTickerDate[key].push(r);
+        });
+
         tickers.forEach(ticker => {
-            const tickerData = data.filter(row => row.Symbol === ticker);
-            
-            // Debug: log ticker data
-            console.log(`Ticker ${ticker}: ${tickerData.length} data points`);
-            if (tickerData.length > 0) {
-                const lastRow = tickerData[tickerData.length - 1];
-                console.log(`${ticker} final value: ${lastRow['Cumulative Value']}, invested: ${lastRow['Cumulative Invested']}`);
-            }
-            
-            const valueMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Value'])]));
             const isMultipleTickers = tickers.length > 1;
             const valueColor = isMultipleTickers ? colors[colorIndex % colors.length] : '#00aa00';
             colorIndex++;
-            
-            const valueData = allDates.map(date => valueMap[date] ?? null);
-            
+
+            let cumulativeShares = 0;
+            let cumulativeInvested = 0;
+            const valueData = [];
+            const investedData = [];
+            const sharesData = [];
+
+            allDates.forEach(date => {
+                const key = ticker + '|' + date;
+                const rows = rowsByTickerDate[key] || [];
+                // Sum today's shares and dollars invested (support different header names)
+                const dayShares = rows.reduce((s, row) => s + (Number(row['Shares Purchased'] ?? row['Shares Purchased'] ?? 1) || 0), 0);
+                const dayInvested = rows.reduce((s, row) => s + (Number(row['Dollars Invested'] ?? row['Dollars Invested'] ?? row['Buy_Price']) || 0), 0);
+
+                cumulativeShares += dayShares;
+                cumulativeInvested += dayInvested;
+
+                // Use Close from the last row on that date if present
+                const close = rows.length ? Number(rows[rows.length - 1].Close) : null;
+                const cumValue = close != null ? cumulativeShares * close : null;
+
+                valueData.push(cumValue);
+                investedData.push(cumulativeInvested || null);
+                sharesData.push(cumulativeShares || null);
+            });
+
             series.push({
                 name: ticker + ' - Value',
                 type: 'line',
@@ -404,73 +669,85 @@
                 showSymbol: false,
                 lineStyle: { color: valueColor }
             });
-            
-            // Only show invested line for individual tickers
-            if (!isMultipleTickers) {
-                const investedMap = Object.fromEntries(tickerData.map(row => [row.Date_add, parseFloat(row['Cumulative Invested'])]));
-                series.push({
-                    name: ticker + ' - Invested',
-                    type: 'line',
-                    connectNulls: true,
-                    data: allDates.map(date => investedMap[date] ?? null),
-                    showSymbol: false,
-                    lineStyle: { type: 'dashed', color: '#0077cc' }
-                });
-            }
+
+            // Invested series (dashed) - include for all tickers
+            series.push({
+                name: ticker + ' - Invested',
+                type: 'line',
+                connectNulls: true,
+                data: investedData,
+                showSymbol: false,
+                lineStyle: { type: 'dashed', color: '#0077cc' }
+            });
+
+            // NOTE: do not plot Shares series; show shares in tooltip only per UX request
         });
+
         return series;
     }
     async function renderChart(selectedTicker) {
-        if (!selectedTicker || selectedTicker === '') {
+            if (!selectedTicker || selectedTicker === '') {
             // No ticker selected - clear chart and show instruction
             const chartDom = document.getElementById('main');
             if (echarts.getInstanceByDom(chartDom)) {
                 echarts.getInstanceByDom(chartDom).dispose();
             }
             document.getElementById('detailed-metrics').style.display = 'none';
-            document.getElementById('bod-summary').innerHTML = 'Please select a ticker and click Calculate to begin analysis.';
             return;
         }
         
         showLoading();
         
         try {
-            updateProgress(20, 'Loading historical data...');
-            const historicalData = await fetchHistoricalData();
-            
-            updateProgress(40, 'Processing ticker data...');
-            const allTickers = Array.from(new Set(historicalData.map(row => row.Symbol)));
+            updateProgress(20, 'Loading precomputed BOD data...');
+            const bodRaw = await fetchHistoricalData();
+
+            updateProgress(40, 'Preparing ticker data...');
+            const allTickers = Array.from(new Set(bodRaw.map(row => row.Symbol))).sort();
             const tickers = (!selectedTicker || selectedTicker === 'ALL') ? allTickers : [selectedTicker];
-            
-            updateProgress(60, 'Calculating buy-on-dip strategies...');
-            // Calculate buy-on-dip data for selected tickers
-            const allBodData = [];
-            const allDates = new Set();
-            
-            let processed = 0;
-            for (const ticker of tickers) {
-                const bodData = calculateBuyOnDip(historicalData, ticker);
-                allBodData.push(...bodData);
-                bodData.forEach(row => allDates.add(row.Date_add));
-                processed++;
-                const progress = 60 + (processed / tickers.length) * 25;
-                updateProgress(progress, `Processing ${ticker}... (${processed}/${tickers.length})`);
-                
-                // Add small delay to show progress
-                await new Promise(resolve => setTimeout(resolve, 50));
+
+            // Fetch full price history early so we can use a consistent reference end date for periods
+            const historyAll = await fetchHistoryData();
+            const historyDates = Array.from(new Set(historyAll.map(r => r.Date_add))).sort();
+            const globalReferenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : new Date().toISOString().slice(0,10);
+
+            // Filter precomputed BOD rows for selected tickers and collect dates
+            updateProgress(60, 'Filtering data for selected tickers...');
+            const allBodData = bodRaw.filter(r => tickers.includes(r.Symbol)).sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+            const allDates = new Set(allBodData.map(r => r.Date_add));
+
+            // Apply timeframe filtering based on activePeriod using the global history reference end
+            let filteredBodData = allBodData;
+            if (activePeriod && allBodData.length > 0) {
+                const range = getPeriodRange(activePeriod, globalReferenceEnd);
+                if (range.startDate && range.endDate) {
+                    filteredBodData = allBodData.filter(r => r.Date_add >= range.startDate && r.Date_add <= range.endDate);
+                }
             }
-            
+            const filteredDates = new Set(filteredBodData.map(r => r.Date_add));
+
             updateProgress(90, 'Preparing chart...');
-            const sortedDates = Array.from(allDates).sort();
-            const series = prepareSeries(allBodData, tickers, sortedDates);
+            const sortedDates = Array.from(filteredDates.size ? filteredDates : allDates).sort();
+            const series = prepareSeries(filteredBodData, tickers, sortedDates);
             
-            // Build lookup for percent gain
+            // Build lookup for percent gain using recomputed cumulatives within the filtered (period) data
             const gainLookup = {};
-            allBodData.forEach(row => {
-                gainLookup[row.Symbol + '_' + row.Date_add] = {
-                    value: parseFloat(row['Cumulative Value']),
-                    invested: parseFloat(row['Cumulative Invested'])
-                };
+            // For each ticker, iterate through sorted dates and accumulate shares/invested to produce per-date cumulatives
+            const tickersSet = Array.from(new Set(filteredBodData.map(r => r.Symbol)));
+            tickersSet.forEach(ticker => {
+                const rows = filteredBodData.filter(r => r.Symbol === ticker).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
+                let cumShares = 0;
+                let cumInvested = 0;
+                rows.forEach(r => {
+                    const shares = Number(r['Shares Purchased'] ?? r['Shares Purchased'] ?? 1) || 0;
+                    const invested = Number(r['Dollars Invested'] ?? r['Dollars Invested'] ?? r['Buy_Price']) || 0;
+                    cumShares += shares;
+                    cumInvested += invested;
+                    const close = r.Close != null ? Number(r.Close) : null;
+                    const value = close != null ? cumShares * close : null;
+                    // store shares, invested, and computed value for tooltip display
+                    gainLookup[ticker + '_' + r.Date_add] = { value: value, invested: cumInvested, shares: cumShares };
+                });
             });
             
             updateProgress(95, 'Rendering chart...');
@@ -484,20 +761,30 @@
                     trigger: 'axis',
                     axisPointer: { type: 'cross' },
                     formatter: function(params) {
-                        let html = params[0].axisValue + '<br/>';
+                        if (!params || params.length === 0) return '';
+                        const date = params[0].axisValue;
+                        let html = date + '<br/>';
                         params.forEach(p => {
-                            let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
-                            if (typeof val === 'number' && (p.seriesName.includes('Value') || p.seriesName.includes('Invested'))) {
-                                val = formatCurrency(val);
+                            // Avoid printing Value/Invested/Shares here to prevent duplication —
+                            // those are shown in the consolidated ticker summary below.
+                            if (p.seriesName.includes('Value') || p.seriesName.includes('Invested') || p.seriesName.includes('Shares')) {
+                                return; // skip this series line
                             }
+                            let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
+                            // format any other series values generically
                             html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
                         });
-                        tickers.forEach(ticker => {
-                            const key = ticker + '_' + params[0].axisValue;
-                            if (gainLookup[key]) {
-                                html += '<b>' + ticker + ' % Gain: ' + percentGain(gainLookup[key].value, gainLookup[key].invested) + '</b><br/>';
-                            }
-                        });
+                                    // show total shares, invested, and value per ticker for this date
+                                    tickers.forEach(ticker => {
+                                        const key = ticker + '_' + date;
+                                        if (gainLookup[key]) {
+                                            const info = gainLookup[key];
+                                            const shares = info.shares != null ? info.shares : '';
+                                            const invested = info.invested != null ? formatCurrency(info.invested) : '';
+                                            const value = info.value != null ? formatCurrency(info.value) : '';
+                                            html += '<b>' + ticker + ' — Shares: ' + shares + ', Invested: ' + invested + ', Value: ' + value + '</b><br/>';
+                                        }
+                                    });
                         return html;
                     }
                 },
@@ -510,19 +797,20 @@
                 type: 'scroll'
             },
             xAxis: { type: 'category', data: sortedDates, name: 'Date' },
-            yAxis: { type: 'value', name: 'USD' },
+            yAxis: [ { type: 'value', name: 'USD' } ],
             series: series
         };
         chart.setOption(option);
         
-        // Calculate overall percent return for each ticker (last value)
+            // Calculate overall percent return for each ticker (last value)
         let summaryArr = tickers.map(ticker => {
-            const tickerData = allBodData.filter(row => row.Symbol === ticker);
-            if (tickerData.length > 0) {
-                const last = tickerData[tickerData.length - 1];
-                const value = parseFloat(last['Cumulative Value']);
-                const invested = parseFloat(last['Cumulative Invested']);
-                const pct = percentGain(value, invested);
+            const tickerRows = filteredBodData.filter(row => row.Symbol === ticker).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
+            if (tickerRows.length > 0) {
+                const cumShares = tickerRows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares Purchased'] ?? 1) || 0), 0);
+                const cumInvested = tickerRows.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars Invested'] ?? r['Buy_Price']) || 0), 0);
+                const lastClose = Number(tickerRows[tickerRows.length - 1].Close) || 0;
+                const value = cumShares * lastClose;
+                const pct = percentGain(value, cumInvested);
                 return { ticker, pct: parseFloat(pct), pctStr: pct };
             }
             return null;
@@ -531,14 +819,57 @@
         if (tickers.length > 1) {
             summaryArr.sort((a, b) => b.pct - a.pct);
         }
-        let summary = summaryArr.map(s => `<b>${s.ticker}:</b> ${s.pctStr} &nbsp;`).join('');
-        document.getElementById('bod-summary').innerHTML = summary;
+    let summary = summaryArr.map(s => `${s.ticker}: ${s.pctStr}`).join('  |  ');
+    // Summary string generated; not displayed in UI (no bod-summary element)
+    console.log('BOD summary:', summary);
+
+    // Update selected ticker display and enable download
+    document.getElementById('selected-ticker-display').textContent = 'Selected: ' + (selectedTicker === 'ALL' ? 'ALL' : selectedTicker);
+    document.getElementById('download-analysis-btn').disabled = false;
         
         // Calculate and display detailed metrics
         if (selectedTicker && selectedTicker !== 'ALL' && selectedTicker !== '') {
-            // Single ticker selected - show detailed metrics
-            const detailedMetrics = calculateDetailedMetrics(allBodData, [selectedTicker]);
-            displayDetailedMetrics(detailedMetrics);
+            // Single ticker selected - compute period-specific deltas using full history as baseline
+            const tickerFiltered = filteredBodData.filter(r => r.Symbol === selectedTicker).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
+            if (tickerFiltered.length === 0) {
+                document.getElementById('detailed-metrics').style.display = 'none';
+            } else {
+                const last = tickerFiltered[tickerFiltered.length - 1];
+                // baseline = last cumulative values before period start
+                let baselineShares = 0, baselineInvested = 0;
+                if (activePeriod) {
+                    const range = getPeriodRange(activePeriod, globalReferenceEnd);
+                    // find the last row in allBodData for this ticker before startDate
+                    const beforeRows = allBodData.filter(r => r.Symbol === selectedTicker && r.Date_add < range.startDate).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
+                    if (beforeRows.length > 0) {
+                        const base = beforeRows[beforeRows.length - 1];
+                        baselineShares = parseFloat(base['Cumulative Shares']) || 0;
+                        baselineInvested = parseFloat(base['Cumulative Invested']) || 0;
+                    }
+                }
+
+                // Recompute period-only totals from filteredBodData (rows inside the active period)
+                const rowsInPeriod = filteredBodData.filter(r => r.Symbol === selectedTicker).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
+                const periodShares = rowsInPeriod.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares Purchased'] ?? 1) || 0), 0);
+                const periodInvested = rowsInPeriod.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars Invested'] ?? r['Buy_Price']) || 0), 0);
+                // For period value, use the last available close price inside the period; if none, fallback to last.Close
+                const lastClose = rowsInPeriod.length ? Number(rowsInPeriod[rowsInPeriod.length - 1].Close) : (parseFloat(last['Close']) || 0);
+                const periodValue = periodShares * lastClose;
+                const gainAmount = periodValue - periodInvested;
+                const gainPercent = periodInvested > 0 ? ((gainAmount / periodInvested) * 100).toFixed(2) : '0.00';
+
+                const metric = {
+                    ticker: selectedTicker,
+                    totalDipsPurchases: periodShares,
+                    totalShares: periodShares,
+                    totalInvested: periodInvested,
+                    totalValue: periodValue,
+                    gainAmount: gainAmount,
+                    gainPercent: gainPercent
+                };
+
+                displayDetailedMetrics([metric]);
+            }
         } else {
             // All tickers selected or no ticker selected - hide metrics
             document.getElementById('detailed-metrics').style.display = 'none';
@@ -546,38 +877,15 @@
         
         } catch (error) {
             console.error('Error during calculation:', error);
-            document.getElementById('bod-summary').innerHTML = '<span style="color: red;">Error calculating BOD strategy. Please try again.</span>';
         } finally {
             hideLoading();
         }
     }
 
-    // Calculate button event listener
-    document.getElementById('calculate-btn').addEventListener('click', function() {
-        const selectedTicker = document.getElementById('bod-ticker-select').value;
-        renderChart(selectedTicker);
-    });
+    // Period buttons execute the strategy for the selected ticker
     
-    // Dropdown event - just update message, never draw chart
-    document.getElementById('bod-ticker-select').addEventListener('change', function() {
-        const selected = this.value;
-        // Always clear any existing chart when dropdown changes
-        const chartDom = document.getElementById('main');
-        if (echarts.getInstanceByDom(chartDom)) {
-            echarts.getInstanceByDom(chartDom).dispose();
-        }
-        document.getElementById('detailed-metrics').style.display = 'none';
-        
-        if (!selected || selected === '') {
-            document.getElementById('bod-summary').innerHTML = 'Please select a ticker and click Calculate to begin analysis.';
-        } else {
-            document.getElementById('bod-summary').innerHTML = 'Click Calculate to analyze ' + (selected === 'ALL' ? 'all tickers' : selected) + '.';
-        }
-    });
-    
-    // Initial setup: populate dropdown, show initial message
+    // Initial setup: populate ticker grid
     populateBodTickerDropdown();
-    document.getElementById('bod-summary').innerHTML = 'Please select a ticker and click Calculate to begin analysis.';
     </script>
 </body>
 </html>

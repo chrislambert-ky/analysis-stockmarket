@@ -45,6 +45,49 @@
         </ul>
     </section>
 
+    <!-- About Me (moved up) -->
+    <section>
+        <h2>About Me</h2>
+        <p>I'm an IT Project Manager and Data Analyst with experience building ETL pipelines, financial data models, and interactive dashboards. Below is a short resume-style summary.</p>
+        <ul>
+            <li><strong>Role:</strong> IT Project Manager / Data Analyst</li>
+            <li><strong>Skills:</strong> Python (pandas), SQL (BigQuery, Oracle), ETL design, JavaScript, ECharts, HTML/CSS, BI tools (Tableau, Looker Studio, PowerBI)</li>
+            <li><strong>Experience:</strong> Design and delivery of data pipelines, and production dashboards for analytics teams.</li>
+            <li><strong>Intent:</strong> This project is an educational portfolio piece showcasing data engineering, financial analytics, and frontend visualization skills.</li>
+        </ul>
+
+        <div class="social-links" style="margin-top:12px;">
+            <a href="https://www.linkedin.com/in/chrislambertky/" target="_blank" rel="noopener noreferrer" title="LinkedIn" style="margin-right:18px;">
+                <!-- LinkedIn svg -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:8px;"><rect width="24" height="24" rx="4" fill="#0077B5"/><path d="M7.1 8.6a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Zm-1.2 1.3h2.5v7.5H5.9V9.9Zm4.1 0h2.4v1.1h.03c.33-.62 1.13-1.27 2.33-1.27 2.5 0 3 1.65 3 3.8v4.1h-2.5v-3.6c0-.86-.02-2-1.22-2-1.22 0-1.41.95-1.41 1.93v3.67h-2.5V9.9Z" fill="#fff"/></svg>
+                LinkedIn
+            </a>
+            <a href="https://x.com/ChrisLambertKY" target="_blank" rel="noopener noreferrer" title="X.com" style="margin-right:18px;">
+                <!-- X svg -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:8px;"><rect width="24" height="24" rx="4" fill="#000"/><path d="M17.5 7h-2.1l-3.1 4.1L9.2 7H6.5l3.7 5.2L6.5 17h2.1l3.2-4.3 3.2 4.3h2.7l-3.7-5.3L17.5 7Zm-2.2 8.2-.9-1.2-.9 1.2h-1.1l1.4-1.8-1.4-1.9h1.1l.9 1.2.9-1.2h1.1l-1.4 1.9 1.4 1.8h-1.1Z" fill="#fff"/></svg>
+                X.com
+            </a>
+            <a href="https://github.com/chrislambert-ky" target="_blank" rel="noopener noreferrer" title="GitHub">
+                <!-- GitHub svg -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:8px;"><rect width="24" height="24" rx="4" fill="#181717"/><path d="M12 5.3c-3.7 0-6.7 3-6.7 6.7 0 3 2 5.5 4.7 6.4.3.1.4-.1.4-.3v-1.1c-1.9.4-2.3-.8-2.3-.8-.3-.7-.7-.9-.7-.9-.6-.4 0-.4 0-.4.7 0 1 .7 1 .7.6 1 1.6.7 2 .5.1-.4.2-.7.4-.8-1.5-.2-3-.7-3-3.2 0-.7.2-1.2.6-1.7 0-.2-.2-.7.1-1.4 0 0 .5-.2 1.7.6.5-.1 1-.2 1.5-.2s1 .1 1.5.2c1.2-.8 1.7-.6 1.7-.6.3.7.1 1.2.1 1.4.4.5.6 1 .6 1.7 0 2.5-1.5 3-3 3.2.2.2.4.5.4 1.1v1.6c0 .2.1.4.4.3 2.7-.9 4.7-3.4 4.7-6.4 0-3.7-3-6.7-6.7-6.7Z" fill="#fff"/></svg>
+                GitHub
+            </a>
+        </div>
+    </section>
+
+    <section>
+        <h2>How calculations are produced</h2>
+        <p>
+        This project separates heavy transforms (ETL) from interactive visualizations. The Python ETL precomputes and normalizes historical price series into <code>data/history_tickers.csv</code> and (optionally) trade-level events into <code>data/all_buy_on_dip.csv</code>. The frontend pages load those CSVs, parse rows, and then compute period-limited totals on the client so users can choose arbitrary date ranges without re-running server-side jobs. Key points:
+        </p>
+        <ul>
+            <li><strong>ETL outputs:</strong> per-day OHLC rows, weekday metadata, and optional precomputed buy-on-dip events (executed price and executed level) for provenance and faster UI responses. (OHLC = Open, High, Low, Close — the standard per-day price fields used in time-series financial analysis.)</li>
+            <li><strong>Client-side calculations:</strong> For accuracy the pages sum per-row "Shares Purchased" and "Dollars Invested" within the selected timeframe and recompute portfolio value = cumulative shares × close price for each day in the period.</li>
+            <li><strong>Fast-paths and fallbacks:</strong> If <code>all_buy_on_dip.csv</code> exists the advanced BOD page will use those events; otherwise it simulates limit fills by comparing intraday lows to target prices derived from previous close.</li>
+            <li><strong>Reproducibility:</strong> CSV downloads include recorded purchase prices and decline levels so you can reproduce the results in a spreadsheet or run independent validation scripts.</li>
+        </ul>
+    </section>
+
     <section>
         <h2>Recent Enhancements</h2>
         <ul>
@@ -55,32 +98,7 @@
         </ul>
     </section>
 
-    <section>
-        <h2>About Me</h2>
-        <ul>
-            <li>IT Project Manager</li>
-            <li>Data Analyst</li>
-            <li>Python ETL Developer</li>
-            <li>SQL Developer (Google BigQuery, Oracle)</li>
-            <li>BI Dashboard Developer (Looker Studio, Tableau, PowerBI)</li>
-            <li>Stock Market Enthusiast</li>
-        </ul>
-    </section>
-
-        <div class="social-links">
-            <a href="https://www.linkedin.com/in/chrislambertky/" target="_blank" rel="noopener noreferrer" title="LinkedIn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:8px;"><rect width="24" height="24" rx="4" fill="#0077B5"/><path d="M7.1 8.6a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Zm-1.2 1.3h2.5v7.5H5.9V9.9Zm4.1 0h2.4v1.1h.03c.33-.62 1.13-1.27 2.33-1.27 2.5 0 3 1.65 3 3.8v4.1h-2.5v-3.6c0-.86-.02-2-1.22-2-1.22 0-1.41.95-1.41 1.93v3.67h-2.5V9.9Z" fill="#fff"/></svg>
-                LinkedIn
-            </a>
-            <a href="https://x.com/ChrisLambertKY" target="_blank" rel="noopener noreferrer" title="X.com" style="margin-left:18px;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:8px;"><rect width="24" height="24" rx="4" fill="#000"/><path d="M17.5 7h-2.1l-3.1 4.1L9.2 7H6.5l3.7 5.2L6.5 17h2.1l3.2-4.3 3.2 4.3h2.7l-3.7-5.3L17.5 7Zm-2.2 8.2-.9-1.2-.9 1.2h-1.1l1.4-1.8-1.4-1.9h1.1l.9 1.2.9-1.2h1.1l-1.4 1.9 1.4 1.8h-1.1Z" fill="#fff"/></svg>
-                X.com
-            </a>
-            <a href="https://github.com/chrislambert-ky" target="_blank" rel="noopener noreferrer" title="GitHub" style="margin-left:18px;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:8px;"><rect width="24" height="24" rx="4" fill="#181717"/><path d="M12 5.3c-3.7 0-6.7 3-6.7 6.7 0 3 2 5.5 4.7 6.4.3.1.4-.1.4-.3v-1.1c-1.9.4-2.3-.8-2.3-.8-.3-.7-.7-.9-.7-.9-.6-.4 0-.4 0-.4.7 0 1 .7 1 .7.6 1 1.6.7 2 .5.1-.4.2-.7.4-.8-1.5-.2-3-.7-3-3.2 0-.7.2-1.2.6-1.7 0-.2-.2-.7.1-1.4 0 0 .5-.2 1.7.6.5-.1 1-.2 1.5-.2s1 .1 1.5.2c1.2-.8 1.7-.6 1.7-.6.3.7.1 1.2.1 1.4.4.5.6 1 .6 1.7 0 2.5-1.5 3-3 3.2.2.2.4.5.4 1.1v1.6c0 .2.1.4.4.3 2.7-.9 4.7-3.4 4.7-6.4 0-3.7-3-6.7-6.7-6.7Z" fill="#fff"/></svg>
-                GitHub
-            </a>
-        </div>
+    
 
     <section>
         <h2>Project: Stock Market Investment Strategy Analysis</h2>
@@ -96,12 +114,12 @@
     <section>
         <h2>Investment Strategies Analyzed</h2>
         <ul>
-            <li><strong>Dollar Cost Averaging (DCA):</strong> Regular periodic investments of fixed dollar amounts regardless of market conditions. Default strategy invests $25 weekly with customizable investment days.</li>
-            <li><strong>Buy-on-Dip (BOD):</strong> Purchase shares when stock price declines by specified percentages from previous day's close. Default strategy buys 1 share per 1-5% decline with configurable decline thresholds.</li>
-            <li><strong>Strategy Comparison:</strong> Side-by-side analysis of DCA vs BOD performance across different tickers and timeframes with interactive visualizations.</li>
-            <li><strong>Multi-Ticker Analysis:</strong> Compare strategy performance across multiple ETFs (QQQ, SPLG, XLG) simultaneously with unified charting.</li>
-            <li><strong>Advanced Calculators:</strong> Fully customizable tools allowing users to test their own investment amounts, frequencies, decline percentages, and date ranges.</li>
-            <li><strong>Market Pattern Analysis:</strong> Advanced metrics including up/down day analysis, Monday-Friday success rates, and week-over-week profitability patterns.</li>
+            <li><strong>Dollar Cost Averaging (DCA):</strong> Regular periodic investments of a fixed dollar amount (for example weekly). The DCA pages simulate recurring purchases on a user-selected weekday and compute cumulative shares purchased, dollars invested, and portfolio value using historical close prices. Totals are calculated only within the chosen date range to produce accurate period-limited performance metrics.</li>
+            <li><strong>Buy-on-Dip (BOD):</strong> Triggered buys that execute when the market drops by a configured percent from the prior trading day's close (for example -1% through -10%). The BOD tools detect executions either by simulating intraday lows against limit order targets or by consuming precomputed buy events (the ETL outputs an <code>all_buy_on_dip.csv</code> with executed price/level for provenance). For each executed trade we track shares purchased, dollars invested, cumulative shares, portfolio value and one-week-forward profitability.</li>
+            <li><strong>Strategy Comparison:</strong> Side-by-side analysis of DCA vs BOD performance across tickers and timeframes with interactive charts and downloadable CSVs so you can verify calculations offline.</li>
+            <li><strong>Multi-Ticker Analysis:</strong> Compare strategy performance across multiple ETFs (QQQ, SPLG, XLG and others) simultaneously with unified charting and summary metrics.</li>
+            <li><strong>Advanced Calculators:</strong> Fully customizable tools allowing users to test investment amounts, schedules, decline thresholds, and date ranges; the advanced pages include quick-period buttons (YTD/5Y/10Y/15Y/20Y) and per-ticker drill-down views.</li>
+            <li><strong>Market Pattern Analysis:</strong> Metrics include up/down day counts, Monday→Friday success, and trade→next-week success to help evaluate short-term effectiveness of timed buys versus steady contributions.</li>
         </ul>
     </section>
 

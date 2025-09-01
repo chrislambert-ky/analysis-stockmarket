@@ -119,6 +119,29 @@
             border-radius: 4px;
             font-size: 14px;
         }
+        /* Period button styles (match dca-strat.html) */
+        .period-selection {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: flex-end;
+        }
+
+        .period-btn {
+            background-color: var(--gray);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            margin: 0 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.25s ease;
+            font-size: 13px;
+        }
+
+        .period-btn:hover { background-color: var(--blue); transform: translateY(-1px); }
+        .period-btn.active { background-color: var(--orange); color: white; }
         .decline-settings {
             grid-column: 1 / -1;
             background-color: #fff;
@@ -196,6 +219,19 @@
             font-size: 0.9em;
             color: #666;
         }
+        .ticker-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .ticker-metric-item {
+            text-align: center;
+            padding: 10px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
         #chartContainer {
             margin-top: 20px;
             height: 500px;
@@ -259,14 +295,24 @@
                 </select>
             </div>
             
-            <div class="input-group">
-                <label for="startDate">Start Date:</label>
-                <input type="date" id="startDate" value="2020-01-01">
-            </div>
-            
-            <div class="input-group">
-                <label for="endDate">End Date:</label>
-                <input type="date" id="endDate" value="2024-12-31">
+            <div style="display:flex;align-items:center;gap:20px;">
+                <div class="input-group" style="flex:0 0 260px;">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" value="2020-01-01" style="width:220px;">
+                </div>
+
+                <div class="input-group" style="flex:0 0 260px;">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate" value="2024-12-31" style="width:220px;">
+                </div>
+
+                <div class="period-selection" style="margin-left:auto;gap:10px;">
+                    <button id="ytd-btn" class="period-btn active" onclick="setStartToYTD()">YTD</button>
+                    <button id="5y-btn" class="period-btn" onclick="shiftStartYears(5)">5Y</button>
+                    <button id="10y-btn" class="period-btn" onclick="shiftStartYears(10)">10Y</button>
+                    <button id="15y-btn" class="period-btn" onclick="shiftStartYears(15)">15Y</button>
+                    <button id="20y-btn" class="period-btn" onclick="shiftStartYears(20)">20Y</button>
+                </div>
             </div>
             
             <div class="decline-settings">
@@ -335,6 +381,27 @@
         
         <div class="results" id="results">
             <h3>Results Summary</h3>
+            <div class="disclaimer">
+                Up Days, Down Days, Mon-Fri, and Week-over-week are general metrics for the selected ticker and date range. These values reflect the stock's overall performance during the chosen period, independent of your strategy settings.
+            </div>
+            <div class="ticker-metrics">
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="upDays">0 (0%)</div>
+                    <div class="result-label">Up Days (Open→Close)</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="downDays">0 (0%)</div>
+                    <div class="result-label">Down Days (Open→Close)</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="mondayFridaySuccess">0 (0%)</div>
+                    <div class="result-label">Monday→Friday Success</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="tradeWeekSuccess">0 (0%)</div>
+                    <div class="result-label">Trade→Next Week Success</div>
+                </div>
+            </div>
             <div class="results-grid">
                 <div class="result-item">
                     <div class="result-value" id="totalInvested">$0</div>
@@ -389,6 +456,7 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
     let stockData = [];
+    let allBodEvents = []; // precomputed buy-on-dip events (fast-path)
     let calculationResults = [];
 
     // Helper function to format currency with commas
@@ -401,6 +469,13 @@
 
     // Load stock data and populate ticker dropdown
     async function loadStockData() {
+        // Ensure end date defaults to today
+        try {
+            const endInput = document.getElementById('endDate');
+            if (endInput) endInput.value = new Date().toISOString().split('T')[0];
+        } catch (e) {
+            console.warn('Could not set endDate to today', e);
+        }
         try {
             const response = await fetch('../data/history_tickers.csv');
             if (!response.ok) {
@@ -431,6 +506,27 @@
             });
             
             console.log(`Loaded ${stockData.length} records for ${tickers.length} tickers`);
+            // Try loading precomputed buy-on-dip events for a fast-path
+            try {
+                const resp2 = await fetch('../data/all_buy_on_dip.csv');
+                if (resp2.ok) {
+                    let txt = await resp2.text();
+                    txt = txt.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                    const rows2 = txt.split('\n').filter(r => r.trim().length > 0);
+                    if (rows2.length > 0) {
+                        const headers2 = rows2[0].split(',').map(h => h.trim());
+                        allBodEvents = rows2.slice(1).map(row => {
+                            const values = row.split(',').map(v => (v ?? '').trim());
+                            const obj = {};
+                            headers2.forEach((h, i) => obj[h.trim()] = values[i] ?? '');
+                            return normalizeBodEvent(obj);
+                        });
+                        console.log(`Loaded ${allBodEvents.length} precomputed BOD events`);
+                    }
+                }
+            } catch (err) {
+                console.warn('no all_buy_on_dip.csv fast-path available or parse failed', err);
+            }
         } catch (error) {
             console.error('Error loading stock data:', error);
         }
@@ -465,7 +561,7 @@
             return;
         }
         
-        calculationResults = calculateBuyOnDip(selectedTicker, startDate, endDate, declineSettings);
+    calculationResults = calculateBuyOnDip(selectedTicker, startDate, endDate, declineSettings);
         displayResults(calculationResults, declineSettings);
         showChart(calculationResults.trades, selectedTicker);
         
@@ -473,51 +569,105 @@
     }
 
     function calculateBuyOnDip(ticker, startDate, endDate, declineSettings) {
+        // Fast-path: if precomputed events exist, use them for this ticker and date range
         const results = [];
         let totalShares = 0;
         let totalInvested = 0;
         let totalTrades = 0;
-        
+
+        const eventsForTicker = allBodEvents.filter(e => e.Symbol === ticker && new Date(e.Date_add) >= startDate && new Date(e.Date_add) <= endDate)
+            .sort((a,b) => new Date(a.Date_add) - new Date(b.Date_add));
+
+        if (eventsForTicker.length > 0) {
+            // events include per-event executed price and decline level; apply user's declineSettings
+            for (const ev of eventsForTicker) {
+                // the ETL may include a field like 'Executed_Level' or 'Buy_Level' indicating the decline percent
+                const declineLevelRaw = ev.Executed_Level || ev.Buy_Level || ev.Level || ev.Decline_Level || ev.DeclinePercent || ev['Executed Level'] || ev['Buy Level'] || '';
+                const declineLevel = Number(declineLevelRaw) || 0;
+                // Only consider declines that the user has configured (1..10)
+                if (!declineSettings[declineLevel]) continue;
+
+                const shares = Number(declineSettings[declineLevel]) || 0;
+                if (shares <= 0) continue;
+
+                const purchasePrice = Number(ev.Executed_Price || ev.Buy_Price || ev.purchasePrice || ev.Purchase_Price || ev.Buy_Price || ev.BuyPrice || ev['Executed Price']) || Number(ev.Buy_Price || ev.BuyPrice || ev.purchasePrice) || 0;
+                const cost = round2(shares * purchasePrice);
+
+                totalShares += shares;
+                totalInvested = round2(totalInvested + cost);
+                totalTrades++;
+
+                const portfolioValue = round2(totalShares * Number(ev.Close || ev.Close_Price || ev.ClosePrice || ev.close || ev.LastClose || 0));
+
+                results.push({
+                    date: ev.Date_add,
+                    open: Number(ev.Open || 0),
+                    high: Number(ev.High || 0),
+                    low: Number(ev.Low || 0),
+                    close: Number(ev.Close || ev.Close_Price || ev.close || 0),
+                    previousClose: Number(ev.Previous_Close || ev.PreviousClose || ev.Previous || 0),
+                    dayInvested: cost,
+                    dayShares: shares,
+                    totalShares: totalShares,
+                    totalInvested: totalInvested,
+                    portfolioValue: portfolioValue,
+                    gain: round2(portfolioValue - totalInvested),
+                    gainPercent: totalInvested > 0 ? round2((portfolioValue - totalInvested) / totalInvested * 100) : 0,
+                    tradesExecuted: [{ declinePercent: declineLevel, purchasePrice: purchasePrice, shares: shares, cost: cost, actualDecline: declineLevel }],
+                    totalTrades: totalTrades
+                });
+            }
+
+            // Compute additional metrics using tickerData fallback
+            const tickerData = stockData.filter(row => row.Symbol === ticker && new Date(row.Date_add) >= startDate && new Date(row.Date_add) <= endDate)
+                .sort((a,b) => new Date(a.Date_add) - new Date(b.Date_add));
+            const additionalMetrics = calculateBODAdditionalMetrics(tickerData, results);
+            return { trades: results, metrics: additionalMetrics };
+        }
+
+        // Fallback: original day-by-day simulation if no precomputed events
         // Filter data for selected ticker and date range
         const tickerData = stockData.filter(row => {
             if (row.Symbol !== ticker) return false;
             const rowDate = new Date(row.Date_add);
             return rowDate >= startDate && rowDate <= endDate;
         }).sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
-        
+
         if (tickerData.length === 0) {
             alert('No data found for selected ticker and date range');
-            return [];
+            return { trades: [], metrics: {} };
         }
-        
+
         // Process each trading day
         for (let i = 1; i < tickerData.length; i++) {
             const currentDay = tickerData[i];
             const previousDay = tickerData[i - 1];
-            
-            const previousClose = parseFloat(previousDay.Close);
-            const currentLow = parseFloat(currentDay.Low);
-            const currentClose = parseFloat(currentDay.Close);
-            
+
+            const previousClose = Number(previousDay.Close);
+            const currentLow = Number(currentDay.Low);
+            const currentClose = Number(currentDay.Close);
+
             let dayInvested = 0;
             let dayShares = 0;
             const tradesExecuted = [];
-            
+
             // Check each decline percentage
-            Object.entries(declineSettings).forEach(([declinePercent, shares]) => {
+            Object.entries(declineSettings).forEach(([declinePercentRaw, sharesRaw]) => {
+                const declinePercent = Number(declinePercentRaw);
+                const shares = Number(sharesRaw) || 0;
                 const limitOrderPrice = previousClose * (1 - declinePercent / 100);
-                
+
                 // If the low of the day hit our limit order price, execute the trade at the limit price
                 if (currentLow <= limitOrderPrice) {
-                    const purchasePrice = limitOrderPrice; // Limit orders execute at the limit price
-                    const cost = shares * purchasePrice;
-                    
-                    dayInvested += cost;
+                    const purchasePrice = round2(limitOrderPrice); // Limit orders execute at the limit price
+                    const cost = round2(shares * purchasePrice);
+
+                    dayInvested = round2(dayInvested + cost);
                     dayShares += shares;
                     totalTrades++;
-                    
-                    const actualDecline = ((previousClose - purchasePrice) / previousClose) * 100;
-                    
+
+                    const actualDecline = round2(((previousClose - purchasePrice) / previousClose) * 100);
+
                     tradesExecuted.push({
                         declinePercent: declinePercent,
                         targetPrice: limitOrderPrice,
@@ -528,16 +678,16 @@
                     });
                 }
             });
-            
-            totalShares += dayShares;
-            totalInvested += dayInvested;
-            const portfolioValue = totalShares * currentClose;
-            
+
+            totalShares = round2(totalShares + dayShares);
+            totalInvested = round2(totalInvested + dayInvested);
+            const portfolioValue = round2(totalShares * currentClose);
+
             results.push({
                 date: currentDay.Date_add,
-                open: parseFloat(currentDay.Open),
-                high: parseFloat(currentDay.High),
-                low: currentLow,
+                open: Number(currentDay.Open),
+                high: Number(currentDay.High),
+                low: Number(currentDay.Low),
                 close: currentClose,
                 previousClose: previousClose,
                 dayInvested: dayInvested,
@@ -545,17 +695,34 @@
                 totalShares: totalShares,
                 totalInvested: totalInvested,
                 portfolioValue: portfolioValue,
-                gain: portfolioValue - totalInvested,
-                gainPercent: totalInvested > 0 ? ((portfolioValue - totalInvested) / totalInvested * 100) : 0,
+                gain: round2(portfolioValue - totalInvested),
+                gainPercent: totalInvested > 0 ? round2((portfolioValue - totalInvested) / totalInvested * 100) : 0,
                 tradesExecuted: tradesExecuted,
                 totalTrades: totalTrades
             });
         }
-        
+
         // Calculate additional metrics using the filtered ticker data
         const additionalMetrics = calculateBODAdditionalMetrics(tickerData, results);
-        
+
         return { trades: results, metrics: additionalMetrics };
+    }
+
+    // Helper: round to 2 decimals
+    function round2(v) {
+        return Math.round((v + Number.EPSILON) * 100) / 100;
+    }
+
+    // Normalize event fields we expect from all_buy_on_dip.csv
+    function normalizeBodEvent(obj) {
+        // ensure numeric fields are numbers and normalized keys exist
+        const normalized = Object.assign({}, obj);
+        // standardize common fields
+        if (normalized.Date) normalized.Date_add = normalized.Date;
+        if (!normalized.Date_add && normalized.date) normalized.Date_add = normalized.date;
+        if (normalized['Executed Price']) normalized.Executed_Price = normalized['Executed Price'];
+        if (normalized['Executed Level']) normalized.Executed_Level = normalized['Executed Level'];
+        return normalized;
     }
 
     function calculateBODAdditionalMetrics(tickerData, tradeResults) {
@@ -840,6 +1007,38 @@
 
     // Load data when page loads
     document.addEventListener('DOMContentLoaded', loadStockData);
+
+    // Set start date to Jan 1 of current year (YTD)
+    function setStartToYTD() {
+        const now = new Date();
+        const ytd = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+        const startInput = document.getElementById('startDate');
+        if (startInput) startInput.value = ytd;
+    setActivePeriodButton('ytd-btn');
+    // If a ticker is selected, recompute
+    if (document.getElementById('tickerSelect').value) calculateStrategy();
+    }
+
+    // Shift start date back by n years (keeps month/day as Jan 1)
+    function shiftStartYears(n) {
+        const now = new Date();
+        const target = new Date(now.getFullYear() - n, 0, 1).toISOString().split('T')[0];
+        const startInput = document.getElementById('startDate');
+        if (startInput) startInput.value = target;
+        // map n to button id
+        const idMap = {5: '5y-btn', 10: '10y-btn', 15: '15y-btn', 20: '20y-btn'};
+        const btnId = idMap[n] || null;
+        if (btnId) setActivePeriodButton(btnId);
+        if (document.getElementById('tickerSelect').value) calculateStrategy();
+    }
+
+    function setActivePeriodButton(id) {
+        ['ytd-btn','5y-btn','10y-btn','15y-btn','20y-btn'].forEach(bid => {
+            const el = document.getElementById(bid);
+            if (!el) return;
+            if (bid === id) el.classList.add('active'); else el.classList.remove('active');
+        });
+    }
     </script>
 </body>
 </html>

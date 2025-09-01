@@ -9,14 +9,12 @@ from datetime import datetime, timedelta
 output_folder = "data"
 os.makedirs(output_folder, exist_ok=True)
 
-etf_list = [
-    "QQQ","FBCG","QTOP","MGK","VGT",
-    "SPLG","XLG","TOPT","FMAG"
-]
+etf_list = ["SPLG","XLG","TOPT","QQQ","VGT","QTOP","FBCG","MSFT","GOOGL","UPRO","TQQQ","QQUP","GGLL","MSFU"]
 
-weekly_investment = 25.0
-
-dip_levels = [0.99, 0.98, 0.97, 0.96, 0.95, 0.94, 0.93, 0.92, 0.91, 0.90]  # 1% → 10% dips
+# Buy-on-dip configuration: generate limit orders at 1% steps up to dip_max_pct.
+# This ensures very deep single-day declines will have additional limit orders recorded.
+dip_step_pct = 1  # step in percent (1% increments)
+dip_max_pct = 30  # generate orders from 1% down to dip_max_pct (e.g., 30% deep days)
 
 
 # =============================
@@ -30,7 +28,7 @@ def extract_all_historical_data():
     for ticker_symbol in etf_list:
         print(f"Downloading data for {ticker_symbol}...")
         ticker = yf.Ticker(ticker_symbol)
-        data = ticker.history(period="10y", interval="1d")
+        data = ticker.history(period="20y", interval="1d")
 
         if data.empty:
             print(f"No data found for {ticker_symbol}, skipping...")
@@ -97,44 +95,25 @@ def extract_all_historical_data():
     # Add previous day's close price
     combined_history['Previous_Close'] = combined_history.groupby('Symbol')['Close'].shift(1)
     
-    # Add daily gain/loss calculations for buy-on-dip troubleshooting
-    def calculate_daily_metrics(row):
-        """Calculate daily performance metrics."""
-        if pd.isna(row['Previous_Close']) or row['Previous_Close'] == 0:
-            return pd.Series({
-                'Daily_Gain_Loss_Pct': None,
-                'Open_vs_PrevClose_Pct': None, 
-                'Low_vs_PrevClose_Pct': None,
-                'Close_vs_PrevClose_Pct': None,
-                'Max_Decline_Pct': None
-            })
-        
-        prev_close = row['Previous_Close']
-        open_price = row['Open']
-        low_price = row['Low'] 
-        close_price = row['Close']
-        
-        # Calculate percentage changes from previous close
-        daily_gain_loss = ((close_price - prev_close) / prev_close) * 100
-        open_vs_prev = ((open_price - prev_close) / prev_close) * 100
-        low_vs_prev = ((low_price - prev_close) / prev_close) * 100
-        close_vs_prev = ((close_price - prev_close) / prev_close) * 100
-        
-        # Maximum decline during the day - specifically comparing Previous_Close to Low
-        # This represents the deepest dip during the trading day
-        max_decline = low_vs_prev
-        
-        return pd.Series({
-            'Daily_Gain_Loss_Pct': round(daily_gain_loss, 2),
-            'Open_vs_PrevClose_Pct': round(open_vs_prev, 2),
-            'Low_vs_PrevClose_Pct': round(low_vs_prev, 2), 
-            'Close_vs_PrevClose_Pct': round(close_vs_prev, 2),
-            'Max_Decline_Pct': round(max_decline, 2)
-        })
-    
-    # Apply the calculations
-    daily_metrics = combined_history.apply(calculate_daily_metrics, axis=1)
-    combined_history = pd.concat([combined_history, daily_metrics], axis=1)
+    # Compute percent metrics relative to previous close using vectorized operations
+    # Guard against missing or zero previous close
+    mask = combined_history['Previous_Close'].notna() & (combined_history['Previous_Close'] != 0)
+    # Initialize columns with NA
+    combined_history['Daily_Gain_Loss_Pct'] = pd.NA
+    combined_history['Open_vs_PrevClose_Pct'] = pd.NA
+    combined_history['Low_vs_PrevClose_Pct'] = pd.NA
+    combined_history['Close_vs_PrevClose_Pct'] = pd.NA
+    combined_history['mx_percent_decline'] = pd.NA
+
+    # Compute where valid
+    if mask.any():
+        prev = combined_history.loc[mask, 'Previous_Close']
+        combined_history.loc[mask, 'Daily_Gain_Loss_Pct'] = ((combined_history.loc[mask, 'Close'] - prev) / prev * 100).round(2)
+        combined_history.loc[mask, 'Open_vs_PrevClose_Pct'] = ((combined_history.loc[mask, 'Open'] - prev) / prev * 100).round(2)
+        combined_history.loc[mask, 'Low_vs_PrevClose_Pct'] = ((combined_history.loc[mask, 'Low'] - prev) / prev * 100).round(2)
+        combined_history.loc[mask, 'Close_vs_PrevClose_Pct'] = combined_history.loc[mask, 'Daily_Gain_Loss_Pct']
+        # mx_percent_decline: percent difference between previous close and the day's low
+        combined_history.loc[mask, 'mx_percent_decline'] = ((prev - combined_history.loc[mask, 'Low']) / prev * 100).round(2)
     
     # Apply date transformation using datetime to ensure 'yyyy-mm-dd' format
     combined_history['Date'] = combined_history['Date'].apply(lambda x: x.strftime('%Y-%m-%d') if hasattr(x, 'strftime') else str(x))
@@ -143,11 +122,11 @@ def extract_all_historical_data():
     column_order = [
         'Date_add', 'Weekday', 'Symbol', 'Open', 'High', 'Low', 'Close', 'Previous_Close',
         'Daily_Gain_Loss_Pct', 'Open_vs_PrevClose_Pct', 'Low_vs_PrevClose_Pct', 
-        'Close_vs_PrevClose_Pct', 'Max_Decline_Pct'
+        'Close_vs_PrevClose_Pct', 'mx_percent_decline'
     ] + [col for col in combined_history.columns if col not in [
         'Date_add', 'Weekday', 'Symbol', 'Open', 'High', 'Low', 'Close', 'Previous_Close',
         'Daily_Gain_Loss_Pct', 'Open_vs_PrevClose_Pct', 'Low_vs_PrevClose_Pct', 
-        'Close_vs_PrevClose_Pct', 'Max_Decline_Pct'
+        'Close_vs_PrevClose_Pct', 'mx_percent_decline'
     ]]
     combined_history = combined_history[column_order]
     
@@ -167,74 +146,7 @@ def load_historical_data():
     return pd.DataFrame()
 
 
-# =============================
-# TRANSFORM (DCA) - FROM HISTORICAL DATA
-# =============================
-def transform_weekly_from_historical(historical_data):
-    """Generate weekly DCA purchase history at $25/week on Mondays from consolidated historical data."""
-    all_weekly = []
-    
-    # Process each ticker separately
-    for ticker_symbol in historical_data['Symbol'].unique():
-        print(f"Processing weekly DCA for {ticker_symbol}...")
-        ticker_data = historical_data[historical_data['Symbol'] == ticker_symbol].copy()
-        ticker_data = ticker_data.sort_values('Date_add')
-        
-        # Convert Date_add to datetime using datetime library for more efficient grouping
-        def parse_and_group_date(date_str):
-            dt = datetime.strptime(date_str, '%Y-%m-%d')
-            return f"{dt.year}-{dt.isocalendar().week:02d}"
-        
-        ticker_data['year_week'] = ticker_data['Date_add'].apply(parse_and_group_date)
-        
-        weekly_purchases = []
-        
-        # Group by year-week and find Monday or closest trading day
-        for year_week, week_data in ticker_data.groupby('year_week'):
-            week_data = week_data.sort_values('Date_add')
-            
-            # Use datetime library to find Monday more efficiently
-            monday_data = []
-            for _, row in week_data.iterrows():
-                dt = datetime.strptime(row['Date_add'], '%Y-%m-%d')
-                if dt.weekday() == 0:  # Monday = 0 in datetime
-                    monday_data.append(row)
-            
-            if monday_data:
-                # Use the first Monday found
-                selected_day = monday_data[0]
-            else:
-                # If no Monday, use the first trading day of the week
-                selected_day = week_data.iloc[0]
-            
-            weekly_purchases.append(selected_day)
-        
-        if not weekly_purchases:
-            continue
-            
-        purchases_df = pd.DataFrame(weekly_purchases)
-        
-        purchases = purchases_df[[
-            'Date_add', 'Symbol', 'Open', 'High', 'Low', 'Close', 'Previous_Close',
-            'Week', 'Weekday', 'avg_daily_price'
-        ]].copy()
-
-        purchases['Strategy'] = 'DCA_Weekly'
-        purchases['Buy_Price'] = purchases['avg_daily_price']
-        purchases['Buy_Level'] = 'DCA'
-        purchases['Shares Purchased'] = (weekly_investment / purchases['avg_daily_price']).round(6)
-        purchases['Dollars Invested'] = weekly_investment
-        purchases['Cumulative Shares'] = purchases['Shares Purchased'].cumsum()
-        purchases['Cumulative Invested'] = purchases['Dollars Invested'].cumsum()
-        purchases['Cumulative Value'] = (purchases['Cumulative Shares'] * purchases['Close']).round(2)
-
-        result_df = purchases[['Date_add', 'Weekday', 'Symbol', 'Strategy', 'Buy_Price', 'Buy_Level', 'Shares Purchased', 'Dollars Invested', 'Cumulative Shares', 'Cumulative Invested', 'Cumulative Value', 'Close', 'Previous_Close']]
-        all_weekly.append(result_df)
-    
-    if not all_weekly:
-        return pd.DataFrame()
-    
-    return pd.concat(all_weekly, ignore_index=True)
+# (DCA transform removed - DCA calculations are performed client-side in JS)
 
 
 # =============================
@@ -263,20 +175,35 @@ def transform_buy_on_dip_from_historical(historical_data):
             # Skip first day of each ticker (no previous close)
             if pd.isna(previous_close):
                 continue
-            
-            for level in sorted(dip_levels):  # Ensure buy levels are processed from smallest to largest
+
+            # Generate percent levels from 1% to dip_max_pct (1%, 2%, ...)
+            for pct in range(dip_step_pct, dip_max_pct + 1, dip_step_pct):
+                # level multiplier e.g., for pct=1 -> 0.99
+                level = 1.0 - (pct / 100.0)
                 # Calculate target price based on PREVIOUS DAY'S CLOSE (limit order set previous night)
                 target_price = previous_close * level
+                # If the day's low reached or went below the limit price, the order would fill
                 if low_price <= target_price:
+                    # Simulate fills occurring at each limit level as the market moves down.
+                    # Use the level's target price as the executed price (limit orders fill at the limit or better).
+                    # Using the day's low for all fills caused every level to show the same executed price;
+                    # using target_price preserves distinct execution prices per level.
+                    executed_price = target_price
+                    # Executed level (percent decline from previous close to executed price)
+                    executed_level = round((1.0 - (executed_price / previous_close)) * 100, 2) if previous_close and previous_close != 0 else None
                     purchased_list.append({
                         'Date_add': date,
                         'Weekday': weekday,
                         'Symbol': row['Symbol'],
                         'Strategy': 'Buy_on_Dip',
+                        # Buy_Price remains the limit price derived from previous close
                         'Buy_Price': round(target_price, 6),
-                        'Buy_Level': f"{(1 - level) * 100:.0f}%",
+                        'Buy_Level': f"{pct}%",
+                        'Executed_Price': round(executed_price, 6),
+                        'Executed_Level': executed_level,
                         'Shares Purchased': 1,
-                        'Dollars Invested': round(target_price, 6),
+                        # Dollars invested should reflect the actual executed price
+                        'Dollars Invested': round(executed_price, 6),
                         'Close': close_price,
                         'Previous_Close': previous_close
                     })
@@ -285,12 +212,23 @@ def transform_buy_on_dip_from_historical(historical_data):
             continue
 
         df_bod = pd.DataFrame(purchased_list)
-        df_bod = df_bod.sort_values(['Date_add', 'Buy_Level']).reset_index(drop=True)
+        if df_bod.empty:
+            continue
+        # Within a day, sort fills by Buy_Price descending so higher-price fills (smaller dips)
+        # are recorded first as the market falls.
+        df_bod = df_bod.sort_values(['Date_add', 'Buy_Price'], ascending=[True, False]).reset_index(drop=True)
         df_bod['Cumulative Shares'] = df_bod['Shares Purchased'].cumsum()
         df_bod['Cumulative Invested'] = df_bod['Dollars Invested'].cumsum()
         df_bod['Cumulative Value'] = (df_bod['Cumulative Shares'] * df_bod['Close']).round(2)
         
-        result_df = df_bod[['Date_add', 'Weekday', 'Symbol', 'Strategy', 'Buy_Price', 'Buy_Level', 'Shares Purchased', 'Dollars Invested', 'Cumulative Shares', 'Cumulative Invested', 'Cumulative Value', 'Close', 'Previous_Close']]
+        # Include executed fields if present
+        cols = ['Date_add', 'Weekday', 'Symbol', 'Strategy', 'Buy_Price', 'Buy_Level']
+        if 'Executed_Price' in df_bod.columns:
+            cols += ['Executed_Price']
+        if 'Executed_Level' in df_bod.columns:
+            cols += ['Executed_Level']
+        cols += ['Shares Purchased', 'Dollars Invested', 'Cumulative Shares', 'Cumulative Invested', 'Cumulative Value', 'Close', 'Previous_Close']
+        result_df = df_bod[cols]
         all_bod.append(result_df)
     
     if not all_bod:
@@ -319,23 +257,20 @@ def load_data(df, ticker_symbol, strategy):
 def main():
     """Main ETL process: Extract all historical data first, then calculate strategies."""
     
-    # Phase 1: Extract or load all historical data
-    historical_data = load_historical_data()
+    # Phase 1: Always extract all historical data and overwrite the consolidated CSV
+    print("Phase 1: Regenerating consolidated historical data (will overwrite existing file if present)...")
+    historical_data = extract_all_historical_data()
     if historical_data.empty:
-        historical_data = extract_all_historical_data()
-        if historical_data.empty:
-            print("No historical data available. Exiting.")
-            return
+        print("No historical data available after extraction. Exiting.")
+        return
     
     print(f"Phase 2: Processing strategies from {len(historical_data)} historical records...")
     
-    # Phase 2: Calculate strategies from historical data
-    weekly_df = transform_weekly_from_historical(historical_data)
+    # Phase 2: Calculate Buy-on-Dip strategy from historical data
     bod_df = transform_buy_on_dip_from_historical(historical_data)
-    
-    # Phase 3: Save strategy results
+
+    # Phase 3: Save Buy-on-Dip results
     consolidations = [
-        (weekly_df, 'all_dca_weekly'),
         (bod_df, 'all_buy_on_dip'),
     ]
 
@@ -345,10 +280,19 @@ def main():
         dollar_cols = [
             'Buy_Price', 'Dollars Invested', 'Cumulative Invested', 'Cumulative Value', 'Close', 'Previous_Close'
         ]
+        # Add executed price/level to dollar and percent formatting
+        if 'Executed_Price' in df.columns:
+            dollar_cols.append('Executed_Price')
+        percent_cols = []
+        if 'Executed_Level' in df.columns:
+            percent_cols.append('Executed_Level')
         for col in share_cols:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').round(5)
         for col in dollar_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').round(2)
+        for col in percent_cols:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce').round(2)
         return df

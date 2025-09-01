@@ -124,6 +124,11 @@
             background-color: var(--orange) !important;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
+        /* Keep active button orange even while hovered */
+        .period-btn.active:hover {
+            background-color: var(--orange) !important;
+            transform: none !important;
+        }
 
         #download-analysis-btn:hover:not(:disabled) {
             background-color: var(--light-blue) !important;
@@ -268,12 +273,12 @@
     <h2>Simulating a $25/week Investment (first trading day of each week at average daily price)</h2>
     
     <!-- Ticker Metrics Grid -->
-    <div id="ticker-metrics-grid" class="ticker-metrics-grid" style="display: none;">
+    <div id="ticker-metrics-grid" class="ticker-metrics-grid" style="display: grid;">
         <!-- Ticker boxes will be populated here by JavaScript -->
     </div>
     
     <!-- Selected Ticker Display and Period Selection -->
-    <div id="ticker-selection-area" style="text-align: center; margin: 15px 0; display: none;">
+    <div id="ticker-selection-area" style="text-align: center; margin: 15px 0; display: block;">
         <!-- Compact layout: Selection, Period buttons, and Download all on same line -->
         <div style="display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
             <h3 id="selected-ticker-display" style="color: var(--blue); margin: 0;">Selected: ALL Tickers</h3>
@@ -325,62 +330,68 @@
         document.getElementById('progress-text').textContent = text;
     }
     
-    // Function to populate ticker metrics boxes
+    // Function to populate simple ticker boxes (no metrics) to keep UI responsive
     function populateTickerBoxes(processedData, period) {
         const tickerGrid = document.getElementById('ticker-metrics-grid');
-        
-        // Calculate summary data for each ticker
-        const summaryArr = Object.keys(processedData).map(ticker => {
-            const tickerResults = processedData[ticker] || [];
-            if (tickerResults.length > 0) {
-                const last = tickerResults[tickerResults.length - 1];
-                const pct = percentGain(last.cumulativeValue, last.cumulativeInvested);
-                const pctFloat = parseFloat(pct);
-                return { 
-                    ticker, 
-                    pct: pctFloat, 
-                    pctStr: pct
-                };
-            }
-            return null;
-        }).filter(Boolean);
-        
-        // Sort by performance (best to worst)
-        summaryArr.sort((a, b) => b.pct - a.pct);
-        
-        // Clear existing boxes
         tickerGrid.innerHTML = '';
-        
+
         // Add ALL box first
         const allBox = document.createElement('div');
         allBox.className = 'ticker-box clickable-ticker';
         allBox.dataset.ticker = 'ALL';
-        allBox.innerHTML = `
-            <div class="ticker-symbol">ALL</div>
-            <div class="ticker-gain" style="color: var(--blue);">View All</div>
-        `;
+        allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
         tickerGrid.appendChild(allBox);
-        
-        // Create individual ticker boxes
-        summaryArr.forEach(item => {
+
+        // Create individual ticker boxes (symbols only)
+        Object.keys(processedData).sort().forEach(ticker => {
             const box = document.createElement('div');
             box.className = 'ticker-box clickable-ticker';
-            box.dataset.ticker = item.ticker;
-            
-            const isPositive = item.pct >= 0;
-            const gainClass = isPositive ? 'positive' : 'negative';
-            
-            box.innerHTML = `
-                <div class="ticker-symbol">${item.ticker}</div>
-                <div class="ticker-gain ${gainClass}">${item.pctStr}</div>
-            `;
-            
+            box.dataset.ticker = ticker;
+            box.innerHTML = `<div class="ticker-symbol">${ticker}</div>`;
+            box.addEventListener('click', function() {
+                selectTicker(ticker);
+            });
             tickerGrid.appendChild(box);
         });
+
+        // Center grid if fewer than 7 boxes
+        try {
+            const visibleBoxes = tickerGrid.children.length;
+            if (visibleBoxes > 0 && visibleBoxes < 7) {
+                tickerGrid.style.gridTemplateColumns = `repeat(${visibleBoxes}, 1fr)`;
+                tickerGrid.style.justifyContent = 'center';
+            } else {
+                tickerGrid.style.gridTemplateColumns = '';
+                tickerGrid.style.justifyContent = '';
+            }
+        } catch (e) { }
+
+        // Re-apply visual selection if any
+        try {
+            if (currentSelectedTicker) {
+                const selBox = document.querySelector(`.ticker-box[data-ticker="${currentSelectedTicker}"]`);
+                if (selBox) selBox.classList.add('selected');
+            }
+        } catch (e) { }
         
         // Show the grid and selection area
         tickerGrid.style.display = 'grid';
         document.getElementById('ticker-selection-area').style.display = 'block';
+
+        // If there are fewer than 7 boxes, center them by reducing the number of columns
+        try {
+            const visibleBoxes = tickerGrid.children.length;
+            if (visibleBoxes > 0 && visibleBoxes < 7) {
+                tickerGrid.style.gridTemplateColumns = `repeat(${visibleBoxes}, 1fr)`;
+                tickerGrid.style.justifyContent = 'center';
+            } else {
+                // Restore default behavior
+                tickerGrid.style.gridTemplateColumns = '';
+                tickerGrid.style.justifyContent = '';
+            }
+        } catch (e) {
+            // ignore
+        }
         
         // Add click handlers to all ticker boxes
         document.querySelectorAll('.clickable-ticker').forEach(box => {
@@ -389,6 +400,14 @@
                 selectTicker(ticker);
             });
         });
+
+        // Re-apply previously selected ticker so visual selection persists across period changes
+        try {
+            if (currentSelectedTicker) {
+                const selBox = document.querySelector(`.ticker-box[data-ticker="${currentSelectedTicker}"]`);
+                if (selBox) selBox.classList.add('selected');
+            }
+        } catch (e) { /* ignore */ }
     }
     
     // Global variables to track selection
@@ -399,11 +418,8 @@
     function selectTicker(ticker) {
         currentSelectedTicker = ticker;
         
-        // If selecting a specific ticker (not ALL), automatically set to YTD and analyze
-        if (ticker !== 'ALL') {
-            currentSelectedPeriod = 'YTD';
-            updatePeriodButtonStates('ytd-btn');
-        }
+        // Do not change the currentSelectedPeriod when user selects a ticker.
+        // This keeps ticker and period controls independent.
         
         // Update visual selection
         document.querySelectorAll('.ticker-box').forEach(box => {
@@ -427,9 +443,15 @@
         // Reset download button
         document.getElementById('download-analysis-btn').disabled = true;
         
-        // If selecting a specific ticker, automatically analyze with YTD
-        if (ticker !== 'ALL') {
-            analyzeSelection();
+    // Show loading immediately so users get feedback while the fetch/processing starts
+    try { showLoading(); } catch (e) { }
+
+    // Trigger analysis for the new selection but do NOT change the current period.
+        // If ALL is selected, run the multi-ticker period analysis; otherwise render the single-ticker chart.
+        if (ticker === 'ALL') {
+            renderPeriodAnalysis(currentSelectedPeriod);
+        } else {
+            renderChart(currentSelectedTicker, currentSelectedPeriod);
         }
     }
     
@@ -455,13 +477,12 @@
             const rawData = await fetchData();
             
             updateProgress(40, 'Processing ticker data...');
-            // Group data by ticker
+            // Group data by ticker (but if a single ticker is selected, only process that ticker)
             const tickerGroups = {};
-            rawData.forEach(row => {
+            const rowsToGroup = (currentSelectedTicker && currentSelectedTicker !== 'ALL') ? rawData.filter(r => r.Symbol === currentSelectedTicker) : rawData;
+            rowsToGroup.forEach(row => {
                 const ticker = row.Symbol;
-                if (!tickerGroups[ticker]) {
-                    tickerGroups[ticker] = [];
-                }
+                if (!tickerGroups[ticker]) tickerGroups[ticker] = [];
                 tickerGroups[ticker].push(row);
             });
 
@@ -770,8 +791,10 @@
     
     // Fetch and parse CSV data
     async function fetchData() {
-        const url = '../data/history_tickers.csv';
-        const response = await fetch(url + '?v=' + Date.now(), { cache: 'no-store' });
+    // Cache parsed CSV in memory to avoid refetching large CSV repeatedly
+    if (window._cachedRawData) return window._cachedRawData;
+    const url = '../data/history_tickers.csv';
+    const response = await fetch(url, { cache: 'no-store' });
         if (!response.ok) {
             console.error('Failed to fetch CSV:', url, response.status, response.statusText);
             return [];
@@ -788,7 +811,8 @@
             headers.forEach((h, i) => obj[h] = values[i] ?? '');
             return obj;
         });
-        return data;
+    window._cachedRawData = data;
+    return data;
     }
 
     // Calculate weekly DCA strategy for a specific ticker with custom date range
@@ -1113,34 +1137,60 @@
 
     
     // Period analysis button event listeners
-    document.getElementById('ytd-btn').addEventListener('click', function() {
+    document.getElementById('ytd-btn').addEventListener('click', async function() {
         currentSelectedPeriod = 'YTD';
         updatePeriodButtonStates('ytd-btn');
-        analyzeSelection();
+        try { showLoading(); } catch (e) { }
+        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
+            // Fast path: render only the selected ticker with new period
+            await renderChart(currentSelectedTicker, currentSelectedPeriod);
+        } else {
+            await renderPeriodAnalysis(currentSelectedPeriod);
+        }
     });
-    
-    document.getElementById('5y-btn').addEventListener('click', function() {
+
+    document.getElementById('5y-btn').addEventListener('click', async function() {
         currentSelectedPeriod = '5Y';
         updatePeriodButtonStates('5y-btn');
-        analyzeSelection();
+        try { showLoading(); } catch (e) { }
+        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
+            await renderChart(currentSelectedTicker, currentSelectedPeriod);
+        } else {
+            await renderPeriodAnalysis(currentSelectedPeriod);
+        }
     });
-    
-    document.getElementById('10y-btn').addEventListener('click', function() {
+
+    document.getElementById('10y-btn').addEventListener('click', async function() {
         currentSelectedPeriod = '10Y';
         updatePeriodButtonStates('10y-btn');
-        analyzeSelection();
+        try { showLoading(); } catch (e) { }
+        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
+            await renderChart(currentSelectedTicker, currentSelectedPeriod);
+        } else {
+            await renderPeriodAnalysis(currentSelectedPeriod);
+        }
     });
-    
-    document.getElementById('15y-btn').addEventListener('click', function() {
+
+    document.getElementById('15y-btn').addEventListener('click', async function() {
         currentSelectedPeriod = '15Y';
         updatePeriodButtonStates('15y-btn');
-        analyzeSelection();
+        try { showLoading(); } catch (e) { }
+        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
+            await renderChart(currentSelectedTicker, currentSelectedPeriod);
+        } else {
+            await renderPeriodAnalysis(currentSelectedPeriod);
+        }
     });
-    
-    document.getElementById('20y-btn').addEventListener('click', function() {
+
+    document.getElementById('20y-btn').addEventListener('click', async function() {
         currentSelectedPeriod = '20Y';
         updatePeriodButtonStates('20y-btn');
-        analyzeSelection();
+        try { showLoading(); } catch (e) { }
+        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
+            await renderChart(currentSelectedTicker, currentSelectedPeriod);
+        } else {
+            await renderPeriodAnalysis(currentSelectedPeriod);
+        }
     });
     
     // Function to update period button visual states

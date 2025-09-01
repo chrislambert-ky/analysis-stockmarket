@@ -161,6 +161,43 @@
                 padding: 0.5rem 0.5rem;
             }
         }
+        /* Period button styles (match DCA page) */
+        #download-analysis-btn, #calculate-btn, .period-btn {
+            transition: all 0.3s ease;
+        }
+
+        .period-btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: var(--bright-green);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+
+        .period-btn:hover:not(:disabled) {
+            background-color: #7dd35e !important;
+            transform: translateY(-1px);
+        }
+
+        .period-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            background-color: var(--gray) !important;
+        }
+
+        .period-btn.active {
+            background-color: var(--orange) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .period-btn.active:hover {
+            background-color: var(--orange) !important;
+            transform: none !important;
+        }
     </style>
 </head>
 <body>
@@ -176,9 +213,45 @@
     </nav>
     <h1>Buy-on-Dip Strategy - Per Ticker</h1>
     <h2>Buying 1 share for each percent drop (1-5%) using limit orders at predetermined prices</h2>
+    <div id="period-controls" style="text-align:center; margin:12px 0;">
+        <button id="ytd-btn" class="period-btn">YTD</button>
+        <button id="5y-btn" class="period-btn">5 Years</button>
+        <button id="10y-btn" class="period-btn">10 Years</button>
+        <button id="15y-btn" class="period-btn">15 Years</button>
+        <button id="20y-btn" class="period-btn">20 Years</button>
+    </div>
     <div id="charts-root"></div>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
+    // Period control state
+    let currentPeriod = 'YTD';
+
+    // Small helper to format Date as YYYY-MM-DD
+    function formatDateToYMD(d) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // Return {startDate, endDate} as YYYY-MM-DD strings for a given period and reference end date
+    function getPeriodRange(periodName, endDateStr) {
+        const endDate = endDateStr ? new Date(endDateStr) : new Date();
+        let startDate = new Date(endDate);
+        if (periodName === 'YTD') {
+            startDate = new Date(endDate.getFullYear(), 0, 1);
+        } else if (periodName === '5Y') {
+            startDate.setFullYear(endDate.getFullYear() - 5);
+        } else if (periodName === '10Y') {
+            startDate.setFullYear(endDate.getFullYear() - 10);
+        } else if (periodName === '15Y') {
+            startDate.setFullYear(endDate.getFullYear() - 15);
+        } else if (periodName === '20Y') {
+            startDate.setFullYear(endDate.getFullYear() - 20);
+        }
+        return { startDate: formatDateToYMD(startDate), endDate: formatDateToYMD(endDate) };
+    }
+
     // Helper function to format currency with commas
     function formatCurrency(amount) {
         return '$' + amount.toLocaleString('en-US', {
@@ -198,19 +271,12 @@
         
         if (tickerResults.length === 0) {
             return {
-                totalWeeks: 0,
                 totalDips: 0,
                 totalInvested: 0,
                 totalValue: 0,
                 gainLoss: 0
             };
         }
-
-        // Calculate total weeks using the raw ticker data date range
-        const dates = rawTickerData.map(row => new Date(row.Date_add)).sort((a, b) => a - b);
-        const startDate = dates[0];
-        const endDate = dates[dates.length - 1];
-        const totalWeeks = Math.ceil((endDate - startDate) / (7 * 24 * 60 * 60 * 1000)) + 1;
 
         const lastResult = tickerResults[tickerResults.length - 1];
         const totalDips = lastResult.cumulativeShares;
@@ -219,7 +285,6 @@
         const gainLoss = totalValue - totalInvested;
 
         return {
-            totalWeeks,
             totalDips,
             totalInvested,
             totalValue,
@@ -234,10 +299,7 @@
         
         return `
             <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-label">Total Weeks</div>
-                    <div class="metric-value">${metrics.totalWeeks}</div>
-                </div>
+                    <!-- Total Weeks removed -->
                 <div class="metric-card">
                     <div class="metric-label">Total Dips/Purchases</div>
                     <div class="metric-value">${metrics.totalDips}</div>
@@ -285,29 +347,49 @@
             const today = sortedData[i];
             const yesterday = sortedData[i - 1];
             
-            const todayLow = parseFloat(today.Low);
-            const todayClose = parseFloat(today.Close);
-            const yesterdayClose = parseFloat(yesterday.Close);
-            
+            const todayLow = today.Low != null ? parseFloat(today.Low) : NaN;
+            const todayClose = today.Close != null ? parseFloat(today.Close) : NaN;
+            const yesterdayClose = yesterday.Close != null ? parseFloat(yesterday.Close) : NaN;
+
             let dayShares = 0;
             let dayInvested = 0;
 
-            // Check for dips at 1%, 2%, 3%, 4%, 5% levels
-            // We set limit orders at previous close * (1 - dip_percentage)
-            for (let dipLevel = 1; dipLevel <= 5; dipLevel++) {
-                const limitOrderPrice = yesterdayClose * (1 - dipLevel / 100);
-                
-                // Check if today's low reached our limit order price
-                if (todayLow <= limitOrderPrice) {
-                    dayShares += 1;
-                    dayInvested += limitOrderPrice;
+            // Prefer explicit fields from the data when available (these may come from a precomputed BOD CSV)
+            const explicitShares = (today['Shares Purchased'] != null) ? Number(today['Shares Purchased']) :
+                                   (today['Shares_Purchased'] != null) ? Number(today['Shares_Purchased']) :
+                                   (today.SharesPurchased != null) ? Number(today.SharesPurchased) : null;
+            const explicitInvested = (today['Dollars Invested'] != null) ? Number(today['Dollars Invested']) :
+                                     (today['Dollars_Invested'] != null) ? Number(today['Dollars_Invested']) :
+                                     (today.DollarsInvested != null) ? Number(today.DollarsInvested) : null;
+            const explicitBuyPrice = (today['Buy_Price'] != null) ? Number(today['Buy_Price']) :
+                                     (today.Buy_Price != null) ? Number(today.Buy_Price) :
+                                     (today.BuyPrice != null) ? Number(today.BuyPrice) : null;
+
+            if (explicitShares != null || explicitInvested != null) {
+                // Use explicit numbers if present
+                dayShares = explicitShares != null ? explicitShares : 0;
+                dayInvested = explicitInvested != null ? explicitInvested : (explicitBuyPrice != null ? explicitBuyPrice * dayShares : 0);
+            } else if (explicitBuyPrice != null) {
+                // If only a buy price is provided, assume 1 share purchased unless Shares provided
+                dayShares = 1;
+                dayInvested = explicitBuyPrice;
+            } else {
+                // Fallback: compute by checking the low against previous close (limit orders at 1-5%)
+                if (!isNaN(todayLow) && !isNaN(yesterdayClose)) {
+                    for (let dipLevel = 1; dipLevel <= 5; dipLevel++) {
+                        const limitOrderPrice = yesterdayClose * (1 - dipLevel / 100);
+                        if (todayLow <= limitOrderPrice) {
+                            dayShares += 1;
+                            dayInvested += limitOrderPrice;
+                        }
+                    }
                 }
             }
 
             if (dayShares > 0) {
                 cumulativeShares += dayShares;
                 cumulativeInvested += dayInvested;
-                
+
                 results.push({
                     date: today.Date_add,
                     close: todayClose,
@@ -315,7 +397,7 @@
                     investedThisDay: dayInvested,
                     cumulativeShares: cumulativeShares,
                     cumulativeInvested: cumulativeInvested,
-                    cumulativeValue: cumulativeShares * todayClose
+                    cumulativeValue: (!isNaN(todayClose) ? cumulativeShares * todayClose : null)
                 });
             }
         }
@@ -353,7 +435,7 @@
             }
         ];
     }
-    async function renderAllCharts() {
+    async function renderAllCharts(period = 'YTD') {
         const rawData = await fetchData();
         
         // Group data by ticker
@@ -366,10 +448,19 @@
             tickerGroups[ticker].push(row);
         });
 
-        // Calculate buy-on-dip results for each ticker
+        // Apply timeframe filter using period and reference end date
+        const historyDates = rawData.map(r => r.Date_add).filter(Boolean).sort();
+        const referenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : new Date().toISOString().slice(0,10);
+        const range = getPeriodRange(period, referenceEnd);
+
+        // Calculate buy-on-dip results for each ticker using filtered rows
         const processedData = {};
         Object.keys(tickerGroups).forEach(ticker => {
-            processedData[ticker] = calculateBuyOnDip(tickerGroups[ticker]);
+            const rows = tickerGroups[ticker].filter(r => {
+                if (!range.startDate || !range.endDate) return true;
+                return r.Date_add >= range.startDate && r.Date_add <= range.endDate;
+            });
+            processedData[ticker] = calculateBuyOnDip(rows);
         });
 
         // Get tickers and sort by percent return (descending)
@@ -385,7 +476,7 @@
             return { ticker, pct };
         }).sort((a, b) => b.pct - a.pct).map(obj => obj.ticker);
 
-        const allDates = getAllDates(processedData);
+    const allDates = getAllDates(processedData);
         const root = document.getElementById('charts-root');
         root.innerHTML = '';
 
@@ -445,15 +536,20 @@
                     formatter: function(params) {
                         let html = params[0].axisValue + '<br/>';
                         params.forEach(p => {
+                            // Avoid printing Value/Invested/Shares here to prevent duplication; we'll show them in the consolidated summary below
+                            if (p.seriesName.includes('Value') || p.seriesName.includes('Invested') || p.seriesName.includes('Shares')) return;
                             let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
-                            if (typeof val === 'number' && (p.seriesName.includes('Value') || p.seriesName.includes('Invested'))) {
-                                val = formatCurrency(val);
-                            }
                             html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
                         });
                         const key = params[0].axisValue;
                         if (gainLookup[key]) {
-                            html += '<b>% Gain: ' + percentGain(gainLookup[key].value, gainLookup[key].invested) + '</b><br/>';
+                            const info = gainLookup[key];
+                            const investedStr = (info.invested != null) ? formatCurrency(info.invested) : '';
+                            const valueStr = (info.value != null) ? formatCurrency(info.value) : '';
+                            const sharesStr = (info.shares != null) ? info.shares : '';
+                            html += '<b>Invested: ' + investedStr + ' &nbsp; Value: ' + valueStr + '</b><br/>';
+                            if (sharesStr !== '') html += '<b>Shares: ' + sharesStr + '</b><br/>';
+                            html += '<b>% Gain: ' + percentGain(info.value, info.invested) + '</b><br/>';
                         }
                         return html;
                     }
@@ -466,7 +562,22 @@
             chart.setOption(option);
         }
     }
-    renderAllCharts();
+
+    // Wire up period buttons
+    function setActivePeriodButton(id) {
+        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    document.getElementById('ytd-btn').addEventListener('click', async () => { currentPeriod = 'YTD'; setActivePeriodButton('ytd-btn'); await renderAllCharts('YTD'); });
+    document.getElementById('5y-btn').addEventListener('click', async () => { currentPeriod = '5Y'; setActivePeriodButton('5y-btn'); await renderAllCharts('5Y'); });
+    document.getElementById('10y-btn').addEventListener('click', async () => { currentPeriod = '10Y'; setActivePeriodButton('10y-btn'); await renderAllCharts('10Y'); });
+    document.getElementById('15y-btn').addEventListener('click', async () => { currentPeriod = '15Y'; setActivePeriodButton('15y-btn'); await renderAllCharts('15Y'); });
+    document.getElementById('20y-btn').addEventListener('click', async () => { currentPeriod = '20Y'; setActivePeriodButton('20y-btn'); await renderAllCharts('20Y'); });
+
+    // Initial render (YTD)
+    setActivePeriodButton('ytd-btn');
+    renderAllCharts('YTD');
     </script>
 </body>
 </html>
