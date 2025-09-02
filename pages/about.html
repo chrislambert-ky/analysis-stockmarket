@@ -76,142 +76,58 @@
     </section>
 
     <section>
-        <h2>Recent Enhancements</h2>
+        <h2>Project Overview</h2>
+        <p>This toolkit provides interactive simulations and visualizations to compare two common retail strategies:</p>
         <ul>
-            <li><strong>Advanced Market Analytics:</strong> Enhanced week-over-week analysis for DCA strategy now calculates success based on total weeks available in selected date range, providing more accurate market trend insights.</li>
-            <li><strong>Professional Design System:</strong> Implemented consistent CSS styling across all strategy pages with unified navigation classes (.main-nav, .nav-link) and standardized title/subtitle formatting.</li>
-            <li><strong>Precision Date Filtering:</strong> All analytics calculations now properly filter data within user-selected date ranges, ensuring accurate time-period analysis for all metrics.</li>
-            <li><strong>Enhanced User Experience:</strong> Improved mobile responsiveness and consistent styling patterns across all 8 analysis pages for seamless navigation.</li>
+            <li><strong>Dollar Cost Averaging (DCA)</strong> — periodic fixed-dollar investments (default: weekly). The frontend simulates weekly purchases, aggregates shares purchased and money invested, and plots cumulative invested vs portfolio value for the selected timeframe.</li>
+            <li><strong>Buy‑on‑Dip (BOD)</strong> — night‑before limit orders placed at previous close minus N% (configurable 1%–10%). A level is marked filled for a day when that day’s Low ≤ limit price. The frontend can use the precomputed <code>data/all_buy_on_dip.csv</code> fast‑path or recompute fills from <code>data/history_tickers.csv</code>.</li>
         </ul>
-    </section>
 
-    
-
-    <section>
-        <h2>Project: Stock Market Investment Strategy Analysis</h2>
+        <h3>How calculations are produced</h3>
+        <p>Calculations are implemented by a two-step flow:</p>
         <ol>
-            <li><strong>Data Collection:</strong> Retrieve historical stock price data using Yahoo Finance API (yfinance) for major ETFs and individual stocks.</li>
-            <li><strong>Strategy Implementation:</strong> Implement Dollar Cost Averaging (DCA) and Buy-on-Dip (BOD) investment strategies with configurable parameters.</li>
-            <li><strong>Performance Analysis:</strong> Calculate portfolio values, gains/losses, and compare strategy effectiveness across different market conditions.</li>
-            <li><strong>Visualization:</strong> Create interactive charts using ECharts library to display portfolio growth, purchase timing, and strategy comparisons.</li>
-            <li><strong>Advanced Calculators:</strong> Provide customizable tools for testing different investment amounts, timeframes, and trigger conditions.</li>
+            <li><strong>ETL (Python)</strong> — <code>etl-market-data.py</code> pulls OHLCV daily history (Yahoo via yfinance), normalizes rows and writes <code>data/history_tickers.csv</code>. When configured, the ETL also writes <code>data/all_buy_on_dip.csv</code> containing normalized BOD execution events.</li>
+            <li><strong>Frontend (JS)</strong> — pages load CSVs and perform timeframe filtering. All period‑filtered cumulatives (shares, invested, value) are recomputed on the client from per‑row fields so the charts and tooltips reflect only the user selected date range.</li>
         </ol>
-    </section>
 
-    <section>
-        <h2>Investment Strategies Analyzed</h2>
+        <h3>Data files used by the site</h3>
         <ul>
-            <li><strong>Dollar Cost Averaging (DCA):</strong> Regular periodic investments of a fixed dollar amount (for example weekly). The DCA pages simulate recurring purchases on a user-selected weekday and compute cumulative shares purchased, dollars invested, and portfolio value using historical close prices. Totals are calculated only within the chosen date range to produce accurate period-limited performance metrics.</li>
-            <li><strong>Buy-on-Dip (BOD):</strong> Triggered buys that execute when the market drops by a configured percent from the prior trading day's close (for example -1% through -10%). The BOD tools detect executions either by simulating intraday lows against limit order targets or by consuming precomputed buy events (the ETL outputs an <code>all_buy_on_dip.csv</code> with executed price/level for provenance). For each executed trade we track shares purchased, dollars invested, cumulative shares, portfolio value and one-week-forward profitability.</li>
-            <li><strong>Strategy Comparison:</strong> Side-by-side analysis of DCA vs BOD performance across tickers and timeframes with interactive charts and downloadable CSVs so you can verify calculations offline.</li>
-            <li><strong>Multi-Ticker Analysis:</strong> Compare strategy performance across multiple ETFs (QQQ, SPLG, XLG and others) simultaneously with unified charting and summary metrics.</li>
-            <li><strong>Advanced Calculators:</strong> Fully customizable tools allowing users to test investment amounts, schedules, decline thresholds, and date ranges; the advanced pages include quick-period buttons (YTD/5Y/10Y/15Y/20Y) and per-ticker drill-down views.</li>
-            <li><strong>Market Pattern Analysis:</strong> Metrics include up/down day counts, Monday→Friday success, and trade→next-week success to help evaluate short-term effectiveness of timed buys versus steady contributions.</li>
+            <li><code>data/history_tickers.csv</code> — per‑day OHLCV with weekday and helper fields.</li>
+            <li><code>data/all_buy_on_dip.csv</code> — precomputed BOD events (limit price, executed level/price, shares, dollars invested). The advanced BOD page uses this file when present for faster calculations.</li>
         </ul>
-    </section>
 
-    <section>
-        <h2>Advanced Analytics Features</h2>
+        <h3>Open, High, Low, Close, Volume — what each field means</h3>
+        <p>Below are plain-language definitions for the daily fields that appear in the CSVs and on the site (these are not abbreviated here):</p>
         <ul>
-            <li><strong>Up Days vs Down Days:</strong> Analysis of daily market direction by comparing opening to closing prices within selected date ranges, showing trend patterns and market volatility.</li>
-            <li><strong>Monday-Friday Success Rate:</strong> Measures how often buying at Monday's close and selling at Friday's close would be profitable, revealing weekly market cycles and trading patterns.</li>
-            <li><strong>Week-over-Week Profitability:</strong> 
-                <ul>
-                    <li><strong>DCA Strategy:</strong> Analyzes market performance between consecutive weeks based on total weeks available in the selected date range, not just investment weeks.</li>
-                    <li><strong>BOD Strategy:</strong> Tracks individual trade profitability after one week from execution, measuring trade timing effectiveness.</li>
-                </ul>
-            </li>
-            <li><strong>Date Range Filtering:</strong> All metrics are calculated based on user-selected start and end dates, ensuring accurate analysis within chosen time periods.</li>
-            <li><strong>Customizable Parameters:</strong> DCA tools allow selection of investment day (Monday-Friday) and any investment amount; BOD tools support up to 10 different decline percentages with custom share quantities.</li>
-            <li><strong>Real-time Calculations:</strong> Instant strategy recalculation as users modify parameters, with live chart updates and immediate metric refreshes.</li>
-            <li><strong>Detailed Trade Tracking:</strong> Complete transaction history with precise purchase prices, decline percentages, and cumulative performance metrics.</li>
+            <li><strong>Open</strong> — the price of the first trade recorded for the symbol on that trading day.</li>
+            <li><strong>High</strong> — the highest trade price reached for the symbol during that trading day.</li>
+            <li><strong>Low</strong> — the lowest trade price reached for the symbol during that trading day.</li>
+            <li><strong>Close</strong> — the price of the last trade at market close for that trading day. (Some datasets also include an <em>Adjusted Close</em> that corrects historical prices for splits and dividends; this site uses the unadjusted Close for day-by-day calculations unless an adjusted field is present and noted.)</li>
+            <li><strong>Volume</strong> — the total number of shares traded for the symbol during that trading day (raw share count).</li>
         </ul>
-    </section>
 
-    <section>
-        <h2>Technical Implementation</h2>
+        <p>How the site uses these fields: the Dollar Cost Averaging tools use an average daily price (derived from the daily prices) for simulated purchases and use the Close price to compute portfolio value and percent gain; the Buy-on-Dip tools compare the previous day's Close to the day's Low to determine whether a limit order at a percentage below the previous Close would have executed.</p>
+
+        <h3>User guidance</h3>
         <ul>
-            <li><strong>Data Processing:</strong> Python ETL pipeline using pandas and yfinance for historical data collection, with enhanced CSV generation including weekday analysis and price averaging.</li>
-            <li><strong>Frontend Framework:</strong> Responsive HTML/CSS/JavaScript with ECharts 5.x for interactive visualizations and professional design system.</li>
-            <li><strong>Calculation Engine:</strong> Advanced JavaScript-based portfolio calculations with precise currency formatting, trade tracking, and market pattern analysis.</li>
-            <li><strong>User Interface:</strong> Professional design system with unified CSS styling, consistent navigation classes (.main-nav, .nav-link), and standardized title/subtitle formatting across all 8 analysis pages for seamless user experience.</li>
-            <li><strong>Mobile Optimization:</strong> Responsive design ensuring accessibility across all device types with adaptive navigation and optimized layouts.</li>
-            <li><strong>Advanced Metrics:</strong> Real-time calculation of market patterns including daily trends, weekly cycles, and short-term profitability analysis.</li>
-            <li><strong>Data Export:</strong> Comprehensive CSV export functionality with detailed transaction history, trade execution details, and performance metrics.</li>
+            <li>Default page state: <strong>ALL</strong> tickers + <strong>YTD</strong>.</li>
+            <li>Period and ticker choices are independent after load — selecting a ticker does not reset the period and vice‑versa.</li>
+            <li>Tooltips and metrics are calculated from rows in the chosen timeframe. Cumulative portfolio value = sum(shares) × close price on each date; cumulative invested = running sum of 'Dollars Invested'.</li>
         </ul>
-    </section>
 
-     <div class="social-links">
-        <a href="https://github.com/chrislambert-ky/analysis-stockmarket" target="_blank" rel="noopener noreferrer" title="GitHub" style="margin-left:18px;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="vertical-align:middle;margin-right:8px;"><rect width="24" height="24" rx="4" fill="#181717"/><path d="M12 5.3c-3.7 0-6.7 3-6.7 6.7 0 3 2 5.5 4.7 6.4.3.1.4-.1.4-.3v-1.1c-1.9.4-2.3-.8-2.3-.8-.3-.7-.7-.9-.7-.9-.6-.4 0-.4 0-.4.7 0 1 .7 1 .7.6 1 1.6.7 2 .5.1-.4.2-.7.4-.8-1.5-.2-3-.7-3-3.2 0-.7.2-1.2.6-1.7 0-.2-.2-.7.1-1.4 0 0 .5-.2 1.7.6.5-.1 1-.2 1.5-.2s1 .1 1.5.2c1.2-.8 1.7-.6 1.7-.6.3.7.1 1.2.1 1.4.4.5.6 1 .6 1.7 0 2.5-1.5 3-3 3.2.2.2.4.5.4 1.1v1.6c0 .2.1.4.4.3 2.7-.9 4.7-3.4 4.7-6.4 0-3.7-3-6.7-6.7-6.7Z" fill="#fff"/></svg>
-        Stock Market Analysis Toolkit
-        </a>
-    </div>
-
-    <section>
-        <h2>Data Sources and Methodology</h2>
-        <br>
-        <p style="text-align:left;">
-        This project analyzes historical stock market data to compare the effectiveness of different investment strategies.
-        The analysis uses real historical price data from Yahoo Finance to simulate how these strategies would have performed over various time periods.
-        <br>
-        <strong>Note:</strong> Dividend payments are <em>not</em> included in this analysis, as the dataset does not contain dividend information. All calculations are based solely on historical price data and do not account for dividends, transaction fees, taxes, or other real-world trading costs.
-        <br>
-        <br><br>
-        The goal is to provide educational insights into long-term investment strategies and help users understand the potential benefits and risks of systematic investing approaches.
-        This toolkit is designed for educational purposes and to demonstrate data analysis and web development skills.
-        </p>
-
-        <ul>
-            <li><strong>Data Source:</strong> Yahoo Finance historical price data via yfinance Python library.</li>
-            <li><strong>Analysis Period:</strong> Configurable date ranges with focus on multi-year performance comparisons.</li>
-            <li><strong>Strategy Simulation:</strong> Precise calculation of share purchases, portfolio values, and performance metrics.</li>
-            <li><strong>Visualization:</strong> Interactive charts showing portfolio growth, purchase timing, and comparative analysis.</li>
-            <li><strong>Export Functionality:</strong> CSV download capability for detailed transaction history and further analysis.</li>
-            <li><strong>Mobile Optimization:</strong> Responsive design ensuring accessibility across all device types.</li>
-        </ul>
+        <h3>Advanced BOD notes</h3>
+        <p>The advanced BOD tool lets users map share quantities to decline thresholds (1%–10%). When <code>data/all_buy_on_dip.csv</code> exists the page filters those precomputed events by ticker, date range, and decline-level to build the running totals and chart.</p>
     </section>
 
     <section>
-        <h2>ETF & Stock Summary</h2>
-        <p>Below is an overview of selected ETFs and equities in our portfolio:</p>
-        
-        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <thead>
-                <tr style="background-color: var(--light-blue); color: white;">
-                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Ticker</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Name & Strategy</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>TQQQ</strong></td><td style="padding: 8px; border: 1px solid #ddd;">ProShares UltraPro QQQ – 3× daily leveraged exposure to NASDAQ-100 (short-term use only).</td></tr>
-                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>UPRO</strong></td><td style="padding: 8px; border: 1px solid #ddd;">ProShares UltraPro S&P 500 – 3× daily leveraged exposure to the S&P 500 (short-term use only).</td></tr>
-                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>GGLL</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Direxion Daily GOOGL Bull 2× – Leverages Alphabet's daily returns.</td></tr>
-                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>MSFU</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Direxion Daily MSFT Bull – 2× (or possibly 1.5×) leveraged returns of Microsoft stock.</td></tr>
-                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>QQQ</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Invesco QQQ – Nasdaq-100 index fund; tech-heavy, low-cost, long-term exposure.</td></tr>
-                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>FBCG</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Fidelity Blue Chip Growth ETF – Actively managed large-cap growth equity ETF.</td></tr>
-                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>QTOP</strong></td><td style="padding: 8px; border: 1px solid #ddd;">iShares Nasdaq Top 30 ETF – Tracks top 30 NASDAQ-100 companies.</td></tr>
-                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>MGK</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Vanguard Mega Cap Growth ETF – Mega-cap U.S. growth stocks exposure.</td></tr>
-                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>VGT</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Vanguard Information Technology ETF – Broad tech-sector index fund across all market caps.</td></tr>
-                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>SPLG</strong></td><td style="padding: 8px; border: 1px solid #ddd;">SPDR Portfolio S&P 500 ETF – Low-cost S&P 500 index tracker.</td></tr>
-                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>XLG</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Invesco S&P 500 Top 50 ETF – Concentrated top-50 S&P 500 companies exposure.</td></tr>
-                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>TOPT</strong></td><td style="padding: 8px; border: 1px solid #ddd;">iShares Top 20 U.S. Stocks ETF – Focuses on the 20 largest U.S. companies.</td></tr>
-                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>MSFT</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Microsoft Corp – Large-cap tech and cloud services leader.</td></tr>
-                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>GOOGL</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Alphabet Inc. (Class A) – Parent of Google; ad and AI giant.</td></tr>
-                <tr><td style="padding: 8px; border: 1px solid #ddd;"><strong>HSBC</strong></td><td style="padding: 8px; border: 1px solid #ddd;">HSBC Holdings plc – Global banking and financial services.</td></tr>
-                <tr style="background-color: #f9f9f9;"><td style="padding: 8px; border: 1px solid #ddd;"><strong>ALLY</strong></td><td style="padding: 8px; border: 1px solid #ddd;">Ally Financial Inc. – Digital-first auto finance and banking services.</td></tr>
-            </tbody>
-        </table>
+        <h2>Project & Source</h2>
+        <p>Repository: <a href="https://github.com/chrislambert-ky/analysis-stockmarket" target="_blank" rel="noopener">github.com/chrislambert-ky/analysis-stockmarket</a></p>
+        <p>Run the ETL to update the CSVs: <code>python etl-market-data.py</code> (uses yfinance/pandas).</p>
     </section>
 
-    <section>
-        <h2>Educational Purpose</h2>
-        <p style="text-align:left;">
-        This project serves as both a learning exercise in web development and a practical tool for understanding investment strategies.
-        It demonstrates skills in data analysis, JavaScript programming, responsive web design, and financial calculation methodologies.
-        The interactive nature of the tools helps users visualize how different approaches to investing might perform under various market conditions.
-        </p>
-    </section>
+    <footer style="margin: 24px 0; font-size:0.95rem; color:#555;">
+        <p>Questions or issues? Open an issue on the GitHub repo or contact via the links above.</p>
+    </footer>
 
 </body>
 </html>

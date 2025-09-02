@@ -234,7 +234,22 @@
         }
         #chartContainer {
             margin-top: 20px;
-            height: 500px;
+            height: 60vh;
+            min-height: 300px;
+            max-height: 700px;
+        }
+
+        /* Mobile menu toggle - hidden on larger screens */
+        #mobileMenuBtn {
+            display: none;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
         }
         .help-text {
             font-size: 12px;
@@ -258,6 +273,8 @@
                 text-align: center;
                 border-radius: 0;
             }
+            #mobileMenuBtn { display: inline-block; }
+            .main-nav.nav-closed .nav-link { display: none; }
         }
 
         @media (max-width: 400px) {
@@ -279,6 +296,7 @@
         <a class="nav-link" href="bod-strat.html">Advanced Buy-on-Dip</a>
         <a class="nav-link" href="about.html">About</a>
     </nav>
+    <button id="mobileMenuBtn" aria-expanded="false">Menu</button>
     
     <div>
         <h1>Advanced Buy-on-Dip Strategy</h1>
@@ -455,6 +473,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
+    // Mobile nav toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const nav = document.querySelector('.main-nav');
+        mobileBtn && mobileBtn.addEventListener('click', () => {
+            const closed = nav.classList.toggle('nav-closed');
+            mobileBtn.setAttribute('aria-expanded', (!closed).toString());
+        });
+
+        // Keep endDate defaulted to today (already attempted earlier)
+        try { document.getElementById('endDate').value = new Date().toISOString().split('T')[0]; } catch(e){}
+    });
+
+    // Keep track of charts for responsive resizing
+    const _responsiveCharts = [];
     let stockData = [];
     let allBodEvents = []; // precomputed buy-on-dip events (fast-path)
     let calculationResults = [];
@@ -869,7 +902,9 @@
         const totalInvested = results.map(r => r.totalInvested);
         const stockPrices = results.map(r => r.close);
         
-        const chart = echarts.init(document.getElementById('chart'));
+    const chartEl = document.getElementById('chart');
+    const chart = echarts.init(chartEl);
+    _responsiveCharts.push(chart);
         
         const option = {
             title: {
@@ -951,9 +986,13 @@
         
         chart.setOption(option);
         
-        // Resize chart when window resizes
+        // Resize all tracked charts on viewport changes
+        let _resizeTimer = null;
         window.addEventListener('resize', () => {
-            chart.resize();
+            if (_resizeTimer) clearTimeout(_resizeTimer);
+            _resizeTimer = setTimeout(() => {
+                _responsiveCharts.forEach(c => c.resize());
+            }, 120);
         });
     }
 

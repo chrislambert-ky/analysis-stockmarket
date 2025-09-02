@@ -82,32 +82,47 @@
             margin-left: 0.5em;
         }
 
-        /* Period Selection Styles */
+        /* Period button styles (match BOD page) */
+        #download-analysis-btn, #calculate-btn, .period-btn {
+            transition: all 0.3s ease;
+        }
+
         .period-selection {
             text-align: center;
             margin: 20px 0;
         }
 
         .period-btn {
-            background-color: var(--gray);
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: var(--bright-green);
             color: white;
             border: none;
-            padding: 8px 16px;
-            margin: 0 5px;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            transition: all 0.3s ease;
+            font-size: 0.95em;
         }
 
-        .period-btn:hover {
-            background-color: var(--blue);
+        .period-btn:hover:not(:disabled) {
+            background-color: #7dd35e !important;
             transform: translateY(-1px);
         }
 
+        .period-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            background-color: var(--gray) !important;
+        }
+
         .period-btn.active {
-            background-color: var(--orange);
-            color: white;
+            background-color: var(--orange) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .period-btn.active:hover {
+            background-color: var(--orange) !important;
+            transform: none !important;
         }
 
         /* Loading Progress Styles */

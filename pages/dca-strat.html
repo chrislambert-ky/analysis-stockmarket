@@ -268,7 +268,23 @@
         }
         #chartContainer {
             margin-top: 20px;
-            height: 500px;
+            /* Use viewport-relative sizing so charts scale on small devices */
+            height: 60vh;
+            min-height: 300px;
+            max-height: 700px;
+        }
+
+        /* Mobile menu toggle - hidden on larger screens */
+        #mobileMenuBtn {
+            display: none;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
         }
 
         /* Responsive Design for Navigation */
@@ -286,6 +302,9 @@
                 text-align: center;
                 border-radius: 0;
             }
+            /* show a compact menu button and allow toggling nav visibility */
+            #mobileMenuBtn { display: inline-block; }
+            .main-nav.nav-closed .nav-link { display: none; }
         }
 
         @media (max-width: 400px) {
@@ -307,6 +326,7 @@
         <a class="nav-link" href="bod-strat.html">Advanced Buy-on-Dip</a>
         <a class="nav-link" href="about.html">About</a>
     </nav>
+    <button id="mobileMenuBtn" aria-expanded="false">Menu</button>
     
     <div>
         <h1>Advanced Dollar Cost Averaging Strategy</h1>
@@ -416,6 +436,18 @@
 
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
+    // Simple mobile nav toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const nav = document.querySelector('.main-nav');
+        mobileBtn && mobileBtn.addEventListener('click', () => {
+            const closed = nav.classList.toggle('nav-closed');
+            mobileBtn.setAttribute('aria-expanded', (!closed).toString());
+        });
+    });
+
+    // Track charts created on the page so we can resize them on viewport changes
+    const _responsiveCharts = [];
     let stockData = [];
     let calculationResults = [];
 
@@ -721,7 +753,10 @@
         const totalInvested = results.map(r => r.totalInvested);
         const stockPrices = results.map(r => r.close);
         
-        const chart = echarts.init(document.getElementById('chart'));
+    const chartEl = document.getElementById('chart');
+    const chart = echarts.init(chartEl);
+    // remember chart instances for responsive resize
+    _responsiveCharts.push(chart);
         
         const option = {
             title: {
@@ -793,6 +828,15 @@
         
         chart.setOption(option);
     }
+
+    // Resize charts on window resize / orientation change
+    let _resizeTimeout = null;
+    window.addEventListener('resize', () => {
+        if (_resizeTimeout) clearTimeout(_resizeTimeout);
+        _resizeTimeout = setTimeout(() => {
+            _responsiveCharts.forEach(c => c.resize());
+        }, 150);
+    });
 
     function downloadCSV() {
         if (!calculationResults || calculationResults.trades.length === 0) {

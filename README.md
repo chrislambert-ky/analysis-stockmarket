@@ -109,65 +109,90 @@ analysis-stockmarket/
   - **DCA Strategy**: Analyzes market performance between consecutive weeks based on total weeks available in the selected date range, not just investment weeks
   - **BOD Strategy**: Tracks individual trade profitability after one week from execution, measuring trade timing effectiveness
 - **Date Range Filtering**: All metrics are calculated based on user-selected start and end dates, ensuring accurate analysis within chosen time periods
+# Stock Market Analysis Toolkit
 
-### Customizable Strategy Parameters
-- **DCA Advanced Calculator**: 
-  - Selectable investment day (Monday through Friday)
-  - Any investment amount ($1 to unlimited)
-  - Flexible date ranges for backtesting
-- **BOD Advanced Calculator**:
-  - Up to 10 different decline percentages (1%-10%)
-  - Custom share quantities for each decline threshold
-  - Precise limit order simulation based on daily low prices
+Interactive tools for analyzing Dollar Cost Averaging (DCA) and Buy‑on‑Dip (BOD) strategies using historical market data.
 
-### Real-time Analytics
-- **Instant Recalculation**: Strategy metrics update immediately as users modify parameters
-- **Live Chart Updates**: Interactive ECharts visualizations refresh automatically with parameter changes
-- **Detailed Trade Tracking**: Complete transaction history with precise purchase prices, decline percentages, and cumulative performance metrics
+This repository contains a small ETL pipeline that collects OHLCV history and a set of client pages that simulate and visualize DCA and BOD strategies across multiple tickers and timeframes.
 
-## �💾 Data Sources and Methodology
+Quick links
+- Local site entry: `index.html`
+- Pages: `pages/dca.html`, `pages/bod.html`, `pages/dca-strat.html`, `pages/bod-strat.html`, `pages/dca-tickers.html`, `pages/bod-tickers.html`, `pages/about.html`
+- ETL: `etl-market-data.py` (generates `data/history_tickers.csv` and `data/all_buy_on_dip.csv`)
 
-This project analyzes historical stock market data to compare the effectiveness of different investment strategies. The analysis uses real historical price data from Yahoo Finance to simulate how these strategies would have performed over various time periods.
+Minimum requirements
+- Python 3.8+
+- pip packages: see `requirements.txt`
+- A modern browser for the frontend (ECharts)
 
-**Key Features:**
-- Strategy simulation with precise calculation of share purchases, portfolio values, and performance metrics
-- Interactive charts showing portfolio growth, purchase timing, and comparative analysis
-- CSV download capability for detailed transaction history and further analysis
-- Mobile optimization ensuring accessibility across all device types
+Getting started (local)
+1. Clone the repo and enter it:
+  ```powershell
+  git clone https://github.com/chrislambert-ky/analysis-stockmarket.git
+  cd analysis-stockmarket
+  ```
 
-## 🎯 Educational Purpose
+2. Create and use your python venv, then install deps:
+  ```powershell
+  python -m venv .venv
+  .\.venv\Scripts\pip.exe install -r requirements.txt
+  ```
 
-This project serves as both a learning exercise in web development and a practical tool for understanding investment strategies. It demonstrates skills in data analysis, JavaScript programming, responsive web design, and financial calculation methodologies. The interactive nature of the tools helps users visualize how different approaches to investing might perform under various market conditions.
+3. Run the ETL to regenerate CSVs:
+  ```powershell
+  .\.venv\Scripts\python.exe .\etl-market-data.py
+  ```
+  This will overwrite `data/history_tickers.csv` and `data/all_buy_on_dip.csv`.
 
-## 🚀 Getting Started
+4. Serve the site (simple static server) and open the pages:
+  ```powershell
+  .\.venv\Scripts\python.exe -m http.server 8000
+  # Open http://localhost:8000/pages/dca.html and pages/bod.html
+  ```
 
-### Prerequisites
-- Python 3.7+
-- Node.js (for development)
-- Web browser
+What each page does
+- `pages/dca.html` — Interactive DCA overview, per‑ticker chart and single‑ticker analysis.
+- `pages/dca-tickers.html` — Grid of per‑ticker DCA mini‑charts (YTD default).
+- `pages/dca-strat.html` — Advanced DCA configurator (custom weekly amounts, day selection).
+- `pages/bod.html` — Buy‑on‑Dip overview (grid of tickers, per‑ticker detail, timeframe controls).
+- `pages/bod-tickers.html` — Grid of per‑ticker BOD mini‑charts (YTD default).
+- `pages/bod-strat.html` — Advanced BOD configurator (configure declines 1%–10% and share quantities). Uses `data/all_buy_on_dip.csv` fast‑path when available.
+- `pages/about.html` — Project explanation, methodology, contact.
 
-### Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/chrislambert-ky/analysis-stockmarket.git
-   cd analysis-stockmarket
-   ```
+Data files (produced by ETL)
+- `data/history_tickers.csv` — Per‑ticker daily OHLC (Date_add), weekday and auxiliary fields used to compute time‑filtered metrics.
+- `data/all_buy_on_dip.csv` — Precomputed buy‑on‑dip events (Buy_Price, Buy_Level, Executed_Price/Executed_Level, Shares Purchased, Dollars Invested, Cumulative fields). The frontend can use this file as a fast path for advanced strategy simulations.
 
-2. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+Key implementation notes
+- The ETL script (`etl-market-data.py`) pulls historical OHLC data and writes normalized CSVs. It intentionally overwrites `data/history_tickers.csv` on each run to ensure tickers in the current list are used.
+- Frontend recomputes cumulative invested/value from per‑row 'Shares Purchased' and 'Dollars Invested' within the user selected timeframe (period buttons). This avoids carrying full-history cumulative values into time‑filtered views.
+- BOD semantics:
+  - Night‑before limit orders at previous close − N% for N in 1..configured max.
+  - A level is considered filled if the day Low ≤ target_limit.
+  - Executed_Price recorded as the level's target price (so multiple fills on a single day remain distinct).
+- UI performance:
+  - CSV parsing is cached per page load.
+  - When a single ticker is selected, the frontend takes a fast path and processes only that ticker's rows on period changes.
 
-3. Run the ETL script to collect data:
-   ```bash
-   python etl-market-data.py
-   ```
+UX conventions used across pages
+- Default selection on load: ALL tickers + YTD period.
+- Period and ticker controls are independent after load: selecting a ticker does not reset the period and vice‑versa.
+- Tooltips show period‑filtered cumulative Invested and Value and the number of Shares (no plotted shares series).
 
-4. Open `index.html` in your web browser or serve with a local web server
+Troubleshooting
+- If a page appears blank after local edits, ensure the HTML file is present and that the browser console shows no JS exceptions. Use the `.venv` python server to serve files and inspect network requests for CSV files.
+- To force the ETL to include current tickers, edit the etf_list in `etl-market-data.py` and re-run it (the script overwrites `data/history_tickers.csv` each run).
 
-## ETF & Stock Summary
+Contributing / notes
+- This is a personal project; PRs and issues are welcome. For larger performance improvements, consider generating per‑ticker JSON outputs from the ETL to eliminate CSV parsing in the browser.
 
-Below is an overview of selected ETFs and equities in our portfolio:
+License
+- MIT License (see LICENSE)
+
+
+ETF & Stock Summary
+
+Below is an overview of selected ETFs and equities analyzed in this project:
 
 | Ticker | Name & Strategy |
 |--------|------------------|
@@ -188,20 +213,6 @@ Below is an overview of selected ETFs and equities in our portfolio:
 | **HSBC** | HSBC Holdings plc – Global banking and financial services. |
 | **ALLY** | Ally Financial Inc. – Digital-first auto finance and banking services. |
 
-## 🤝 Contributing
-
-This is a personal learning project, but suggestions and feedback are welcome! Feel free to open issues or submit pull requests.
-
-## 📞 Connect
-
-- **LinkedIn**: [Chris Lambert](https://www.linkedin.com/in/chrislambertky/)
-- **GitHub**: [@chrislambert-ky](https://github.com/chrislambert-ky)
-- **X.com**: [@ChrisLambertKY](https://x.com/ChrisLambertKY)
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-**About the Developer**: IT Project Manager, Data Analyst, Python ETL Developer, SQL Developer (Google BigQuery, Oracle), BI Dashboard Developer (Looker Studio, Tableau, PowerBI), and Investment Strategy Enthusiast.
+Contact
+- LinkedIn: https://www.linkedin.com/in/chrislambertky/
+- GitHub: https://github.com/chrislambert-ky
