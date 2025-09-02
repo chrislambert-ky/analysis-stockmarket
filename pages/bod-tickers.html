@@ -77,47 +77,7 @@
             margin-bottom: 0.5em;
         }
 
-        /* Metrics Grid Styles */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e0e1e1;
-        }
-
-        .metric-card {
-            background: white;
-            padding: 1rem;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-            border: 1px solid #e0e1e1;
-        }
-
-        .metric-label {
-            font-size: 0.9rem;
-            color: var(--dark-gray);
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        .metric-value {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--blue);
-        }
-
-        .metric-value.positive {
-            color: var(--bright-green);
-        }
-
-        .metric-value.negative {
-            color: var(--red);
-        }
+    /* Shared metric styles moved to css/ticker-metrics.css */
 
         /* Heading Styles */
         h1 {
@@ -199,6 +159,7 @@
             transform: none !important;
         }
     </style>
+    <link rel="stylesheet" href="../css/ticker-metrics.css">
 </head>
 <body>
     <nav>
@@ -314,7 +275,7 @@
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">Gain/Loss</div>
-                    <div class="metric-value ${gainLossClass}">${formatCurrency(metrics.gainLoss)}</div>
+                    <div class="metric-value ${gainLossClass}">${percentGain(metrics.totalValue, metrics.totalInvested)}</div>
                 </div>
             </div>
         `;

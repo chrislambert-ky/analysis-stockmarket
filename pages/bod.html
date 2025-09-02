@@ -148,6 +148,20 @@
         .ticker-count { font-size: 1.1rem; font-weight: bold; color: var(--dark-gray); }
         .period-btn { padding: 10px 20px; margin: 0 5px; background-color: var(--bright-green); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.95em; }
         .period-btn.active { background-color: var(--orange) !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        /* Metric grid/card shared styles (consistent with dca/bod-tickers) */
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+        @media (max-width: 900px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .metric-grid { grid-template-columns: repeat(1, 1fr); } }
+        .metric-card { background: white; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #e6e6e6; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .metric-label { font-size: 0.85rem; color: #666; margin-bottom: 6px; }
+        .metric-value { font-size: 1.1rem; font-weight: bold; color: var(--blue); }
+        .metric-value.positive { color: var(--bright-green); }
+        .metric-value.negative { color: var(--red); }
     </style>
     <!-- PapaParse for robust CSV parsing -->
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -211,8 +225,8 @@
     let cachedBodData = null;
     // Global selected ticker from the grid (default ALL)
     let selectedTickerGlobal = 'ALL';
-    // Active period (e.g. 'YTD', '5Y', '10Y', etc.)
-    let activePeriod = null;
+    // Active period (e.g. 'YTD', '5Y', '10Y', etc.) - default to YTD so users see data on load
+    let activePeriod = 'YTD';
 
     // Helper: format Date object as YYYY-MM-DD
     function formatDateToYMD(d) {
@@ -330,24 +344,11 @@
             
             metricDiv.innerHTML = `
                 <h4 style="margin: 0 0 10px 0; color: var(--blue); font-size: 1.2rem; text-align: center;">${metric.ticker}</h4>
-                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; text-align: center;">
-                    <!-- Total Weeks removed -->
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${metric.totalDipsPurchases}</div>
-                        <div style="font-size: 0.9em; color: #666;">Total Dips/Purchases</div>
-                    </div>
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${formatCurrency(metric.totalInvested)}</div>
-                        <div style="font-size: 0.9em; color: #666;">Total Invested</div>
-                    </div>
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${formatCurrency(metric.totalValue)}</div>
-                        <div style="font-size: 0.9em; color: #666;">Total Value</div>
-                    </div>
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: ${gainColor};">${formatCurrency(metric.gainAmount)} (${metric.gainPercent}%)</div>
-                        <div style="font-size: 0.9em; color: #666;">Gain/Loss</div>
-                    </div>
+                <div class="metric-grid">
+                    <div class="metric-card"><div class="metric-label">Total Dips/Purchases</div><div class="metric-value">${metric.totalDipsPurchases}</div></div>
+                    <div class="metric-card"><div class="metric-label">Total Invested</div><div class="metric-value">${formatCurrency(metric.totalInvested)}</div></div>
+                    <div class="metric-card"><div class="metric-label">Total Value</div><div class="metric-value">${formatCurrency(metric.totalValue)}</div></div>
+                    <div class="metric-card"><div class="metric-label">Gain/Loss</div><div class="metric-value ${gainColor === '#28a745' ? 'positive' : 'negative'}">${formatCurrency(metric.gainAmount)} (${metric.gainPercent}%)</div></div>
                 </div>
             `;
             
@@ -486,14 +487,25 @@
     async function populateBodTickerDropdown() {
         try {
             const historicalData = await fetchHistoricalData();
-            // Default period is YTD so the grid shows YTD counts on load
-            if (!activePeriod) activePeriod = 'YTD';
+            // Ensure defaults: show ALL and YTD on load
+            selectedTickerGlobal = selectedTickerGlobal || 'ALL';
+            activePeriod = activePeriod || 'YTD';
             // Build ticker grid similar to DCA page (buildTickerGrid will compute counts using activePeriod)
             await buildTickerGrid(historicalData);
             document.getElementById('ticker-metrics-grid').style.display = '';
             document.getElementById('ticker-selection-area').style.display = '';
             // Enable download
             document.getElementById('download-analysis-btn').disabled = false;
+            // ensure ALL box is visually selected and render initial chart for ALL
+            try {
+                const allBox = document.querySelector('#ticker-metrics-grid [data-ticker="ALL"]');
+                if (allBox) {
+                    document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
+                    allBox.classList.add('selected');
+                }
+            } catch (e) { /* ignore */ }
+            // Render initial chart for ALL using the default period
+            renderChart('ALL');
         } catch (err) {
             console.error(err);
         }

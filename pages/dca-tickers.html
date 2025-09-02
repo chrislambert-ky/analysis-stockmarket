@@ -200,7 +200,9 @@
                 padding: 0.5rem 0.5rem;
             }
         }
+    /* metric card styles extracted to css/ticker-metrics.css */
     </style>
+    <link rel="stylesheet" href="../css/ticker-metrics.css">
 </head>
 <body>
     <nav>
@@ -481,27 +483,41 @@
                 const container = document.createElement('div');
                 container.className = 'chart-container';
                 
-                // Calculate overall metrics for this ticker
-                let summary = '';
+                // Calculate overall metrics for this ticker and render metric cards
                 let weeksCount = 0;
                 let totalInvested = 0;
                 let totalValue = 0;
                 let totalShares = 0;
-                
+
                 if (tickerResults.length > 0) {
                     const last = tickerResults[tickerResults.length - 1];
                     weeksCount = tickerResults.length;
                     totalInvested = last.cumulativeInvested;
                     totalValue = last.cumulativeValue;
                     totalShares = last.cumulativeShares;
-                    const pct = percentGain(totalValue, totalInvested);
-                    summary = `<span style="color:#007700;font-size:1rem;">${ticker} Overall % Gain: <b>${pct}</b> | Weeks: ${weeksCount} | Shares: ${totalShares.toFixed(4)} | Invested: ${formatCurrency(totalInvested)} | Value: ${formatCurrency(totalValue)}</span>`;
                 }
-                
-                // Title
+
+                // Title with metric cards
                 const title = document.createElement('div');
                 title.className = 'chart-title';
-                title.innerHTML = `Ticker: <span id="ticker-symbol">${ticker}</span> <span class="ticker-label">Growth of $25/week (first available trading day)</span><br/>${summary}`;
+                title.innerHTML = `Ticker: <span id="ticker-symbol">${ticker}</span> <span class="ticker-label">Growth of $25/week (first available trading day)</span>`;
+
+                // Metric cards container - use metric-label/metric-value classes and color the gain/lose value
+                const gainNumeric = (totalValue || 0) - (totalInvested || 0);
+                const gainClass = gainNumeric >= 0 ? 'metric-value positive' : 'metric-value negative';
+                const metricsHtml = `
+                    <div class="metric-grid">
+                        <div class="metric-card"><div class="metric-label">Total Weeks</div><div class="metric-value">${weeksCount}</div></div>
+                        <div class="metric-card"><div class="metric-label">Total Invested</div><div class="metric-value">${formatCurrency(totalInvested || 0)}</div></div>
+                        <div class="metric-card"><div class="metric-label">Total Value</div><div class="metric-value">${formatCurrency(totalValue || 0)}</div></div>
+                        <div class="metric-card"><div class="metric-label">Gain/Loss</div><div class="${gainClass}">${percentGain(totalValue || 0, totalInvested || 0) || '0.00%'}</div></div>
+                    </div>
+                `;
+                const metricsContainer = document.createElement('div');
+                metricsContainer.innerHTML = metricsHtml;
+                // Append title and metrics
+                container.appendChild(title);
+                container.appendChild(metricsContainer);
                 container.appendChild(title);
                 
                 // Chart div

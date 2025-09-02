@@ -1,0 +1,29 @@
+/* Shared metric/card styles for ticker pages */
+.metric-grid, .metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e1e1;
+}
+@media (max-width: 900px) {
+  .metric-grid, .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .metric-grid, .metrics-grid { grid-template-columns: repeat(1, 1fr); }
+}
+.metric-card {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.metric-label { font-size: 0.85rem; color: #666; margin-bottom: 6px; }
+.metric-value { font-size: 1.1rem; font-weight: bold; color: var(--blue); }
+.metric-value.positive { color: var(--bright-green); }
+.metric-value.negative { color: var(--red); }
