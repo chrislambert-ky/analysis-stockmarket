@@ -140,6 +140,11 @@
         .ticker-box:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-color: var(--blue); }
         .ticker-box.selected { background: linear-gradient(135deg, var(--bright-green) 0%, #7bc143 100%); border-color: var(--bright-green); color: white; }
         .ticker-symbol { font-size: 1.0rem; font-weight: bold; color: var(--blue); margin-bottom: 3px; }
+    .clickable-ticker { cursor: pointer; }
+    .clickable-ticker:hover { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); }
+    .ticker-gain { font-size: 0.95rem; font-weight: bold; }
+    .ticker-gain.positive { color: var(--bright-green); }
+    .ticker-gain.negative { color: var(--red); }
         .ticker-count { font-size: 1.1rem; font-weight: bold; color: var(--dark-gray); }
         .period-btn { padding: 10px 20px; margin: 0 5px; background-color: var(--bright-green); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.95em; }
         .period-btn.active { background-color: var(--orange) !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
@@ -887,6 +892,27 @@
     
     // Initial setup: populate ticker grid
     populateBodTickerDropdown();
+    </script>
+    <script>
+    (function() {
+        try {
+            // Ensure the main grid uses the unified class
+            const grid = document.getElementById('ticker-metrics-grid');
+            if (grid && !grid.classList.contains('ticker-metrics-grid')) grid.classList.add('ticker-metrics-grid');
+
+            // Make existing child nodes adopt ticker-box classes
+            Array.from(document.querySelectorAll('#ticker-metrics-grid > *')).forEach(child => {
+                if (!child.classList.contains('ticker-box')) child.classList.add('ticker-box');
+                if (!child.classList.contains('clickable-ticker')) child.classList.add('clickable-ticker');
+                if (!child.querySelector('.ticker-symbol')) {
+                    const txt = child.dataset.ticker || child.textContent.trim().split(/\s+/)[0] || '';
+                    child.insertAdjacentHTML('afterbegin', `<div class="ticker-symbol">${txt}</div>`);
+                }
+            });
+        } catch (e) {
+            console.error('applyBodTickerStyles', e);
+        }
+    })();
     </script>
 </body>
 </html>
