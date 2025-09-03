@@ -528,6 +528,14 @@
                 return obj;
             });
             
+            // IMPORTANT: Note about cumulative fields
+            // The precomputed `all_buy_on_dip.csv` file may include cumulative fields
+            // such as `Cumulative Shares` and `Cumulative Invested`. These are
+            // intended only for troubleshooting and auditing. Do NOT use those
+            // cumulatives directly in UI charts or period summaries. Instead,
+            // filter per-event rows to the user's timeframe and recompute totals
+            // (sum shares, sum dollars invested, use last close in period for value).
+            // See docs/ai-instruction.md for the official rule.
             // Populate ticker dropdown
             const tickers = [...new Set(stockData.map(row => row.Symbol))].sort();
             const select = document.getElementById('tickerSelect');
@@ -552,6 +560,22 @@
                             const values = row.split(',').map(v => (v ?? '').trim());
                             const obj = {};
                             headers2.forEach((h, i) => obj[h.trim()] = values[i] ?? '');
+                            // normalize date
+                            const rawDate = obj['Date_add'] || obj['Date'] || obj['date'] || '';
+                            try { obj.Date_add = rawDate ? new Date(rawDate).toISOString().slice(0,10) : ''; } catch(e) { obj.Date_add = rawDate; }
+                            // coerce numeric fields
+                            ['Buy_Price','Executed_Price','Low','Previous_Close','Close','Open','High','Dollars Invested','Dollars_Invested'].forEach(k => {
+                                if (obj[k] != null && obj[k] !== '') {
+                                    const n = Number(obj[k]); obj[k] = isNaN(n) ? obj[k] : n;
+                                }
+                            });
+                            // Remove audit-only cumulative fields if present in the precomputed CSV
+                            // These cumulative columns (if present) are for troubleshooting only and
+                            // must not be used directly by UI charts or period summaries. The UI
+                            // should recompute totals from per-event rows filtered to the timeframe.
+                            ['Cumulative Shares','Cumulative Invested','Cumulative Value','Cumulative Return','Cumulative Current Value'].forEach(k => {
+                                if (k in obj) delete obj[k];
+                            });
                             return normalizeBodEvent(obj);
                         });
                         console.log(`Loaded ${allBodEvents.length} precomputed BOD events`);
@@ -755,6 +779,17 @@
         if (!normalized.Date_add && normalized.date) normalized.Date_add = normalized.date;
         if (normalized['Executed Price']) normalized.Executed_Price = normalized['Executed Price'];
         if (normalized['Executed Level']) normalized.Executed_Level = normalized['Executed Level'];
+        // Normalize Date_add
+        try {
+            if (normalized.Date_add) normalized.Date_add = new Date(normalized.Date_add).toISOString().slice(0,10);
+        } catch(e) { /* keep existing */ }
+        // Coerce numeric fields
+        ['Low','Previous_Close','Close','Buy_Price','Executed_Price'].forEach(k => {
+            if (normalized[k] != null && normalized[k] !== '') {
+                const n = Number(normalized[k]);
+                normalized[k] = isNaN(n) ? normalized[k] : n;
+            }
+        });
         return normalized;
     }
 

@@ -177,9 +177,8 @@
         <a href="bod-strat.html">Advanced Buy-on-Dip</a>
         <a href="about.html">About</a>
     </nav>
-    <h1>Buy-on-Dip Strategy - Cumulative Shares, Value, and Invested</h1>
-    <h2>Simulating limit orders of 1 share for each percent drop (1-5%)<br>
-    Please allow for some delay when choosing a timeframe of 15 or 20 years.</h2>
+    <h1>Buy-on-Dip Strategy</h1>
+    <h2>Simulating limit orders of 1 share for each percent drop (1-5%). Use period buttons to change timeframe.</h2>
     <!-- Calculate button removed: period buttons execute the strategy -->
     <!-- Ticker grid to match DCA look -->
     <div id="ticker-metrics-grid" class="ticker-metrics-grid" style="display: grid;">
@@ -223,6 +222,14 @@
     <script>
     // Cached precomputed BOD data (loaded from data/all_buy_on_dip.csv)
     let cachedBodData = null;
+    // IMPORTANT: The CSV `data/all_buy_on_dip.csv` contains cumulative fields
+    // (e.g. `Cumulative Shares`, `Cumulative Invested`, `Cumulative Value`) that
+    // are intended for troubleshooting/auditing only. DO NOT use those cumulative
+    // fields directly in visualizations or period-based metrics. Always filter
+    // per-event rows to the user's selected timeframe and recompute totals from
+    // those filtered events. See docs/ai-instruction.md for the project rule.
+    // Last rendered filtered BOD events (so downloads match the chart when we computed from history)
+    let lastRenderedBodData = null;
     // Global selected ticker from the grid (default ALL)
     let selectedTickerGlobal = 'ALL';
     // Active period (e.g. 'YTD', '5Y', '10Y', etc.) - default to YTD so users see data on load
@@ -296,8 +303,14 @@
             
             if (tickerData.length === 0) return;
             // Compute totals from per-row data (so callers can pass filtered period data)
-            const totalShares = tickerData.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares Purchased'] ?? 1) || 0), 0);
-            const totalInvested = tickerData.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars Invested'] ?? r['Buy_Price']) || 0), 0);
+            const totalShares = tickerData.reduce((s, r) => {
+                const v = Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0);
+                return s + (isNaN(v) ? 0 : v);
+            }, 0);
+            const totalInvested = tickerData.reduce((s, r) => {
+                const v = Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0);
+                return s + (isNaN(v) ? 0 : v);
+            }, 0);
             const lastClose = tickerData.length ? Number(tickerData[tickerData.length - 1].Close) : null;
             const totalValue = (lastClose != null) ? totalShares * lastClose : null;
 
@@ -386,11 +399,15 @@
                     Strategy: row['Strategy'] ?? row['strategy'] ?? 'Buy_on_Dip',
                     'Buy_Price': row['Buy_Price'] != null ? Number(row['Buy_Price']) : null,
                     'Buy_Level': row['Buy_Level'] ?? row['Buy_Level'] ?? '',
-                    'Shares Purchased': row['Shares Purchased'] != null ? Number(row['Shares Purchased']) : 1,
-                    'Dollars Invested': row['Dollars Invested'] != null ? Number(row['Dollars Invested']) : null,
-                    'Cumulative Shares': row['Cumulative Shares'] != null ? Number(row['Cumulative Shares']) : null,
-                    'Cumulative Invested': row['Cumulative Invested'] != null ? Number(row['Cumulative Invested']) : null,
-                    'Cumulative Value': row['Cumulative Value'] != null ? Number(row['Cumulative Value']) : null,
+                    'Shares Purchased': row['Shares Purchased'] != null ? Number(row['Shares Purchased']) : (row['Shares_Purchased'] != null ? Number(row['Shares_Purchased']) : 0),
+                    'Dollars Invested': row['Dollars Invested'] != null ? Number(row['Dollars Invested']) : (row['Dollars_Invested'] != null ? Number(row['Dollars_Invested']) : null),
+                    // NOTE: Do NOT import cumulative columns from CSV into the UI dataset.
+                    // Those fields are global running totals and must not be used for
+                    // period-filtered visualizations. We'll recompute cumulatives below
+                    // from per-event rows when rendering charts and downloads.
+                    //'Cumulative Shares': row['Cumulative Shares'] != null ? Number(row['Cumulative Shares']) : null,
+                    //'Cumulative Invested': row['Cumulative Invested'] != null ? Number(row['Cumulative Invested']) : null,
+                    //'Cumulative Value': row['Cumulative Value'] != null ? Number(row['Cumulative Value']) : null,
                     'Close': row['Close'] != null ? Number(row['Close']) : null,
                     'Previous_Close': row['Previous_Close'] != null ? Number(row['Previous_Close']) : null
                 };
@@ -419,7 +436,11 @@
                 return {
                     Date_add: Date_add,
                     Symbol: row['Symbol'] ?? row['symbol'] ?? '',
-                    Close: row['Close'] != null ? Number(row['Close']) : null
+                    Close: row['Close'] != null ? Number(row['Close']) : null,
+                    Low: row['Low'] != null ? Number(row['Low']) : null,
+                    Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
+                    Open: row['Open'] != null ? Number(row['Open']) : null,
+                    High: row['High'] != null ? Number(row['High']) : null
                 };
             }).filter(r => r && r.Date_add);
             return cachedHistoryData;
@@ -431,55 +452,60 @@
     
     // Calculate Buy-on-Dip strategy for a specific ticker
     function calculateBuyOnDip(historicalData, ticker, startDate = '2015-09-01', endDate = '2025-09-01') {
+        // Support either Date_add or Date fields from different CSVs
         const tickerData = historicalData
-            .filter(row => row.Symbol === ticker && row.Date >= startDate && row.Date <= endDate)
-            .sort((a, b) => new Date(a.Date) - new Date(b.Date));
-        
+            .filter(row => row.Symbol === ticker && ((row.Date_add ?? row.Date) >= startDate) && ((row.Date_add ?? row.Date) <= endDate))
+            .sort((a, b) => new Date((a.Date_add ?? a.Date)) - new Date((b.Date_add ?? b.Date)));
+
         const results = [];
+        // Build cumulatives from per-event rows (do not trust CSV cumulatives)
         let cumulativeShares = 0;
         let cumulativeInvested = 0;
-        
+
         for (let i = 1; i < tickerData.length; i++) {
             const today = tickerData[i];
             const yesterday = tickerData[i - 1];
-            
-            const todayLow = parseFloat(today.Low);
-            const todayClose = parseFloat(today.Close);
-            const yesterdayClose = parseFloat(yesterday.Close);
-            
-            // Check for dips at 1%, 2%, 3%, 4%, 5% levels
-            // We set limit orders at previous close * (1 - dip_percentage)
+
+            const todayLow = Number(today.Low);
+            const todayClose = Number(today.Close);
+            const yesterdayClose = Number(yesterday.Close);
+
+            // Check for dips at 1%..5% levels. Limit orders are set at previous close * (1 - dip%)
             for (let dipLevel = 1; dipLevel <= 5; dipLevel++) {
                 const limitOrderPrice = yesterdayClose * (1 - dipLevel / 100);
-                
-                // Check if today's low reached our limit order price
-                if (todayLow <= limitOrderPrice) {
-                    // Buy 1 share at the exact limit order price
-                    const buyPrice = limitOrderPrice;
-                    cumulativeShares += 1;
-                    cumulativeInvested += buyPrice;
-                    
-                    const cumulativeValue = cumulativeShares * todayClose;
-                    
+
+                // If today's low reaches or goes below the limit price, the limit order executes
+                if (!isNaN(todayLow) && todayLow <= limitOrderPrice) {
+                    // Buy exactly 1 share per dip level (per product spec)
+                    const sharesBought = 1;
+                    const buyPrice = Number(limitOrderPrice.toFixed(2));
+                    const invested = Number((buyPrice * sharesBought).toFixed(2));
+
+                    cumulativeShares += sharesBought;
+                    cumulativeInvested += invested;
+
+                    const cumulativeValue = Number((cumulativeShares * todayClose).toFixed(2));
+
                     results.push({
-                        Date_add: today.Date,
-                        Weekday: new Date(today.Date).toLocaleDateString('en-US', { weekday: 'long' }),
+                        Date_add: today.Date_add ?? today.Date,
+                        Weekday: new Date(today.Date_add ?? today.Date).toLocaleDateString('en-US', { weekday: 'long' }),
                         Symbol: ticker,
                         Strategy: 'Buy_on_Dip',
-                        Buy_Price: buyPrice.toFixed(2),
+                        Buy_Price: buyPrice,
                         Buy_Level: dipLevel + '%',
-                        'Shares Purchased': 1,
-                        'Dollars Invested': buyPrice.toFixed(2),
+                        'Shares Purchased': sharesBought,
+                        'Dollars Invested': invested,
+                        // recomputed cumulatives (numbers)
                         'Cumulative Shares': cumulativeShares,
-                        'Cumulative Invested': cumulativeInvested.toFixed(2),
-                        'Cumulative Value': cumulativeValue.toFixed(2),
-                        Close: todayClose.toFixed(2),
-                        Previous_Close: yesterdayClose.toFixed(2)
+                        'Cumulative Invested': Number(cumulativeInvested.toFixed(2)),
+                        'Cumulative Value': cumulativeValue,
+                        Close: todayClose,
+                        Previous_Close: yesterdayClose
                     });
                 }
             }
         }
-        
+
         return results;
     }
     
@@ -549,7 +575,10 @@
                 document.getElementById('selected-ticker-display').textContent = 'Selected: ' + ticker;
                 // Default behavior: auto-run YTD when a ticker is selected so user sees initial results immediately
                 setPeriod('YTD');
-                renderChart(selectedTickerGlobal);
+                console.debug('Ticker clicked, running renderChart for', ticker);
+                renderChart(selectedTickerGlobal).then(()=>{
+                    console.debug('renderChart completed for', ticker);
+                }).catch(e=>console.error('renderChart error', e));
             });
             grid.appendChild(box);
         });
@@ -608,9 +637,17 @@
     document.getElementById('20y-btn').addEventListener('click', ()=>{ setPeriod('20Y'); renderChart(selectedTickerGlobal); });
 
     // Download CSV - will download currently displayed all_buy_on_dip filtered by selection
-    function downloadCSVForSelection() {
+    async function downloadCSVForSelection() {
     const selected = selectedTickerGlobal || 'ALL';
-    const rowsBase = cachedBodData.filter(r => selected === 'ALL' || r.Symbol === selected);
+    // Prefer the last-rendered filtered data (which may have been computed from history for single-ticker views).
+    let rowsBase = null;
+    if (lastRenderedBodData && lastRenderedBodData.length > 0) {
+        // Use lastRenderedBodData when it matches the selected ticker (or ALL)
+        rowsBase = lastRenderedBodData.filter(r => selected === 'ALL' || r.Symbol === selected);
+    }
+    if (!rowsBase || rowsBase.length === 0) {
+        rowsBase = (cachedBodData || []).filter(r => selected === 'ALL' || r.Symbol === selected);
+    }
     let rows = rowsBase;
     if (activePeriod && rowsBase.length) {
         const sorted = rowsBase.map(r => r.Date_add).filter(Boolean).sort();
@@ -621,7 +658,37 @@
         }
     }
         if (!rows || rows.length === 0) return;
-        const headers = Object.keys(rows[0]);
+        // Ensure Low and Previous_Close exist in export so users can verify the limit execution
+        // Attempt to enrich rows from history data when those fields are missing
+        try {
+            const history = await fetchHistoryData();
+            const historyIndex = {};
+            history.forEach(h => {
+                const key = (h.Symbol || '') + '|' + (h.Date_add || '');
+                historyIndex[key] = h;
+            });
+
+            rows = rows.map(r => {
+                const out = Object.assign({}, r);
+                if (out.Low == null || out.Low === '') {
+                    const key = (out.Symbol || '') + '|' + (out.Date_add || '');
+                    if (historyIndex[key] && historyIndex[key].Low != null) out.Low = historyIndex[key].Low;
+                }
+                if (out.Previous_Close == null || out.Previous_Close === '') {
+                    const key = (out.Symbol || '') + '|' + (out.Date_add || '');
+                    if (historyIndex[key] && historyIndex[key].Previous_Close != null) out.Previous_Close = historyIndex[key].Previous_Close;
+                }
+                return out;
+            });
+        } catch (e) {
+            // If history fetch fails, continue without enrichment
+            console.warn('Failed to enrich CSV with history Low/Previous_Close:', e);
+        }
+
+        // Determine headers union across all rows to include the new fields
+        const headerSet = new Set();
+        rows.forEach(r => Object.keys(r || {}).forEach(k => headerSet.add(k)));
+        const headers = Array.from(headerSet);
         const csv = [headers.join(',')].concat(rows.map(r => headers.map(h => JSON.stringify(r[h] ?? '')).join(','))).join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -664,8 +731,14 @@
                 const key = ticker + '|' + date;
                 const rows = rowsByTickerDate[key] || [];
                 // Sum today's shares and dollars invested (support different header names)
-                const dayShares = rows.reduce((s, row) => s + (Number(row['Shares Purchased'] ?? row['Shares Purchased'] ?? 1) || 0), 0);
-                const dayInvested = rows.reduce((s, row) => s + (Number(row['Dollars Invested'] ?? row['Dollars Invested'] ?? row['Buy_Price']) || 0), 0);
+                const dayShares = rows.reduce((s, row) => {
+                    const v = Number(row['Shares Purchased'] ?? row['Shares_Purchased'] ?? row.SharesPurchased ?? 0);
+                    return s + (isNaN(v) ? 0 : v);
+                }, 0);
+                const dayInvested = rows.reduce((s, row) => {
+                    const v = Number(row['Dollars Invested'] ?? row['Dollars_Invested'] ?? row.DollarsInvested ?? row['Buy_Price'] ?? 0);
+                    return s + (isNaN(v) ? 0 : v);
+                }, 0);
 
                 cumulativeShares += dayShares;
                 cumulativeInvested += dayInvested;
@@ -729,20 +802,82 @@
             const historyDates = Array.from(new Set(historyAll.map(r => r.Date_add))).sort();
             const globalReferenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : new Date().toISOString().slice(0,10);
 
-            // Filter precomputed BOD rows for selected tickers and collect dates
-            updateProgress(60, 'Filtering data for selected tickers...');
-            const allBodData = bodRaw.filter(r => tickers.includes(r.Symbol)).sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
-            const allDates = new Set(allBodData.map(r => r.Date_add));
+            // For selected tickers: prefer computing from history when a single ticker is selected.
+            updateProgress(60, 'Preparing data for selected tickers...');
+            let filteredBodData = [];
+            let allDates = new Set();
 
-            // Apply timeframe filtering based on activePeriod using the global history reference end
-            let filteredBodData = allBodData;
-            if (activePeriod && allBodData.length > 0) {
-                const range = getPeriodRange(activePeriod, globalReferenceEnd);
-                if (range.startDate && range.endDate) {
-                    filteredBodData = allBodData.filter(r => r.Date_add >= range.startDate && r.Date_add <= range.endDate);
+            if (tickers.length === 1 && tickers[0] !== 'ALL') {
+                // Build BOD events from full history for this ticker so we don't rely on cumulative fields
+                const sym = tickers[0];
+                // Get history rows for this ticker
+                let histRows = historyAll.filter(r => r.Symbol === sym).sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
+                // Apply timeframe filter
+                if (activePeriod && histRows.length > 0) {
+                    const referenceDates = histRows.map(r => r.Date_add).filter(Boolean).sort();
+                    const refEnd = referenceDates.length ? referenceDates[referenceDates.length - 1] : globalReferenceEnd;
+                    const range = getPeriodRange(activePeriod, refEnd);
+                    if (range.startDate && range.endDate) {
+                        histRows = histRows.filter(r => r.Date_add >= range.startDate && r.Date_add <= range.endDate);
+                    }
+                }
+
+                // Build events by inspecting each day vs previous day's close
+                let cumShares = 0;
+                let cumInvested = 0;
+                const events = [];
+                for (let i = 1; i < histRows.length; i++) {
+                    const today = histRows[i];
+                    const yesterday = histRows[i-1];
+                    const prevClose = (yesterday && (Number(yesterday.Close) || Number(yesterday.Previous_Close))) ? Number(yesterday.Close) : (Number(today.Previous_Close) || null);
+                    const todayLow = today.Low != null ? Number(today.Low) : null;
+                    if (prevClose == null || todayLow == null) continue;
+
+                    // For each dip level 1..5, check if today's low reached the limit order price
+                    for (let dipLevel = 1; dipLevel <= 5; dipLevel++) {
+                        const limitPrice = prevClose * (1 - dipLevel / 100);
+                        if (todayLow <= limitPrice) {
+                            cumShares += 1;
+                            cumInvested += limitPrice;
+                            const close = today.Close != null ? Number(today.Close) : prevClose;
+                            events.push({
+                                Date_add: today.Date_add,
+                                Weekday: new Date(today.Date_add).toLocaleDateString('en-US', { weekday: 'long' }),
+                                Symbol: sym,
+                                Strategy: 'Buy_on_Dip',
+                                'Buy_Price': Number(limitPrice.toFixed(4)),
+                                'Buy_Level': dipLevel + '%',
+                                'Shares Purchased': 1,
+                                'Dollars Invested': Number(limitPrice.toFixed(4)),
+                                'Cumulative Shares': cumShares,
+                                'Cumulative Invested': Number(cumInvested.toFixed(4)),
+                                'Cumulative Value': Number((cumShares * close).toFixed(4)),
+                                Close: Number(close.toFixed(4)),
+                                Previous_Close: Number(prevClose.toFixed(4))
+                            });
+                        }
+                    }
+                }
+
+                filteredBodData = events.sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
+                filteredBodData.forEach(r => allDates.add(r.Date_add));
+            } else {
+                // Use precomputed consolidated BOD rows for multiple tickers or ALL
+                const allBodData = bodRaw.filter(r => tickers.includes(r.Symbol)).sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+                allBodData.forEach(r => allDates.add(r.Date_add));
+
+                // Apply timeframe filtering based on activePeriod using the global history reference end
+                filteredBodData = allBodData;
+                if (activePeriod && allBodData.length > 0) {
+                    const range = getPeriodRange(activePeriod, globalReferenceEnd);
+                    if (range.startDate && range.endDate) {
+                        filteredBodData = allBodData.filter(r => r.Date_add >= range.startDate && r.Date_add <= range.endDate);
+                    }
                 }
             }
             const filteredDates = new Set(filteredBodData.map(r => r.Date_add));
+            // Store the filtered data so download and debug can use exactly what was rendered
+            lastRenderedBodData = filteredBodData.slice();
 
             updateProgress(90, 'Preparing chart...');
             const sortedDates = Array.from(filteredDates.size ? filteredDates : allDates).sort();
@@ -757,8 +892,8 @@
                 let cumShares = 0;
                 let cumInvested = 0;
                 rows.forEach(r => {
-                    const shares = Number(r['Shares Purchased'] ?? r['Shares Purchased'] ?? 1) || 0;
-                    const invested = Number(r['Dollars Invested'] ?? r['Dollars Invested'] ?? r['Buy_Price']) || 0;
+                    const shares = Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0;
+                    const invested = Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0) || 0;
                     cumShares += shares;
                     cumInvested += invested;
                     const close = r.Close != null ? Number(r.Close) : null;
@@ -844,54 +979,73 @@
     // Update selected ticker display and enable download
     document.getElementById('selected-ticker-display').textContent = 'Selected: ' + (selectedTicker === 'ALL' ? 'ALL' : selectedTicker);
     document.getElementById('download-analysis-btn').disabled = false;
-        
-        // Calculate and display detailed metrics
-        if (selectedTicker && selectedTicker !== 'ALL' && selectedTicker !== '') {
-            // Single ticker selected - compute period-specific deltas using full history as baseline
-            const tickerFiltered = filteredBodData.filter(r => r.Symbol === selectedTicker).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
-            if (tickerFiltered.length === 0) {
+
+    // Compute and display detailed metrics based on filteredBodData and the selected period
+    if (!filteredBodData || filteredBodData.length === 0) {
+        document.getElementById('detailed-metrics').style.display = 'none';
+    } else {
+        // Group rows by Symbol
+        const groups = {};
+        filteredBodData.forEach(r => {
+            const s = r.Symbol || 'UNKNOWN';
+            if (!groups[s]) groups[s] = [];
+            groups[s].push(r);
+        });
+
+        if (selectedTicker === 'ALL') {
+            // Aggregate across all tickers for the selected period
+            let totalShares = 0;
+            let totalInvested = 0;
+            let totalValue = 0;
+            Object.keys(groups).forEach(sym => {
+                const rows = groups[sym].sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
+                const shares = rows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0), 0);
+                const invested = rows.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0) || 0), 0);
+                const lastClose = rows.length ? Number(rows[rows.length - 1].Close) : 0;
+                const value = shares * lastClose;
+                totalShares += shares;
+                totalInvested += invested;
+                totalValue += value;
+            });
+
+            const gainAmount = totalValue - totalInvested;
+            const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
+            const metric = {
+                ticker: 'ALL',
+                totalDipsPurchases: totalShares,
+                totalShares: totalShares,
+                totalInvested: totalInvested,
+                totalValue: totalValue,
+                gainAmount: gainAmount,
+                gainPercent: gainPercent
+            };
+            displayDetailedMetrics([metric]);
+        } else {
+            // Single ticker metrics
+            const rows = (groups[selectedTicker] || []).sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
+            if (rows.length === 0) {
                 document.getElementById('detailed-metrics').style.display = 'none';
             } else {
-                const last = tickerFiltered[tickerFiltered.length - 1];
-                // baseline = last cumulative values before period start
-                let baselineShares = 0, baselineInvested = 0;
-                if (activePeriod) {
-                    const range = getPeriodRange(activePeriod, globalReferenceEnd);
-                    // find the last row in allBodData for this ticker before startDate
-                    const beforeRows = allBodData.filter(r => r.Symbol === selectedTicker && r.Date_add < range.startDate).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
-                    if (beforeRows.length > 0) {
-                        const base = beforeRows[beforeRows.length - 1];
-                        baselineShares = parseFloat(base['Cumulative Shares']) || 0;
-                        baselineInvested = parseFloat(base['Cumulative Invested']) || 0;
-                    }
-                }
-
-                // Recompute period-only totals from filteredBodData (rows inside the active period)
-                const rowsInPeriod = filteredBodData.filter(r => r.Symbol === selectedTicker).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
-                const periodShares = rowsInPeriod.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares Purchased'] ?? 1) || 0), 0);
-                const periodInvested = rowsInPeriod.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars Invested'] ?? r['Buy_Price']) || 0), 0);
-                // For period value, use the last available close price inside the period; if none, fallback to last.Close
-                const lastClose = rowsInPeriod.length ? Number(rowsInPeriod[rowsInPeriod.length - 1].Close) : (parseFloat(last['Close']) || 0);
-                const periodValue = periodShares * lastClose;
-                const gainAmount = periodValue - periodInvested;
-                const gainPercent = periodInvested > 0 ? ((gainAmount / periodInvested) * 100).toFixed(2) : '0.00';
+                const totalShares = rows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0), 0);
+                const totalInvested = rows.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0) || 0), 0);
+                const lastClose = rows.length ? Number(rows[rows.length - 1].Close) : 0;
+                const totalValue = totalShares * lastClose;
+                const gainAmount = totalValue - totalInvested;
+                const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
 
                 const metric = {
                     ticker: selectedTicker,
-                    totalDipsPurchases: periodShares,
-                    totalShares: periodShares,
-                    totalInvested: periodInvested,
-                    totalValue: periodValue,
+                    totalDipsPurchases: totalShares,
+                    totalShares: totalShares,
+                    totalInvested: totalInvested,
+                    totalValue: totalValue,
                     gainAmount: gainAmount,
                     gainPercent: gainPercent
                 };
-
                 displayDetailedMetrics([metric]);
             }
-        } else {
-            // All tickers selected or no ticker selected - hide metrics
-            document.getElementById('detailed-metrics').style.display = 'none';
         }
+    }
         
         } catch (error) {
             console.error('Error during calculation:', error);

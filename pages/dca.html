@@ -269,10 +269,8 @@
         <a href="bod-strat.html">Advanced Buy-on-Dip</a>
         <a href="about.html">About</a>
     </nav>
-    <h1>Dollar Cost Averaging (DCA) - Cumulative Shares, Value, and Invested</h1>
-    <h2>Simulating a $25/week Investment (first trading day of each week at average daily price)<br>
-        Please allow for some delay when choosing tickers for 15 and 20 year analysis
-    </h2>
+    <h1>Dollar Cost Averaging (DCA)</h1>
+    <h2>Simulating a $25/week investment (first trading day of each week at average daily price). Use period buttons to change timeframe.</h2>
     
     <!-- Ticker Metrics Grid -->
     <div id="ticker-metrics-grid" class="ticker-metrics-grid" style="display: grid;">
@@ -580,9 +578,44 @@
             
             // Populate ticker boxes instead of summary text
             populateTickerBoxes(processedData, period);
-            
-            // Hide individual ticker metrics, enable download analysis
-            document.getElementById('detailed-metrics').style.display = 'none';
+
+            // If ALL is selected, compute aggregated metrics and display them; otherwise hide individual metrics
+            if (currentSelectedTicker === 'ALL' || !currentSelectedTicker) {
+                try {
+                    let totalWeeks = 0, totalInvested = 0, totalEndValue = 0, totalShares = 0;
+                    // Count unique dates across all tickers (distinct weeks) for the ALL aggregation
+                    const weekSet = new Set();
+                    Object.keys(processedData || {}).forEach(sym => {
+                        const arr = processedData[sym] || [];
+                        if (arr.length === 0) return;
+                        const last = arr[arr.length - 1];
+                        // collect distinct dates (result.date) across all ticker arrays
+                        arr.forEach(r => { if (r && r.date) weekSet.add(r.date); });
+                        totalInvested += Number(last.cumulativeInvested || 0);
+                        totalEndValue += Number(last.cumulativeValue || 0);
+                        totalShares += Number(last.cumulativeShares || 0);
+                    });
+                    totalWeeks = weekSet.size;
+                    const gainAmount = totalEndValue - totalInvested;
+                    const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
+                    displayDetailedMetrics([{
+                        ticker: 'ALL',
+                        weeksMondays: totalWeeks,
+                        totalInvested: totalInvested,
+                        totalEndValue: totalEndValue,
+                        totalShares: totalShares,
+                        gainAmount: gainAmount,
+                        gainPercent: gainPercent
+                    }]);
+                } catch (e) {
+                    console.error('Error aggregating ALL metrics after period render:', e);
+                    document.getElementById('detailed-metrics').style.display = 'none';
+                }
+            } else {
+                document.getElementById('detailed-metrics').style.display = 'none';
+            }
+
+            // Enable download analysis
             document.getElementById('download-analysis-btn').disabled = false;
             
             // Store processed data for download functionality
@@ -1106,9 +1139,42 @@
                 downloadBtn.disabled = false;
                 downloadBtn.style.opacity = '1';
             } else if (selectedTicker === 'ALL') {
-                // All tickers selected - hide individual metrics, enable analysis download
-                document.getElementById('detailed-metrics').style.display = 'none';
-                
+                // All tickers selected - aggregate metrics across all tickers and display them
+                try {
+                    let totalWeeks = 0;
+                    let totalInvested = 0;
+                    let totalEndValue = 0;
+                    let totalShares = 0;
+                    const weekSet2 = new Set();
+                    Object.keys(processedData || {}).forEach(sym => {
+                        const arr = processedData[sym] || [];
+                        if (arr.length === 0) return;
+                        const last = arr[arr.length - 1];
+                        arr.forEach(r => { if (r && r.date) weekSet2.add(r.date); });
+                        totalInvested += Number(last.cumulativeInvested || 0);
+                        totalEndValue += Number(last.cumulativeValue || 0);
+                        totalShares += Number(last.cumulativeShares || 0);
+                    });
+                    totalWeeks = weekSet2.size;
+
+                    const gainAmount = totalEndValue - totalInvested;
+                    const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
+
+                    const metric = {
+                        ticker: 'ALL',
+                        weeksMondays: totalWeeks,
+                        totalInvested: totalInvested,
+                        totalEndValue: totalEndValue,
+                        totalShares: totalShares,
+                        gainAmount: gainAmount,
+                        gainPercent: gainPercent
+                    };
+                    displayDetailedMetrics([metric]);
+                } catch (e) {
+                    console.error('Error aggregating ALL metrics:', e);
+                    document.getElementById('detailed-metrics').style.display = 'none';
+                }
+
                 // Enable download button for ALL tickers analysis
                 const downloadBtn = document.getElementById('download-analysis-btn');
                 downloadBtn.disabled = false;
@@ -1215,12 +1281,50 @@
     });
     
     // Initial setup: load YTD analysis for all tickers by default
-    setTimeout(() => {
-        renderPeriodAnalysis('YTD');
-        // Set initial selection state
-        selectTicker('ALL');
-        updatePeriodButtonStates('ytd-btn');
-    }, 500);
+    (async function initialDcaLoad() {
+        try {
+            updatePeriodButtonStates('ytd-btn');
+            // Ensure visual selection shows ALL
+            try { selectTicker('ALL'); } catch (e) { /* ignore */ }
+            // Run the period analysis and wait for processedData to be available
+            await renderPeriodAnalysis('YTD');
+
+            // After renderPeriodAnalysis completes, window.currentProcessedData should be set
+                try {
+                const processed = window.currentProcessedData || {};
+                // Aggregate totals across all tickers and display metrics
+                let totalWeeks = 0, totalInvested = 0, totalEndValue = 0, totalShares = 0;
+                const weekSet3 = new Set();
+                Object.keys(processed).forEach(sym => {
+                    const arr = processed[sym] || [];
+                    if (arr.length === 0) return;
+                    const last = arr[arr.length - 1];
+                    arr.forEach(r => { if (r && r.date) weekSet3.add(r.date); });
+                    totalInvested += Number(last.cumulativeInvested || 0);
+                    totalEndValue += Number(last.cumulativeValue || 0);
+                    totalShares += Number(last.cumulativeShares || 0);
+                });
+                totalWeeks = weekSet3.size;
+
+                const gainAmount = totalEndValue - totalInvested;
+                const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
+
+                displayDetailedMetrics([{
+                    ticker: 'ALL',
+                    weeksMondays: totalWeeks,
+                    totalInvested: totalInvested,
+                    totalEndValue: totalEndValue,
+                    totalShares: totalShares,
+                    gainAmount: gainAmount,
+                    gainPercent: gainPercent
+                }]);
+            } catch (e) {
+                console.error('Failed to compute ALL aggregated metrics on initial load:', e);
+            }
+        } catch (e) {
+            console.error('Initial DCA load failed:', e);
+        }
+    })();
     
     </script>
 </body>

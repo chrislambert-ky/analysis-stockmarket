@@ -286,10 +286,43 @@
         const text = await response.text();
         const rows = text.split('\n').filter(Boolean);
         const headers = rows[0].split(',');
-        const data = rows.slice(1).map(row => {
+    // IMPORTANT: The dataset `data/history_tickers.csv` and any precomputed
+    // `all_buy_on_dip.csv` may contain cumulative fields. Cumulative fields in
+    // the precomputed CSV are for troubleshooting only and MUST NOT be used
+    // directly to compute visualizations for arbitrary user-selected timeframes.
+    // Always compute per-period metrics from per-event rows filtered to the
+    // user's timeframe.
+    const data = rows.slice(1).map(row => {
             const values = row.split(',');
             const obj = {};
-            headers.forEach((h, i) => obj[h.trim()] = values[i]);
+            headers.forEach((h, i) => obj[h.trim()] = values[i] ?? '');
+
+            // Remove any cumulative fields that may be present in precomputed CSVs.
+            // These are global running totals and must not be used by UI visualizations
+            // or period-based metrics. We'll recompute cumulatives from per-event rows.
+            ['Cumulative Shares','Cumulative Invested','Cumulative Value','Cumulative Return','Cumulative Current Value'].forEach(k => {
+                if (Object.prototype.hasOwnProperty.call(obj, k)) delete obj[k];
+            });
+
+            // Normalize Date_add to YYYY-MM-DD
+            const rawDate = obj['Date_add'] || obj['Date'] || obj['date'] || '';
+            try {
+                obj.Date_add = rawDate ? formatDateToYMD(new Date(rawDate)) : '';
+            } catch (e) {
+                obj.Date_add = rawDate;
+            }
+
+            // Coerce numeric fields to numbers where available
+            ['Close','Low','Previous_Close','Open','High'].forEach(k => {
+                if (obj[k] != null && obj[k] !== '') {
+                    const n = Number(obj[k]);
+                    obj[k] = isNaN(n) ? null : n;
+                } else {
+                    obj[k] = null;
+                }
+            });
+
+            // Keep raw string copies for any other logic
             return obj;
         });
         return data;
