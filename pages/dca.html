@@ -665,7 +665,9 @@
             
             // Get final values from last result
             const lastResult = tickerResults[tickerResults.length - 1];
-            const mondaysCount = tickerResults.length; // Each result represents a Monday investment
+            // Count unique investment week dates (use Set to be consistent with ALL aggregation)
+            const weeksSet = new Set(tickerResults.map(r => r.date));
+            const mondaysCount = weeksSet.size;
             const totalInvested = lastResult.cumulativeInvested;
             const totalEndValue = lastResult.cumulativeValue;
             const totalShares = lastResult.cumulativeShares;
