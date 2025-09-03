@@ -151,88 +151,7 @@
             background-color: var(--gray) !important;
         }
 
-        /* Ticker Metrics Grid */
-        .ticker-metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-
-        /* Responsive breakpoints for ticker grid */
-        @media (max-width: 1024px) {
-            .ticker-metrics-grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .ticker-metrics-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        .ticker-box {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border: 2px solid var(--light-blue);
-            border-radius: 8px;
-            padding: 8px;
-            text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-height: 55px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .ticker-box:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-            border-color: var(--blue);
-        }
-
-        .clickable-ticker {
-            cursor: pointer;
-        }
-
-        .clickable-ticker:hover {
-            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        }
-
-        .ticker-box.selected {
-            background: linear-gradient(135deg, var(--bright-green) 0%, #7bc143 100%);
-            border-color: var(--bright-green);
-            color: white;
-        }
-
-        .ticker-box.selected .ticker-symbol,
-        .ticker-box.selected .ticker-gain {
-            color: white;
-        }
-
-        .ticker-symbol {
-            font-size: 1.0rem;
-            font-weight: bold;
-            color: var(--blue);
-            margin-bottom: 3px;
-        }
-
-        .ticker-gain {
-            font-size: 0.95rem;
-            font-weight: bold;
-        }
-
-        .ticker-gain.positive {
-            color: var(--bright-green);
-        }
-
-        .ticker-gain.negative {
-            color: var(--red);
-        }
-
+    /* Ticker and metric styles moved to css/metrics.css for sharing with BOD page */
         /* Responsive Design for Navigation */
         @media (max-width: 700px) {
             nav {
@@ -257,6 +176,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="../css/metrics.css">
 </head>
 <body>
     <nav>
@@ -790,31 +710,13 @@
             
             metricDiv.innerHTML = `
                 <h4 style="margin: 0 0 10px 0; color: var(--blue); font-size: 1.2rem; text-align: center;">${metric.ticker}</h4>
-                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; text-align: center;">
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${metric.weeksMondays}</div>
-                        <div style="font-size: 0.9em; color: #666;">Weeks/Mondays</div>
-                    </div>
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${formatCurrency(metric.totalInvested)}</div>
-                        <div style="font-size: 0.9em; color: #666;">Total Invested</div>
-                    </div>
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${formatCurrency(metric.totalEndValue)}</div>
-                        <div style="font-size: 0.9em; color: #666;">Total End Value</div>
-                    </div>
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--blue);">${metric.totalShares.toFixed(4)}</div>
-                        <div style="font-size: 0.9em; color: #666;">Total Shares</div>
-                    </div>
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: ${gainColor};">${formatCurrency(metric.gainAmount)}</div>
-                        <div style="font-size: 0.9em; color: #666;">Gain/Loss</div>
-                    </div>
-                    <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: ${gainColor};">${metric.gainPercent}%</div>
-                        <div style="font-size: 0.9em; color: #666;">Return %</div>
-                    </div>
+                <div class="metric-grid" style="grid-template-columns: repeat(6, 1fr);">
+                    <div class="metric-card"><div class="metric-label">Weeks/Mondays</div><div class="metric-value">${metric.weeksMondays}</div></div>
+                    <div class="metric-card"><div class="metric-label">Total Invested</div><div class="metric-value">${formatCurrency(metric.totalInvested)}</div></div>
+                    <div class="metric-card"><div class="metric-label">Total End Value</div><div class="metric-value">${formatCurrency(metric.totalEndValue)}</div></div>
+                    <div class="metric-card"><div class="metric-label">Total Shares</div><div class="metric-value">${metric.totalShares.toFixed(4)}</div></div>
+                    <div class="metric-card"><div class="metric-label">Gain/Loss</div><div class="metric-value ${gainColor === '#28a745' ? 'positive' : 'negative'}">${formatCurrency(metric.gainAmount)}</div></div>
+                    <div class="metric-card"><div class="metric-label">Return %</div><div class="metric-value ${gainColor === '#28a745' ? 'positive' : 'negative'}">${metric.gainPercent}%</div></div>
                 </div>
             `;
             

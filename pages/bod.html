@@ -148,21 +148,9 @@
         .ticker-count { font-size: 1.1rem; font-weight: bold; color: var(--dark-gray); }
         .period-btn { padding: 10px 20px; margin: 0 5px; background-color: var(--bright-green); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.95em; }
         .period-btn.active { background-color: var(--orange) !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        /* Metric grid/card shared styles (consistent with dca/bod-tickers) */
-        .metric-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-top: 12px;
-        }
-        @media (max-width: 900px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 480px) { .metric-grid { grid-template-columns: repeat(1, 1fr); } }
-        .metric-card { background: white; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #e6e6e6; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-        .metric-label { font-size: 0.85rem; color: #666; margin-bottom: 6px; }
-        .metric-value { font-size: 1.1rem; font-weight: bold; color: var(--blue); }
-        .metric-value.positive { color: var(--bright-green); }
-        .metric-value.negative { color: var(--red); }
+        /* Metric styles moved to css/metrics.css for sharing with DCA page */
     </style>
+    <link rel="stylesheet" href="../css/metrics.css">
     <!-- PapaParse for robust CSV parsing -->
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
