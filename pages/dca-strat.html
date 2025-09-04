@@ -480,8 +480,8 @@
                 return obj;
             });
             
-            // Populate ticker dropdown
-            const tickers = [...new Set(stockData.map(row => row.Symbol))].sort();
+            // Populate ticker dropdown - sort alphabetically
+            const tickers = [...new Set(stockData.map(row => row.Symbol))].sort((a,b) => a.localeCompare(b));
             const select = document.getElementById('tickerSelect');
             tickers.forEach(ticker => {
                 const option = document.createElement('option');

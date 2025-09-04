@@ -262,8 +262,8 @@
         allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
         tickerGrid.appendChild(allBox);
 
-        // Create individual ticker boxes (symbols only)
-        Object.keys(processedData).sort().forEach(ticker => {
+    // Create individual ticker boxes (symbols only) - sort alphabetically (case-insensitive)
+    Object.keys(processedData).sort((a,b) => a.localeCompare(b)).forEach(ticker => {
             const box = document.createElement('div');
             box.className = 'ticker-box clickable-ticker';
             box.dataset.ticker = ticker;
@@ -849,7 +849,7 @@
     // Dynamically populate dropdown with all tickers from the CSV
     async function populateDcaTickerDropdown() {
         const data = await fetchData();
-        const tickers = Array.from(new Set(data.map(row => row.Symbol))).sort();
+        const tickers = Array.from(new Set(data.map(row => row.Symbol))).sort((a,b) => a.localeCompare(b));
         const select = document.getElementById('dca-ticker-select');
         // Remove all except the first two options
         while (select.options.length > 2) select.remove(2);

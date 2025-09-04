@@ -537,7 +537,7 @@
             // (sum shares, sum dollars invested, use last close in period for value).
             // See docs/ai-instruction.md for the official rule.
             // Populate ticker dropdown
-            const tickers = [...new Set(stockData.map(row => row.Symbol))].sort();
+            const tickers = [...new Set(stockData.map(row => row.Symbol))].sort((a,b) => a.localeCompare(b));
             const select = document.getElementById('tickerSelect');
             tickers.forEach(ticker => {
                 const option = document.createElement('option');

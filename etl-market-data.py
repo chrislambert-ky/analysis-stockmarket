@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 output_folder = "data"
 os.makedirs(output_folder, exist_ok=True)
 
-etf_list = ["SPLG","XLG","TOPT","QQQ","VGT","QTOP","FBCG","MSFT","GOOGL","UPRO","TQQQ","QQUP","GGLL","MSFU"]
+etf_list = ["SPLG","XLG","TOPT","QQQ","VGT","QTOP","FBCG","MSFT","GOOGL","UPRO","TQQQ","QQUP","GGLL","MSFU","OEF"]
 
 # Buy-on-dip configuration: generate limit orders at 1% steps up to dip_max_pct.
 # This ensures very deep single-day declines will have additional limit orders recorded.

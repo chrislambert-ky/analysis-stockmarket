@@ -540,7 +540,7 @@
             // fallback to today if history not available
         }
 
-        const tickers = Array.from(new Set(historicalData.map(row => row.Symbol))).sort();
+    const tickers = Array.from(new Set(historicalData.map(row => row.Symbol))).sort((a,b) => a.localeCompare(b));
         const range = getPeriodRange(activePeriod || 'YTD', referenceEnd);
 
         tickers.forEach(ticker => {
@@ -782,7 +782,7 @@
             const bodRaw = await fetchHistoricalData();
 
             updateProgress(40, 'Preparing ticker data...');
-            const allTickers = Array.from(new Set(bodRaw.map(row => row.Symbol))).sort();
+            const allTickers = Array.from(new Set(bodRaw.map(row => row.Symbol))).sort((a,b) => a.localeCompare(b));
             const tickers = (!selectedTicker || selectedTicker === 'ALL') ? allTickers : [selectedTicker];
 
             // Fetch full price history early so we can use a consistent reference end date for periods
@@ -874,7 +874,7 @@
             // Build lookup for percent gain using recomputed cumulatives within the filtered (period) data
             const gainLookup = {};
             // For each ticker, iterate through sorted dates and accumulate shares/invested to produce per-date cumulatives
-            const tickersSet = Array.from(new Set(filteredBodData.map(r => r.Symbol)));
+            const tickersSet = Array.from(new Set(filteredBodData.map(r => r.Symbol))).sort((a,b) => a.localeCompare(b));
             tickersSet.forEach(ticker => {
                 const rows = filteredBodData.filter(r => r.Symbol === ticker).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
                 let cumShares = 0;
