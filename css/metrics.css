@@ -50,3 +50,16 @@
 .ticker-gain { font-size: 0.95rem; font-weight: bold; }
 .ticker-gain.positive { color: var(--bright-green); }
 .ticker-gain.negative { color: var(--red); }
+
+/* Period controls: ensure a small vertical gap when buttons wrap on small screens */
+.period-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px; /* horizontal gap */
+    flex-wrap: wrap;
+    row-gap: 8px; /* small vertical spacing between wrapped rows */
+}
+.period-controls .period-btn {
+    margin: 4px 6px; /* small per-button margin to avoid touching when wrapped */
+}
