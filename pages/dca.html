@@ -712,7 +712,7 @@
             
             metricDiv.innerHTML = `
                 <h4 style="margin: 0 0 10px 0; color: var(--blue); font-size: 1.2rem; text-align: center;">${metric.ticker}</h4>
-                <div class="metric-grid" style="grid-template-columns: repeat(6, 1fr);">
+                <div class="metric-grid">
                     <div class="metric-card"><div class="metric-label">Weeks/Mondays</div><div class="metric-value">${metric.weeksMondays}</div></div>
                     <div class="metric-card"><div class="metric-label">Total Invested</div><div class="metric-value">${formatCurrency(metric.totalInvested)}</div></div>
                     <div class="metric-card"><div class="metric-label">Total End Value</div><div class="metric-value">${formatCurrency(metric.totalEndValue)}</div></div>
