@@ -217,7 +217,7 @@
     // per-event rows to the user's selected timeframe and recompute totals from
     // those filtered events. See docs/ai-instruction.md for the project rule.
     // Last rendered filtered BOD events (so downloads match the chart when we computed from history)
-    let lastRenderedBodData = null;
+        let lastRenderedBodData = [];
     // Global selected ticker from the grid (default ALL)
     let selectedTickerGlobal = 'ALL';
     // Active period (e.g. 'YTD', '5Y', '10Y', etc.) - default to YTD so users see data on load
@@ -380,10 +380,11 @@
                 } catch (e) {
                     Date_add = rawDate;
                 }
+
                 return {
                     Date_add: Date_add,
                     Weekday: row['Weekday'] ?? row['weekday'] ?? '',
-                    Symbol: row['Symbol'] ?? row['symbol'] ?? '',
+                    Symbol: String(row['Symbol'] ?? row['symbol'] ?? '').trim(),
                     Strategy: row['Strategy'] ?? row['strategy'] ?? 'Buy_on_Dip',
                     'Buy_Price': row['Buy_Price'] != null ? Number(row['Buy_Price']) : null,
                     'Buy_Level': row['Buy_Level'] ?? row['Buy_Level'] ?? '',
@@ -423,7 +424,7 @@
                 try { Date_add = rawDate ? formatDateToYMD(new Date(rawDate)) : null; } catch (e) { Date_add = rawDate; }
                 return {
                     Date_add: Date_add,
-                    Symbol: row['Symbol'] ?? row['symbol'] ?? '',
+                    Symbol: String(row['Symbol'] ?? row['symbol'] ?? '').trim(),
                     Close: row['Close'] != null ? Number(row['Close']) : null,
                     Low: row['Low'] != null ? Number(row['Low']) : null,
                     Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
@@ -540,14 +541,24 @@
             // fallback to today if history not available
         }
 
-    const tickers = Array.from(new Set(historicalData.map(row => row.Symbol))).sort((a,b) => a.localeCompare(b));
+    // Merge tickers from the precomputed BOD CSV and the full history so newly added
+    // tickers (present in history_tickers.csv but not yet in all_buy_on_dip.csv) appear.
+    let historyAll = [];
+    try {
+        historyAll = await fetchHistoryData();
+    } catch (e) { /* ignore - proceed with precomputed */ }
+
+    const tickersSet = new Set();
+    historicalData.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
+    historyAll.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
+    const tickers = Array.from(tickersSet).filter(Boolean).sort((a,b) => a.localeCompare(b));
         const range = getPeriodRange(activePeriod || 'YTD', referenceEnd);
 
         tickers.forEach(ticker => {
             // Count rows for this ticker within the selected timeframe
-            let count = historicalData.filter(r => r.Symbol === ticker).length;
+            let count = historicalData.filter(r => String(r.Symbol).trim() === ticker).length;
             if (range.startDate && range.endDate) {
-                count = historicalData.filter(r => r.Symbol === ticker && r.Date_add >= range.startDate && r.Date_add <= range.endDate).length;
+                count = historicalData.filter(r => String(r.Symbol).trim() === ticker && r.Date_add >= range.startDate && r.Date_add <= range.endDate).length;
             }
 
             const box = document.createElement('div');
