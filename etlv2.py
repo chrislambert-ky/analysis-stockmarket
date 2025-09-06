@@ -1,4 +1,5 @@
 import os
+import json
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
@@ -166,6 +167,69 @@ def write_per_ticker_files(proc_df=None):
     return symbols
 
 
+def write_ticker_index(proc_df=None, symbols=None, output_folder=OUTPUT_FOLDER):
+    """Create a small index file at data/tickers/index.json with metadata for each ticker.
+    The index is an array of objects:
+      { symbol, start_date, end_date, history_rows, bod_rows, history_path, bod_path }
+    This index will be used by the frontend to quickly build the ticker grid without parsing large CSVs.
+    """
+    if proc_df is None:
+        if not os.path.exists(PROC_COMBINED_CSV):
+            raise FileNotFoundError(f"{PROC_COMBINED_CSV} not found; run process_combined() first")
+        proc_df = pd.read_csv(PROC_COMBINED_CSV)
+
+    if symbols is None:
+        symbols = sorted(proc_df["Symbol"].dropna().unique())
+
+    tickers_dir = os.path.join(output_folder, 'tickers')
+    os.makedirs(tickers_dir, exist_ok=True)
+
+    index = []
+    for sym in symbols:
+        try:
+            rows = proc_df[proc_df['Symbol'] == sym]
+            if rows.empty:
+                start_date = None
+                end_date = None
+                history_rows = 0
+            else:
+                dates = rows['Date'].dropna().astype(str).sort_values()
+                start_date = dates.iloc[0] if len(dates) else None
+                end_date = dates.iloc[-1] if len(dates) else None
+                history_rows = len(rows)
+
+            history_path = os.path.join(output_folder, f"{sym}-data-raw.csv")
+            bod_path = os.path.join(output_folder, f"{sym}-data-bod.csv")
+            bod_rows = 0
+            if os.path.exists(bod_path):
+                try:
+                    df_bod = pd.read_csv(bod_path)
+                    bod_rows = len(df_bod)
+                except Exception:
+                    bod_rows = 0
+
+            entry = {
+                'symbol': sym,
+                'start_date': start_date,
+                'end_date': end_date,
+                'history_rows': int(history_rows),
+                'bod_rows': int(bod_rows),
+                'history_path': os.path.relpath(history_path, output_folder),
+                'bod_path': os.path.relpath(bod_path, output_folder)
+            }
+            index.append(entry)
+        except Exception as e:
+            print(f"Warning: failed to index {sym}: {e}")
+
+    index_file = os.path.join(tickers_dir, 'etl-index.json')
+    try:
+        with open(index_file, 'w', encoding='utf-8') as f:
+            json.dump(index, f, indent=2, ensure_ascii=False)
+        print(f"Wrote ticker index -> {index_file} ({len(index)} entries)")
+    except Exception as e:
+        print(f"Failed to write ticker index {index_file}: {e}")
+
+
 # =============================
 # STEP 4: Generate per-ticker buy-on-dip events and consolidated all_buy_on_dip.csv
 #  - For each day, create limit orders based on previous close for levels 1..dip_max_pct
@@ -298,6 +362,16 @@ def main():
     proc = process_combined(combined_raw)
     symbols = write_per_ticker_files(proc)
     generate_bod_events(proc, symbols)
+    # create small index for frontend (data/tickers/index.json)
+    try:
+        # Build the index based on the configured etf_list but alphabetize it case-insensitively
+        try:
+            ordered = sorted(etf_list, key=str.upper)
+        except Exception:
+            ordered = symbols
+        write_ticker_index(proc, ordered)
+    except Exception as e:
+        print('Warning: write_ticker_index failed:', e)
     print("ETL v2 complete")
 
 

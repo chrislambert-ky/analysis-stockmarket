@@ -464,6 +464,69 @@
             throw err;
         }
     }
+
+    // Fetch small ETL index (data/tickers/etl-index.json) to quickly enumerate tickers
+    let cachedTickerIndex = null;
+    async function fetchTickerIndex() {
+        if (cachedTickerIndex) return cachedTickerIndex;
+        try {
+            const res = await fetch('../data/tickers/etl-index.json');
+            if (!res.ok) throw new Error('No index');
+            const j = await res.json();
+            // normalize to array of symbols
+            cachedTickerIndex = Array.isArray(j) ? j : [];
+            return cachedTickerIndex;
+        } catch (e) {
+            // Index missing or unreadable — return null so caller falls back
+            return null;
+        }
+    }
+
+    // Fetch per-ticker history file (preferred) with fallback to consolidated history
+    const perTickerCache = {};
+    async function fetchTickerHistory(sym) {
+        if (!sym) return null;
+        if (perTickerCache[sym]) return perTickerCache[sym];
+        const candidates = [
+            `../data/${sym}-data-raw.csv`,
+            `../data/${sym}-data-bod.csv`
+        ];
+        for (const url of candidates) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) continue;
+                const text = await res.text();
+                const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+                const mapped = parsed.data.map(row => {
+                    const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'];
+                    let Date_add = null;
+                    try { Date_add = rawDate ? toYMDFromString(rawDate) : null; } catch (e) { Date_add = rawDate; }
+                    return {
+                        Date_add: Date_add,
+                        Symbol: String(row['Symbol'] ?? row['symbol'] ?? sym).trim(),
+                        Close: row['Close'] != null ? Number(row['Close']) : null,
+                        Low: row['Low'] != null ? Number(row['Low']) : null,
+                        Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
+                        Open: row['Open'] != null ? Number(row['Open']) : null,
+                        High: row['High'] != null ? Number(row['High']) : null
+                    };
+                }).filter(r => r && r.Date_add);
+                perTickerCache[sym] = mapped;
+                return mapped;
+            } catch (e) {
+                // try next candidate
+            }
+        }
+        // Fallback to consolidated history if per-ticker files not found
+        try {
+            const all = await fetchHistoryData();
+            const filtered = all.filter(r => String(r.Symbol).trim() === String(sym).trim());
+            perTickerCache[sym] = filtered;
+            return filtered;
+        } catch (e) {
+            return [];
+        }
+    }
     
     // Calculate Buy-on-Dip strategy for a specific ticker
     function calculateBuyOnDip(historicalData, ticker, startDate = '2015-09-01', endDate = '2025-09-01') {
@@ -576,10 +639,21 @@
             referenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : referenceEnd;
         } catch (e) { /* ignore - proceed with precomputed */ }
 
-        const tickersSet = new Set();
-        historicalData.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
-        historyAll.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
-        const tickers = Array.from(tickersSet).filter(Boolean).sort((a,b) => a.localeCompare(b));
+        // Prefer the small ETL index if available (fast). Fallback to merging precomputed and history.
+        let tickers = [];
+        try {
+            const index = await fetchTickerIndex();
+            if (index && index.length) {
+                tickers = index.map(e => String(e.symbol).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+            }
+        } catch (e) { /* ignore */ }
+
+        if (!tickers || tickers.length === 0) {
+            const tickersSet = new Set();
+            historicalData.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
+            historyAll.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
+            tickers = Array.from(tickersSet).filter(Boolean).sort((a,b) => a.localeCompare(b));
+        }
 
         const range = getPeriodRange(activePeriod || 'YTD', referenceEnd);
 
@@ -867,10 +941,11 @@
             let allDates = new Set();
 
             if (tickers.length === 1 && tickers[0] !== 'ALL') {
-                // Build BOD events from full history for this ticker so we don't rely on cumulative fields
+                // Build BOD events from the per-ticker history for this ticker so we don't rely on cumulative fields
                 const sym = tickers[0];
-                // Get history rows for this ticker
-                let histRows = historyAll.filter(r => r.Symbol === sym).sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
+                // Load per-ticker file with fallback to consolidated history
+                let histRows = await fetchTickerHistory(sym);
+                histRows = (histRows || []).sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
                 // Apply timeframe filter
                 if (activePeriod && histRows.length > 0) {
                     const referenceDates = histRows.map(r => r.Date_add).filter(Boolean).sort();

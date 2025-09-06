@@ -249,9 +249,86 @@
         document.getElementById('progress-fill').style.width = percent + '%';
         document.getElementById('progress-text').textContent = text;
     }
+
+    // Fetch small ETL index (data/tickers/etl-index.json) to quickly enumerate tickers
+    let cachedTickerIndex = null;
+    async function fetchTickerIndex() {
+        if (cachedTickerIndex) return cachedTickerIndex;
+        try {
+            const res = await fetch('../data/tickers/etl-index.json');
+            if (!res.ok) throw new Error('No index');
+            const j = await res.json();
+            cachedTickerIndex = Array.isArray(j) ? j : [];
+            return cachedTickerIndex;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Per-ticker history fetch with fallback to consolidated history
+    const perTickerCache = {};
+    async function fetchTickerHistory(sym) {
+        if (!sym) return null;
+        if (perTickerCache[sym]) return perTickerCache[sym];
+        const candidates = [
+            `../data/${sym}-data-raw.csv`,
+            `../data/${sym}-data-dca.csv`
+        ];
+        for (const url of candidates) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) continue;
+                const text = await res.text();
+                const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+                const mapped = parsed.data.map(row => {
+                    const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'];
+                    let Date_add = null;
+                    try { Date_add = rawDate ? toYMDFromString(rawDate) : null; } catch (e) { Date_add = rawDate; }
+                    return {
+                        Date_add: Date_add,
+                        Symbol: String(row['Symbol'] ?? row['symbol'] ?? sym).trim(),
+                        Close: row['Close'] != null ? Number(row['Close']) : null,
+                        Low: row['Low'] != null ? Number(row['Low']) : null,
+                        Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
+                        Open: row['Open'] != null ? Number(row['Open']) : null,
+                        High: row['High'] != null ? Number(row['High']) : null
+                    };
+                }).filter(r => r && r.Date_add);
+                perTickerCache[sym] = mapped;
+                return mapped;
+            } catch (e) {
+                // try next candidate
+            }
+        }
+        // Fallback to consolidated history
+        try {
+            const res = await fetch('../data/history_tickers.csv');
+            if (!res.ok) throw new Error('history missing');
+            const text = await res.text();
+            const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+            const mapped = parsed.data.map(row => {
+                const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'];
+                let Date_add = null;
+                try { Date_add = rawDate ? toYMDFromString(rawDate) : null; } catch (e) { Date_add = rawDate; }
+                return {
+                    Date_add: Date_add,
+                    Symbol: String(row['Symbol'] ?? row['symbol'] ?? '').trim(),
+                    Close: row['Close'] != null ? Number(row['Close']) : null,
+                    Low: row['Low'] != null ? Number(row['Low']) : null,
+                    Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
+                    Open: row['Open'] != null ? Number(row['Open']) : null,
+                    High: row['High'] != null ? Number(row['High']) : null
+                };
+            }).filter(r => r && r.Date_add && r.Symbol === sym);
+            perTickerCache[sym] = mapped;
+            return mapped;
+        } catch (e) {
+            return [];
+        }
+    }
     
     // Function to populate simple ticker boxes (no metrics) to keep UI responsive
-    function populateTickerBoxes(processedData, period) {
+    async function populateTickerBoxes(processedData, period) {
         const tickerGrid = document.getElementById('ticker-metrics-grid');
         tickerGrid.innerHTML = '';
 
@@ -262,8 +339,15 @@
         allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
         tickerGrid.appendChild(allBox);
 
-    // Create individual ticker boxes (symbols only) - sort alphabetically (case-insensitive)
-    Object.keys(processedData).sort((a,b) => a.localeCompare(b)).forEach(ticker => {
+    // Create individual ticker boxes (symbols only) - prefer ETL index when available
+        let tickers = [];
+        try {
+            const idx = await fetchTickerIndex();
+            if (idx && idx.length) tickers = idx.map(e => String(e.symbol).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+        } catch (e) { }
+        if (!tickers || tickers.length === 0) tickers = Object.keys(processedData).sort((a,b) => a.localeCompare(b));
+
+        tickers.forEach(ticker => {
             const box = document.createElement('div');
             box.className = 'ticker-box clickable-ticker';
             box.dataset.ticker = ticker;
@@ -496,8 +580,8 @@
             
             summaryArr.sort((a, b) => b.pct - a.pct);
             
-            // Populate ticker boxes instead of summary text
-            populateTickerBoxes(processedData, period);
+            // Populate ticker boxes instead of summary text (await completion)
+            await populateTickerBoxes(processedData, period);
 
             // If ALL is selected, compute aggregated metrics and display them; otherwise hide individual metrics
             if (currentSelectedTicker === 'ALL' || !currentSelectedTicker) {
@@ -924,15 +1008,23 @@
             const rawData = await fetchData();
             
             updateProgress(40, 'Processing ticker data...');
-            // Group data by ticker
+            // Group data by ticker (or, for single-ticker selection, prefer a per-ticker file)
             const tickerGroups = {};
-            rawData.forEach(row => {
-                const ticker = row.Symbol;
-                if (!tickerGroups[ticker]) {
-                    tickerGroups[ticker] = [];
-                }
-                tickerGroups[ticker].push(row);
-            });
+            if (selectedTicker && selectedTicker !== 'ALL') {
+                // Load per-ticker history first
+                const rows = await fetchTickerHistory(selectedTicker);
+                tickerGroups[selectedTicker] = rows || [];
+            }
+            // Only fall back to consolidated rawData grouping for ALL or if per-ticker missing
+            if (!selectedTicker || selectedTicker === 'ALL' || !tickerGroups[selectedTicker] || tickerGroups[selectedTicker].length === 0) {
+                rawData.forEach(row => {
+                    const ticker = row.Symbol;
+                    if (!tickerGroups[ticker]) {
+                        tickerGroups[ticker] = [];
+                    }
+                    tickerGroups[ticker].push(row);
+                });
+            }
 
             updateProgress(60, 'Calculating DCA strategies...');
             // Calculate DCA results for each ticker
