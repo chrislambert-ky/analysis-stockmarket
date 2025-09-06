@@ -313,6 +313,33 @@
                 padding: 0.5rem 0.5rem;
             }
         }
+        /* Responsive improvements for form controls to avoid horizontal scrolling */
+        @media (max-width: 900px) {
+            .form-row, .form-row-dates {
+                /* collapse to two columns on medium screens */
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .form-row label, .form-row-dates label, .input-group label {
+                /* allow labels to wrap instead of forcing width */
+                white-space: normal;
+            }
+            .input-group {
+                flex-wrap: wrap;
+            }
+            .period-selection {
+                flex-wrap: wrap;
+                gap: 8px;
+                row-gap: 8px;
+                justify-content: center;
+            }
+        }
+        @media (max-width: 480px) {
+            .form-row, .form-row-dates {
+                /* stack everything vertically on small screens */
+                grid-template-columns: 1fr;
+            }
+            .button-group { grid-column: 1 / -1; }
+        }
     </style>
 </head>
 <body>

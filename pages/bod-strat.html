@@ -283,6 +283,29 @@
                 padding: 0.5rem 0.5rem;
             }
         }
+        /* Responsive tweaks for selection row to prevent horizontal scrolling */
+        @media (max-width: 900px) {
+            .flex-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            .flex-row .input-group {
+                flex: 1 1 200px !important;
+                min-width: 160px;
+            }
+            .period-selection {
+                flex: 1 1 100%;
+                justify-content: center !important;
+                margin-left: 0 !important;
+                gap: 8px;
+                row-gap: 8px;
+            }
+        }
+        @media (max-width: 480px) {
+            .flex-row .input-group { flex-basis: 100% !important; }
+        }
     </style>
 </head>
 <body>
@@ -313,7 +336,7 @@
                 </select>
             </div>
             
-            <div style="display:flex;align-items:center;gap:20px;">
+            <div class="flex-row" style="display:flex;align-items:center;gap:20px;">
                 <div class="input-group" style="flex:0 0 260px;">
                     <label for="startDate">Start Date:</label>
                     <input type="date" id="startDate" value="2020-01-01" style="width:220px;">

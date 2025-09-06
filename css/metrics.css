@@ -59,6 +59,7 @@
     gap: 20px; /* horizontal gap */
     flex-wrap: wrap;
     row-gap: 8px; /* small vertical spacing between wrapped rows */
+    margin: 15px 0; /* standardize outer vertical spacing to match dca/bod */
 }
 .period-controls .period-btn {
     margin: 4px 6px; /* small per-button margin to avoid touching when wrapped */
