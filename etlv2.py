@@ -25,28 +25,7 @@ ALL_BOD_CSV = os.path.join(OUTPUT_FOLDER, "all_buy_on_dip.csv")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 # list of tickers to fetch
-etf_list = [
-    "ALLY",
-    "GGLL",
-    "GOOGL",
-    "HSBC",
-    "MSFT",
-    "MSFU",
-    "FBCG",
-    "FMAG",
-    "MGK",
-    "OEF",
-    "QQQM",
-    "QTOP",
-    "SPLG",
-    "TOPT",
-    "VGT",
-    "XLG",
-    "QQUP",
-    "QQXL",
-    "TQQQ",
-    "UPRO"
-]
+etf_list = ["SPLG","XLG","TOPT","QQQ","VGT","QTOP","FBCG","MSFT","GOOGL","UPRO","TQQQ","QQUP","GGLL","MSFU","OEF","QQQJ","VTI","ALLY","HSBC","ARKK","FMAG","QQXL","AMZN","MGK","AAPL","NVDA"]
 
 # Buy-on-dip configuration for ETL (we generate levels 1% .. dip_max_pct %)
 dip_step_pct = 1
