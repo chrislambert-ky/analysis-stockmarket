@@ -528,17 +528,20 @@
     // Dynamically populate grid with all tickers from precomputed BOD data
     async function populateBodTickerDropdown() {
         try {
+            try { showLoading(); } catch(e) {}
+            updateProgress(5, 'Loading precomputed BOD data...');
             const historicalData = await fetchHistoricalData();
             // Ensure defaults: show ALL and YTD on load
             selectedTickerGlobal = selectedTickerGlobal || 'ALL';
             activePeriod = activePeriod || 'YTD';
             // Build ticker grid similar to DCA page (buildTickerGrid will compute counts using activePeriod)
+            updateProgress(25, 'Preparing ticker list...');
             await buildTickerGrid(historicalData);
             document.getElementById('ticker-metrics-grid').style.display = '';
             document.getElementById('ticker-selection-area').style.display = '';
             // Enable download
             document.getElementById('download-analysis-btn').disabled = false;
-            // ensure ALL box is visually selected and render initial chart for ALL
+            // ensure ALL box is visually selected
             try {
                 const allBox = document.querySelector('#ticker-metrics-grid [data-ticker="ALL"]');
                 if (allBox) {
@@ -546,10 +549,14 @@
                     allBox.classList.add('selected');
                 }
             } catch (e) { /* ignore */ }
-            // Render initial chart for ALL using the default period
-            renderChart('ALL');
+            // Render initial chart for ALL using the default period and wait so we hide loader after it finishes
+            updateProgress(60, 'Rendering initial chart...');
+            await renderChart('ALL');
+            updateProgress(100, 'Complete!');
+            try { hideLoading(); } catch(e) {}
         } catch (err) {
             console.error(err);
+            try { hideLoading(); } catch(e) {}
         }
     }
 
@@ -557,37 +564,64 @@
     async function buildTickerGrid(historicalData) {
         const grid = document.getElementById('ticker-metrics-grid');
         grid.innerHTML = '';
-
         // Determine reference end date from history so period ranges align with chart
         let referenceEnd = new Date().toISOString().slice(0,10);
+        // Merge tickers from the precomputed BOD CSV and the full history so newly added
+        // tickers (present in history_tickers.csv but not yet in all_buy_on_dip.csv) appear.
+        let historyAll = [];
         try {
-            const historyAll = await fetchHistoryData();
+            updateProgress(30, 'Loading full price history...');
+            historyAll = await fetchHistoryData();
             const historyDates = Array.from(new Set(historyAll.map(r => r.Date_add))).sort();
             referenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : referenceEnd;
-        } catch (e) {
-            // fallback to today if history not available
-        }
+        } catch (e) { /* ignore - proceed with precomputed */ }
 
-    // Merge tickers from the precomputed BOD CSV and the full history so newly added
-    // tickers (present in history_tickers.csv but not yet in all_buy_on_dip.csv) appear.
-    let historyAll = [];
-    try {
-        historyAll = await fetchHistoryData();
-    } catch (e) { /* ignore - proceed with precomputed */ }
+        const tickersSet = new Set();
+        historicalData.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
+        historyAll.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
+        const tickers = Array.from(tickersSet).filter(Boolean).sort((a,b) => a.localeCompare(b));
 
-    const tickersSet = new Set();
-    historicalData.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
-    historyAll.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
-    const tickers = Array.from(tickersSet).filter(Boolean).sort((a,b) => a.localeCompare(b));
         const range = getPeriodRange(activePeriod || 'YTD', referenceEnd);
 
-        tickers.forEach(ticker => {
-            // Count rows for this ticker within the selected timeframe
-            let count = historicalData.filter(r => String(r.Symbol).trim() === ticker).length;
+    // Precompute counts per ticker within the selected timeframe in a single pass
+        const countsByTicker = {};
+        let totalCount = 0;
+        for (let i = 0; i < historicalData.length; i++) {
+            const r = historicalData[i];
+            if (!r || !r.Symbol) continue;
+            const sym = String(r.Symbol).trim();
             if (range.startDate && range.endDate) {
-                count = historicalData.filter(r => String(r.Symbol).trim() === ticker && r.Date_add >= range.startDate && r.Date_add <= range.endDate).length;
+                if (!(r.Date_add >= range.startDate && r.Date_add <= range.endDate)) continue;
             }
+            countsByTicker[sym] = (countsByTicker[sym] || 0) + 1;
+            totalCount++;
+        }
 
+    updateProgress(50, 'Building ticker grid...');
+
+        // Build DOM using a fragment to avoid repeated reflows
+        const frag = document.createDocumentFragment();
+
+        // Add an ALL box that shows total count within the timeframe
+        const allBox = document.createElement('div');
+        allBox.className = 'ticker-box clickable-ticker';
+        allBox.dataset.ticker = 'ALL';
+        allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
+        allBox.addEventListener('click', () => {
+            document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
+            allBox.classList.add('selected');
+            selectedTickerGlobal = 'ALL';
+            document.getElementById('selected-ticker-display').textContent = 'Selected: ALL';
+            // Default behavior: auto-run YTD when ALL is selected
+            setPeriod('YTD');
+            try { showLoading(); } catch(e) {}
+            renderChart('ALL');
+        });
+        frag.appendChild(allBox);
+
+        // Append tickers incrementally and update progress to match DCA UX
+        let processed = 0;
+        for (const ticker of tickers) {
             const box = document.createElement('div');
             box.className = 'ticker-box clickable-ticker';
             box.dataset.ticker = ticker;
@@ -602,32 +636,27 @@
                 // Default behavior: auto-run YTD when a ticker is selected so user sees initial results immediately
                 setPeriod('YTD');
                 console.debug('Ticker clicked, running renderChart for', ticker);
+                try { showLoading(); } catch(e) {}
                 renderChart(selectedTickerGlobal).then(()=>{
                     console.debug('renderChart completed for', ticker);
                 }).catch(e=>console.error('renderChart error', e));
             });
-            grid.appendChild(box);
-        });
+            frag.appendChild(box);
 
-        // Add an ALL box that shows total count within the timeframe
-        const allBox = document.createElement('div');
-        allBox.className = 'ticker-box clickable-ticker';
-        allBox.dataset.ticker = 'ALL';
-        let totalCount = historicalData.length;
-        if (range.startDate && range.endDate) {
-            totalCount = historicalData.filter(r => r.Date_add >= range.startDate && r.Date_add <= range.endDate).length;
+            processed++;
+            // Report progress between 50% and 90% while building the grid
+            try {
+                const pct = 50 + Math.round((processed / (tickers.length || 1)) * 40);
+                updateProgress(pct, `Processing ${ticker}... (${processed}/${tickers.length})`);
+            } catch (e) { }
+
+            // Yield to the UI so progress bar updates are visible
+            await new Promise(resolve => setTimeout(resolve, 5));
         }
-    allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
-        allBox.addEventListener('click', () => {
-            document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
-            allBox.classList.add('selected');
-            selectedTickerGlobal = 'ALL';
-            document.getElementById('selected-ticker-display').textContent = 'Selected: ALL';
-            // Default behavior: auto-run YTD when ALL is selected
-            setPeriod('YTD');
-            renderChart('ALL');
-        });
-        grid.insertBefore(allBox, grid.firstChild);
+
+    grid.appendChild(frag);
+
+    try { updateProgress(80, 'Ticker grid built'); } catch(e) {}
 
         // Center grid when there are fewer than 7 boxes
         try {
@@ -656,11 +685,11 @@
     activePeriod = name;
     }
 
-    document.getElementById('ytd-btn').addEventListener('click', ()=>{ setPeriod('YTD'); renderChart(selectedTickerGlobal); });
-    document.getElementById('5y-btn').addEventListener('click', ()=>{ setPeriod('5Y'); renderChart(selectedTickerGlobal); });
-    document.getElementById('10y-btn').addEventListener('click', ()=>{ setPeriod('10Y'); renderChart(selectedTickerGlobal); });
-    document.getElementById('15y-btn').addEventListener('click', ()=>{ setPeriod('15Y'); renderChart(selectedTickerGlobal); });
-    document.getElementById('20y-btn').addEventListener('click', ()=>{ setPeriod('20Y'); renderChart(selectedTickerGlobal); });
+    document.getElementById('ytd-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('YTD'); renderChart(selectedTickerGlobal); });
+    document.getElementById('5y-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('5Y'); renderChart(selectedTickerGlobal); });
+    document.getElementById('10y-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('10Y'); renderChart(selectedTickerGlobal); });
+    document.getElementById('15y-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('15Y'); renderChart(selectedTickerGlobal); });
+    document.getElementById('20y-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('20Y'); renderChart(selectedTickerGlobal); });
 
     // Download CSV - will download currently displayed all_buy_on_dip filtered by selection
     async function downloadCSVForSelection() {
