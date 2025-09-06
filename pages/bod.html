@@ -231,6 +231,29 @@
         return `${yyyy}-${mm}-${dd}`;
     }
 
+    // Parse a date-like string into a local Date (avoid timezone shifts when parsing ISO YYYY-MM-DD)
+    function parseDateStringAsLocal(s) {
+        if (!s) return null;
+        if (s instanceof Date) return s;
+        const str = String(s).trim();
+        // YYYY-MM-DD
+        let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        // MM/DD/YYYY or M/D/YYYY
+        m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+        // Fallback to Date parser but normalize to local midnight for the parsed date
+        const parsed = new Date(str);
+        if (isNaN(parsed)) return null;
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+    }
+
+    // Convert a date-like string to YYYY-MM-DD using local date parts
+    function toYMDFromString(s) {
+        const d = parseDateStringAsLocal(s);
+        return d ? formatDateToYMD(d) : s;
+    }
+
     // Helper: given a period name and an endDate string (YYYY-MM-DD), return {startDate, endDate}
     function getPeriodRange(periodName, endDateStr) {
         if (!periodName) return { startDate: null, endDate: null };
@@ -373,17 +396,20 @@
             cachedBodData = parsed.data.map(row => {
                 // Support possible header name variants and ensure keys exist
                 const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'] ?? row['Date_add'];
-                // Normalize to YYYY-MM-DD for consistent comparisons
+                // Normalize to YYYY-MM-DD for consistent comparisons using local parsing
                 let Date_add = null;
                 try {
-                    Date_add = rawDate ? formatDateToYMD(new Date(rawDate)) : null;
+                    Date_add = rawDate ? toYMDFromString(rawDate) : null;
                 } catch (e) {
                     Date_add = rawDate;
                 }
 
+                // compute weekday from normalized local Date_add to avoid timezone shifts
+                const _parsedDate = parseDateStringAsLocal(Date_add);
+                const computedWeekday = _parsedDate ? _parsedDate.toLocaleDateString('en-US', { weekday: 'long' }) : (row['Weekday'] ?? row['weekday'] ?? '');
                 return {
                     Date_add: Date_add,
-                    Weekday: row['Weekday'] ?? row['weekday'] ?? '',
+                    Weekday: computedWeekday,
                     Symbol: String(row['Symbol'] ?? row['symbol'] ?? '').trim(),
                     Strategy: row['Strategy'] ?? row['strategy'] ?? 'Buy_on_Dip',
                     'Buy_Price': row['Buy_Price'] != null ? Number(row['Buy_Price']) : null,
@@ -421,7 +447,7 @@
             cachedHistoryData = parsed.data.map(row => {
                 const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'] ?? row['Date_add'];
                 let Date_add = null;
-                try { Date_add = rawDate ? formatDateToYMD(new Date(rawDate)) : null; } catch (e) { Date_add = rawDate; }
+                try { Date_add = rawDate ? toYMDFromString(rawDate) : null; } catch (e) { Date_add = rawDate; }
                 return {
                     Date_add: Date_add,
                     Symbol: String(row['Symbol'] ?? row['symbol'] ?? '').trim(),
@@ -475,9 +501,10 @@
 
                     const cumulativeValue = Number((cumulativeShares * todayClose).toFixed(2));
 
+                    const dateForWeek = parseDateStringAsLocal(today.Date_add ?? today.Date);
                     results.push({
-                        Date_add: today.Date_add ?? today.Date,
-                        Weekday: new Date(today.Date_add ?? today.Date).toLocaleDateString('en-US', { weekday: 'long' }),
+                        Date_add: toYMDFromString(today.Date_add ?? today.Date),
+                        Weekday: dateForWeek ? dateForWeek.toLocaleDateString('en-US', { weekday: 'long' }) : (today.Weekday || ''),
                         Symbol: ticker,
                         Strategy: 'Buy_on_Dip',
                         Buy_Price: buyPrice,
@@ -669,6 +696,10 @@
 
             rows = rows.map(r => {
                 const out = Object.assign({}, r);
+                // normalize Date_add and compute weekday for the exported row
+                if (out.Date_add) out.Date_add = toYMDFromString(out.Date_add);
+                const parsed = parseDateStringAsLocal(out.Date_add);
+                out.Weekday = parsed ? parsed.toLocaleDateString('en-US', { weekday: 'long' }) : (out.Weekday || '');
                 if (out.Low == null || out.Low === '') {
                     const key = (out.Symbol || '') + '|' + (out.Date_add || '');
                     if (historyIndex[key] && historyIndex[key].Low != null) out.Low = historyIndex[key].Low;
@@ -839,9 +870,10 @@
                             cumShares += 1;
                             cumInvested += limitPrice;
                             const close = today.Close != null ? Number(today.Close) : prevClose;
+                            const eventDateLocal = parseDateStringAsLocal(today.Date_add);
                             events.push({
-                                Date_add: today.Date_add,
-                                Weekday: new Date(today.Date_add).toLocaleDateString('en-US', { weekday: 'long' }),
+                                Date_add: toYMDFromString(today.Date_add),
+                                Weekday: eventDateLocal ? eventDateLocal.toLocaleDateString('en-US', { weekday: 'long' }) : (today.Weekday || ''),
                                 Symbol: sym,
                                 Strategy: 'Buy_on_Dip',
                                 'Buy_Price': Number(limitPrice.toFixed(4)),

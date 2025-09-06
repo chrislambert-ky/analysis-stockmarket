@@ -196,6 +196,25 @@
         return `${yyyy}-${mm}-${dd}`;
     }
 
+    // Parse a date-like string into a local Date (avoid timezone shifts when parsing ISO YYYY-MM-DD)
+    function parseDateStringAsLocal(s) {
+        if (!s) return null;
+        if (s instanceof Date) return s;
+        const str = String(s).trim();
+        let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+        const parsed = new Date(str);
+        if (isNaN(parsed)) return null;
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+    }
+
+    function toYMDFromString(s) {
+        const d = parseDateStringAsLocal(s);
+        return d ? formatDateToYMD(d) : s;
+    }
+
     // Return {startDate, endDate} as YYYY-MM-DD strings for a given period and reference end date
     function getPeriodRange(periodName, endDateStr) {
         const endDate = endDateStr ? new Date(endDateStr) : new Date();
@@ -305,10 +324,10 @@
                 if (Object.prototype.hasOwnProperty.call(obj, k)) delete obj[k];
             });
 
-            // Normalize Date_add to YYYY-MM-DD
+            // Normalize Date_add to YYYY-MM-DD using local date parsing
             const rawDate = obj['Date_add'] || obj['Date'] || obj['date'] || '';
             try {
-                obj.Date_add = rawDate ? formatDateToYMD(new Date(rawDate)) : '';
+                obj.Date_add = rawDate ? toYMDFromString(rawDate) : '';
             } catch (e) {
                 obj.Date_add = rawDate;
             }
@@ -332,7 +351,11 @@
     // Calculate buy-on-dip strategy for a specific ticker
     function calculateBuyOnDip(tickerData) {
         // Sort by date
-        const sortedData = tickerData.sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+        const sortedData = tickerData.sort((a, b) => {
+            const da = parseDateStringAsLocal(a.Date_add);
+            const db = parseDateStringAsLocal(b.Date_add);
+            return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+        });
         
         let cumulativeShares = 0;
         let cumulativeInvested = 0;

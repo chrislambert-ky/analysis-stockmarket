@@ -579,13 +579,35 @@
                     const rows2 = txt.split('\n').filter(r => r.trim().length > 0);
                     if (rows2.length > 0) {
                         const headers2 = rows2[0].split(',').map(h => h.trim());
+                        // small helpers for timezone-safe parsing
+                        function parseDateStringAsLocal(s) {
+                            if (!s) return null;
+                            if (s instanceof Date) return s;
+                            const str = String(s).trim();
+                            let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+                            if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+                            m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                            if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+                            const parsed = new Date(str);
+                            if (isNaN(parsed)) return null;
+                            return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+                        }
+                        function toYMDFromString(s) {
+                            const d = parseDateStringAsLocal(s);
+                            if (!d) return s;
+                            const yyyy = d.getFullYear();
+                            const mm = String(d.getMonth() + 1).padStart(2, '0');
+                            const dd = String(d.getDate()).padStart(2, '0');
+                            return `${yyyy}-${mm}-${dd}`;
+                        }
+
                         allBodEvents = rows2.slice(1).map(row => {
                             const values = row.split(',').map(v => (v ?? '').trim());
                             const obj = {};
                             headers2.forEach((h, i) => obj[h.trim()] = values[i] ?? '');
                             // normalize date
                             const rawDate = obj['Date_add'] || obj['Date'] || obj['date'] || '';
-                            try { obj.Date_add = rawDate ? new Date(rawDate).toISOString().slice(0,10) : ''; } catch(e) { obj.Date_add = rawDate; }
+                            try { obj.Date_add = rawDate ? toYMDFromString(rawDate) : ''; } catch(e) { obj.Date_add = rawDate; }
                             // coerce numeric fields
                             ['Buy_Price','Executed_Price','Low','Previous_Close','Close','Open','High','Dollars Invested','Dollars_Invested'].forEach(k => {
                                 if (obj[k] != null && obj[k] !== '') {
@@ -656,7 +678,11 @@
         let totalTrades = 0;
 
         const eventsForTicker = allBodEvents.filter(e => e.Symbol === ticker && new Date(e.Date_add) >= startDate && new Date(e.Date_add) <= endDate)
-            .sort((a,b) => new Date(a.Date_add) - new Date(b.Date_add));
+                .sort((a,b) => {
+                    const da = parseDateStringAsLocal(a.Date_add);
+                    const db = parseDateStringAsLocal(b.Date_add);
+                    return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+                });
 
         if (eventsForTicker.length > 0) {
             // events include per-event executed price and decline level; apply user's declineSettings
@@ -700,7 +726,11 @@
 
             // Compute additional metrics using tickerData fallback
             const tickerData = stockData.filter(row => row.Symbol === ticker && new Date(row.Date_add) >= startDate && new Date(row.Date_add) <= endDate)
-                .sort((a,b) => new Date(a.Date_add) - new Date(b.Date_add));
+                    .sort((a,b) => {
+                        const da = parseDateStringAsLocal(a.Date_add);
+                        const db = parseDateStringAsLocal(b.Date_add);
+                        return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+                    });
             const additionalMetrics = calculateBODAdditionalMetrics(tickerData, results);
             return { trades: results, metrics: additionalMetrics };
         }
@@ -709,9 +739,13 @@
         // Filter data for selected ticker and date range
         const tickerData = stockData.filter(row => {
             if (row.Symbol !== ticker) return false;
-            const rowDate = new Date(row.Date_add);
-            return rowDate >= startDate && rowDate <= endDate;
-        }).sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+            const rowDate = parseDateStringAsLocal(row.Date_add);
+            return rowDate && rowDate >= startDate && rowDate <= endDate;
+        }).sort((a, b) => {
+            const da = parseDateStringAsLocal(a.Date_add);
+            const db = parseDateStringAsLocal(b.Date_add);
+            return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+        });
 
         if (tickerData.length === 0) {
             alert('No data found for selected ticker and date range');
@@ -802,9 +836,9 @@
         if (!normalized.Date_add && normalized.date) normalized.Date_add = normalized.date;
         if (normalized['Executed Price']) normalized.Executed_Price = normalized['Executed Price'];
         if (normalized['Executed Level']) normalized.Executed_Level = normalized['Executed Level'];
-        // Normalize Date_add
+        // Normalize Date_add using local parsing helper
         try {
-            if (normalized.Date_add) normalized.Date_add = new Date(normalized.Date_add).toISOString().slice(0,10);
+            if (normalized.Date_add) normalized.Date_add = toYMDFromString(normalized.Date_add);
         } catch(e) { /* keep existing */ }
         // Coerce numeric fields
         ['Low','Previous_Close','Close','Buy_Price','Executed_Price'].forEach(k => {
