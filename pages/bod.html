@@ -944,14 +944,21 @@
             const series = prepareSeries(filteredBodData, tickers, sortedDates);
             
             // Build lookup for percent gain using recomputed cumulatives within the filtered (period) data
+            // Optimization: pre-group filteredBodData by ticker to avoid repeated .filter() scans
             const gainLookup = {};
-            // For each ticker, iterate through sorted dates and accumulate shares/invested to produce per-date cumulatives
-            const tickersSet = Array.from(new Set(filteredBodData.map(r => r.Symbol))).sort((a,b) => a.localeCompare(b));
+            const groups = {};
+            filteredBodData.forEach(r => {
+                const s = r.Symbol || 'UNKNOWN';
+                if (!groups[s]) groups[s] = [];
+                groups[s].push(r);
+            });
+            const tickersSet = Object.keys(groups).sort((a,b) => a.localeCompare(b));
             tickersSet.forEach(ticker => {
-                const rows = filteredBodData.filter(r => r.Symbol === ticker).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
+                const rows = (groups[ticker] || []).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
                 let cumShares = 0;
                 let cumInvested = 0;
-                rows.forEach(r => {
+                for (let i = 0; i < rows.length; i++) {
+                    const r = rows[i];
                     const shares = Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0;
                     const invested = Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0) || 0;
                     cumShares += shares;
@@ -960,7 +967,7 @@
                     const value = close != null ? cumShares * close : null;
                     // store shares, invested, and computed value for tooltip display
                     gainLookup[ticker + '_' + r.Date_add] = { value: value, invested: cumInvested, shares: cumShares };
-                });
+                }
             });
             
             updateProgress(95, 'Rendering chart...');
@@ -1016,18 +1023,19 @@
         chart.setOption(option);
         
             // Calculate overall percent return for each ticker (last value)
-        let summaryArr = tickers.map(ticker => {
-            const tickerRows = filteredBodData.filter(row => row.Symbol === ticker).sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
-            if (tickerRows.length > 0) {
-                const cumShares = tickerRows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares Purchased'] ?? 1) || 0), 0);
-                const cumInvested = tickerRows.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars Invested'] ?? r['Buy_Price']) || 0), 0);
-                const lastClose = Number(tickerRows[tickerRows.length - 1].Close) || 0;
-                const value = cumShares * lastClose;
-                const pct = percentGain(value, cumInvested);
-                return { ticker, pct: parseFloat(pct), pctStr: pct };
-            }
-            return null;
-        }).filter(Boolean);
+                // Use grouped rows (built earlier) to compute summary efficiently
+                let summaryArr = tickers.map(ticker => {
+                    const tickerRows = (groups[ticker] || []).slice().sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
+                    if (tickerRows.length > 0) {
+                        const cumShares = tickerRows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0), 0);
+                        const cumInvested = tickerRows.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0) || 0), 0);
+                        const lastClose = Number(tickerRows[tickerRows.length - 1].Close) || 0;
+                        const value = cumShares * lastClose;
+                        const pct = percentGain(value, cumInvested);
+                        return { ticker, pct: parseFloat(pct), pctStr: pct };
+                    }
+                    return null;
+                }).filter(Boolean);
         
         if (tickers.length > 1) {
             summaryArr.sort((a, b) => b.pct - a.pct);
@@ -1044,21 +1052,14 @@
     if (!filteredBodData || filteredBodData.length === 0) {
         document.getElementById('detailed-metrics').style.display = 'none';
     } else {
-        // Group rows by Symbol
-        const groups = {};
-        filteredBodData.forEach(r => {
-            const s = r.Symbol || 'UNKNOWN';
-            if (!groups[s]) groups[s] = [];
-            groups[s].push(r);
-        });
-
+        // (groups already built earlier when creating gainLookup)
         if (selectedTicker === 'ALL') {
             // Aggregate across all tickers for the selected period
             let totalShares = 0;
             let totalInvested = 0;
             let totalValue = 0;
             Object.keys(groups).forEach(sym => {
-                const rows = groups[sym].sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
+                const rows = (groups[sym] || []).slice().sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
                 const shares = rows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0), 0);
                 const invested = rows.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0) || 0), 0);
                 const lastClose = rows.length ? Number(rows[rows.length - 1].Close) : 0;
