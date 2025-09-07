@@ -387,27 +387,27 @@
                     </div>
                     <div class="decline-item">
                         <label>-6%:</label>
-                        <input type="number" id="decline6" value="1" min="0" step="1">
+                        <input type="number" id="decline6" value="0" min="0" step="1">
                         <span>shares</span>
                     </div>
                     <div class="decline-item">
                         <label>-7%:</label>
-                        <input type="number" id="decline7" value="1" min="0" step="1">
+                        <input type="number" id="decline7" value="0" min="0" step="1">
                         <span>shares</span>
                     </div>
                     <div class="decline-item">
                         <label>-8%:</label>
-                        <input type="number" id="decline8" value="1" min="0" step="1">
+                        <input type="number" id="decline8" value="0" min="0" step="1">
                         <span>shares</span>
                     </div>
                     <div class="decline-item">
                         <label>-9%:</label>
-                        <input type="number" id="decline9" value="1" min="0" step="1">
+                        <input type="number" id="decline9" value="0" min="0" step="1">
                         <span>shares</span>
                     </div>
                     <div class="decline-item">
                         <label>-10%:</label>
-                        <input type="number" id="decline10" value="1" min="0" step="1">
+                        <input type="number" id="decline10" value="0" min="0" step="1">
                         <span>shares</span>
                     </div>
                 </div>
@@ -658,6 +658,15 @@
                                     const n = Number(obj[k]); obj[k] = isNaN(n) ? obj[k] : n;
                                 }
                             });
+                            // Normalize level fields like '1%' -> 1 (number) and ensure consistent keys
+                            const levelKeys = ['Executed_Level','Buy_Level','Level','Decline_Level','DeclinePercent','Executed Level','Buy Level'];
+                            for (const k of levelKeys) {
+                                if (k in obj && obj[k] != null && obj[k] !== '') {
+                                    const raw = String(obj[k]).trim();
+                                    const matched = raw.match(/^(\d+(?:\.\d+)?)/);
+                                    if (matched) obj['Executed_Level'] = Number(matched[1]);
+                                }
+                            }
                             // Remove audit-only cumulative fields if present in the precomputed CSV
                             // These cumulative columns (if present) are for troubleshooting only and
                             // must not be used directly by UI charts or period summaries. The UI
@@ -732,7 +741,12 @@
             // events include per-event executed price and decline level; apply user's declineSettings
             for (const ev of eventsForTicker) {
                 // the ETL may include a field like 'Executed_Level' or 'Buy_Level' indicating the decline percent
-                const declineLevelRaw = ev.Executed_Level || ev.Buy_Level || ev.Level || ev.Decline_Level || ev.DeclinePercent || ev['Executed Level'] || ev['Buy Level'] || '';
+                // support values like '1%' or '1' or numeric 1
+                let declineLevelRaw = ev.Executed_Level ?? ev.Buy_Level ?? ev.Level ?? ev.Decline_Level ?? ev.DeclinePercent ?? ev['Executed Level'] ?? ev['Buy Level'] ?? '';
+                if (typeof declineLevelRaw === 'string') {
+                    const m = declineLevelRaw.match(/^(\d+(?:\.\d+)?)/);
+                    declineLevelRaw = m ? Number(m[1]) : declineLevelRaw;
+                }
                 const declineLevel = Number(declineLevelRaw) || 0;
                 // Only consider declines that the user has configured (1..10)
                 if (!declineSettings[declineLevel]) continue;
@@ -751,6 +765,7 @@
 
                 results.push({
                     date: ev.Date_add,
+                    // OHLC may be missing from precomputed CSV; try to fill from stockData (history) when absent
                     open: (ev.Open != null && ev.Open !== '') ? Number(ev.Open) : null,
                     high: (ev.High != null && ev.High !== '') ? Number(ev.High) : null,
                     low: (ev.Low != null && ev.Low !== '') ? Number(ev.Low) : null,
@@ -767,6 +782,22 @@
                     tradesExecuted: [{ declinePercent: declineLevel, purchasePrice: purchasePrice, shares: shares, cost: cost, actualDecline: declineLevel }],
                     totalTrades: totalTrades
                 });
+            }
+
+            // After collecting results, attempt to populate missing OHLC/Previous_Close from stockData
+            for (let i = 0; i < results.length; i++) {
+                const r = results[i];
+                if ((r.open == null || r.high == null || r.low == null || r.previousClose == null) && stockData && stockData.length) {
+                    // find exact matching row in stockData for same symbol and date
+                    const match = stockData.find(sd => sd.Symbol === ticker && (sd.Date_add === r.date || sd.Date_add === r.Date_add));
+                    if (match) {
+                        if (r.open == null && match.Open != null && match.Open !== '') r.open = Number(match.Open);
+                        if (r.high == null && match.High != null && match.High !== '') r.high = Number(match.High);
+                        if (r.low == null && match.Low != null && match.Low !== '') r.low = Number(match.Low);
+                        if (r.close == null && match.Close != null && match.Close !== '') r.close = Number(match.Close);
+                        if (r.previousClose == null && (match.Previous_Close != null && match.Previous_Close !== '')) r.previousClose = Number(match.Previous_Close);
+                    }
+                }
             }
             // If multiple fills occurred on the same Date_add, merge them so the UI shows all trades executed that day
             function mergeResultsByDate(rows) {
