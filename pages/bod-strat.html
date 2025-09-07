@@ -490,8 +490,13 @@
             mobileBtn.setAttribute('aria-expanded', (!closed).toString());
         });
 
-        // Keep endDate defaulted to today (already attempted earlier)
-        try { document.getElementById('endDate').value = new Date().toISOString().split('T')[0]; } catch(e){}
+        // Keep endDate defaulted to today and set start date to YTD so the selected period matches the date range
+        try {
+            const endInput = document.getElementById('endDate');
+            if (endInput) endInput.value = new Date().toISOString().split('T')[0];
+            // ensure YTD start is applied on load (will also set the active button)
+            if (typeof setStartToYTD === 'function') setStartToYTD();
+        } catch(e){}
     });
 
     // Keep track of charts for responsive resizing
