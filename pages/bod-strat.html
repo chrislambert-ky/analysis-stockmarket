@@ -472,22 +472,7 @@
                     <div class="result-value" id="totalTrades">0</div>
                     <div class="result-label">Total Trades</div>
                 </div>
-                <div class="result-item">
-                    <div class="result-value" id="upDays">0 (0%)</div>
-                    <div class="result-label">Up Days (Open→Close)</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="downDays">0 (0%)</div>
-                    <div class="result-label">Down Days (Open→Close)</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="mondayFridaySuccess">0 (0%)</div>
-                    <div class="result-label">Monday→Friday Success</div>
-                </div>
-                <div class="result-item">
-                    <div class="result-value" id="tradeWeekSuccess">0 (0%)</div>
-                    <div class="result-label">Trade→Next Week Success</div>
-                </div>
+                <!-- Additional summary metrics are shown above in the ticker-metrics section -->
             </div>
         </div>
         
@@ -514,6 +499,29 @@
     let stockData = [];
     let allBodEvents = []; // precomputed buy-on-dip events (fast-path)
     let calculationResults = [];
+
+    // Global date parsing helpers (used by multiple functions)
+    function parseDateStringAsLocal(s) {
+        if (!s) return null;
+        if (s instanceof Date) return s;
+        const str = String(s).trim();
+        let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+        const parsed = new Date(str);
+        if (isNaN(parsed)) return null;
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+    }
+
+    function toYMDFromString(s) {
+        const d = parseDateStringAsLocal(s);
+        if (!d) return s;
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
 
     // Helper function to format currency with commas
     function formatCurrency(amount) {
@@ -544,10 +552,46 @@
             if (rows.length === 0) return;
             
             const headers = rows[0].split(',').map(h => h.trim());
-            stockData = rows.slice(1).map(row => {
-                const values = row.split(',').map(v => (v ?? '').trim());
+            // Basic CSV line parser (supports quoted fields) and numeric coercion
+            function parseCsvLine(line) {
+                const out = [];
+                let cur = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const ch = line[i];
+                    if (ch === '"') {
+                        if (inQuotes && i + 1 < line.length && line[i + 1] === '"') { cur += '"'; i++; }
+                        else { inQuotes = !inQuotes; }
+                    } else if (ch === ',' && !inQuotes) {
+                        out.push(cur);
+                        cur = '';
+                    } else {
+                        cur += ch;
+                    }
+                }
+                out.push(cur);
+                return out.map(s => (s ?? '').trim());
+            }
+
+            const numericKeys = new Set(['Open','High','Low','Close','Previous_Close','avg_daily_price','Volume','Adj Close','Adj_Close']);
+            stockData = rows.slice(1).map(line => {
+                const values = parseCsvLine(line);
                 const obj = {};
-                headers.forEach((h, i) => obj[h] = values[i] ?? '');
+                headers.forEach((h, i) => {
+                    const key = h || `col${i}`;
+                    const val = values[i] ?? '';
+                    if (key.toLowerCase() === 'date' || key.toLowerCase() === 'date_add') {
+                        obj['Date_add'] = val;
+                        return;
+                    }
+                    if (numericKeys.has(key)) {
+                        const n = val === '' ? null : Number(val.replace(/\"/g, ''));
+                        obj[key] = (n === null || isNaN(n)) ? null : n;
+                    } else {
+                        obj[key] = val;
+                    }
+                });
+                if (!obj.Date_add) obj.Date_add = obj['Date'] || obj['date'] || '';
                 return obj;
             });
             
@@ -707,15 +751,16 @@
 
                 results.push({
                     date: ev.Date_add,
-                    open: Number(ev.Open || 0),
-                    high: Number(ev.High || 0),
-                    low: Number(ev.Low || 0),
-                    close: Number(ev.Close || ev.Close_Price || ev.close || 0),
-                    previousClose: Number(ev.Previous_Close || ev.PreviousClose || ev.Previous || 0),
+                    open: (ev.Open != null && ev.Open !== '') ? Number(ev.Open) : null,
+                    high: (ev.High != null && ev.High !== '') ? Number(ev.High) : null,
+                    low: (ev.Low != null && ev.Low !== '') ? Number(ev.Low) : null,
+                    close: (ev.Close != null && ev.Close !== '') ? Number(ev.Close) : (ev.Close_Price != null && ev.Close_Price !== '' ? Number(ev.Close_Price) : null),
+                    previousClose: (ev.Previous_Close != null && ev.Previous_Close !== '') ? Number(ev.Previous_Close) : (ev.PreviousClose != null && ev.PreviousClose !== '' ? Number(ev.PreviousClose) : null),
                     dayInvested: cost,
                     dayShares: shares,
                     totalShares: totalShares,
                     totalInvested: totalInvested,
+                    cumulativeInvested: totalInvested,
                     portfolioValue: portfolioValue,
                     gain: round2(portfolioValue - totalInvested),
                     gainPercent: totalInvested > 0 ? round2((portfolioValue - totalInvested) / totalInvested * 100) : 0,
@@ -723,6 +768,52 @@
                     totalTrades: totalTrades
                 });
             }
+            // If multiple fills occurred on the same Date_add, merge them so the UI shows all trades executed that day
+            function mergeResultsByDate(rows) {
+                const map = new Map();
+                for (const r of rows) {
+                    const d = r.date || r.Date_add || '';
+                    if (!map.has(d)) {
+                        // shallow copy and ensure arrays are copied
+                        map.set(d, Object.assign({}, r, { tradesExecuted: Array.isArray(r.tradesExecuted) ? r.tradesExecuted.slice() : [] }));
+                        continue;
+                    }
+                    const agg = map.get(d);
+                    // append trades
+                    if (r.tradesExecuted && r.tradesExecuted.length) agg.tradesExecuted = agg.tradesExecuted.concat(r.tradesExecuted);
+                    // sum dayInvested/dayShares
+                    agg.dayInvested = round2((Number(agg.dayInvested) || 0) + (Number(r.dayInvested) || 0));
+                    agg.dayShares = round2((Number(agg.dayShares) || 0) + (Number(r.dayShares) || 0));
+                    // totals should reflect the latest cumulative values
+                    agg.totalShares = r.totalShares != null ? r.totalShares : agg.totalShares;
+                    agg.totalInvested = r.totalInvested != null ? r.totalInvested : agg.totalInvested;
+                    agg.cumulativeInvested = r.cumulativeInvested != null ? r.cumulativeInvested : agg.cumulativeInvested;
+                    agg.portfolioValue = r.portfolioValue != null ? r.portfolioValue : agg.portfolioValue;
+                    // reconcile OHLC: prefer non-null values; for high take max, for low take min
+                    agg.open = agg.open != null ? agg.open : r.open;
+                    agg.high = (agg.high != null && r.high != null) ? Math.max(agg.high, r.high) : (agg.high != null ? agg.high : r.high);
+                    agg.low = (agg.low != null && r.low != null) ? Math.min(agg.low, r.low) : (agg.low != null ? agg.low : r.low);
+                    agg.close = r.close != null ? r.close : agg.close;
+                    // recompute gain/gainPercent
+                    const inv = agg.cumulativeInvested != null ? agg.cumulativeInvested : agg.totalInvested;
+                    agg.gain = round2((agg.portfolioValue != null ? agg.portfolioValue : 0) - (inv != null ? inv : 0));
+                    agg.gainPercent = inv > 0 ? round2((agg.gain / inv) * 100) : 0;
+                    agg.totalTrades = r.totalTrades != null ? r.totalTrades : agg.totalTrades;
+                    map.set(d, agg);
+                }
+                // return items in original chronological order
+                const ordered = [];
+                for (const r of rows) {
+                    const d = r.date || r.Date_add || '';
+                    if (map.has(d)) {
+                        ordered.push(map.get(d));
+                        map.delete(d);
+                    }
+                }
+                return ordered;
+            }
+
+            const mergedResults = mergeResultsByDate(results);
 
             // Compute additional metrics using tickerData fallback
             const tickerData = stockData.filter(row => row.Symbol === ticker && new Date(row.Date_add) >= startDate && new Date(row.Date_add) <= endDate)
@@ -731,8 +822,8 @@
                         const db = parseDateStringAsLocal(b.Date_add);
                         return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
                     });
-            const additionalMetrics = calculateBODAdditionalMetrics(tickerData, results);
-            return { trades: results, metrics: additionalMetrics };
+            const additionalMetrics = calculateBODAdditionalMetrics(tickerData, mergedResults);
+            return { trades: mergedResults, metrics: additionalMetrics };
         }
 
         // Fallback: original day-by-day simulation if no precomputed events
@@ -799,15 +890,16 @@
 
             results.push({
                 date: currentDay.Date_add,
-                open: Number(currentDay.Open),
-                high: Number(currentDay.High),
-                low: Number(currentDay.Low),
+                open: (currentDay.Open != null && currentDay.Open !== '') ? Number(currentDay.Open) : null,
+                high: (currentDay.High != null && currentDay.High !== '') ? Number(currentDay.High) : null,
+                low: (currentDay.Low != null && currentDay.Low !== '') ? Number(currentDay.Low) : null,
                 close: currentClose,
                 previousClose: previousClose,
                 dayInvested: dayInvested,
                 dayShares: dayShares,
                 totalShares: totalShares,
                 totalInvested: totalInvested,
+                cumulativeInvested: totalInvested, // explicit alias for clarity
                 portfolioValue: portfolioValue,
                 gain: round2(portfolioValue - totalInvested),
                 gainPercent: totalInvested > 0 ? round2((portfolioValue - totalInvested) / totalInvested * 100) : 0,
@@ -965,10 +1057,11 @@
         
         const results = calculationData.trades;
         const metrics = calculationData.metrics;
-        const lastResult = results[results.length - 1];
-        const avgPurchasePrice = lastResult.totalInvested > 0 ? lastResult.totalInvested / lastResult.totalShares : 0;
-        
-        document.getElementById('totalInvested').textContent = formatCurrency(lastResult.totalInvested);
+    const lastResult = results[results.length - 1];
+    const cumulativeInv = (lastResult.cumulativeInvested != null) ? lastResult.cumulativeInvested : lastResult.totalInvested;
+    const avgPurchasePrice = cumulativeInv > 0 ? cumulativeInv / lastResult.totalShares : 0;
+
+    document.getElementById('totalInvested').textContent = formatCurrency(cumulativeInv);
         document.getElementById('totalShares').textContent = lastResult.totalShares.toFixed(4);
         document.getElementById('portfolioValue').textContent = formatCurrency(lastResult.portfolioValue);
         document.getElementById('totalReturn').textContent = formatCurrency(lastResult.gain);
@@ -989,9 +1082,10 @@
         const chartContainer = document.getElementById('chartContainer');
         chartContainer.innerHTML = '<div id="chart" style="width: 100%; height: 500px;"></div>';
         
-        const dates = results.map(r => r.date);
-        const portfolioValues = results.map(r => r.portfolioValue);
-        const totalInvested = results.map(r => r.totalInvested);
+    const dates = results.map(r => r.date);
+    const portfolioValues = results.map(r => r.portfolioValue);
+    // Prefer explicit cumulativeInvested where available
+    const totalInvested = results.map(r => (r.cumulativeInvested != null ? r.cumulativeInvested : r.totalInvested));
         const stockPrices = results.map(r => r.close);
         
     const chartEl = document.getElementById('chart');
@@ -1021,7 +1115,7 @@
                     return `
                         Date: ${result.date}<br/>
                         Portfolio Value: ${formatCurrency(result.portfolioValue)}<br/>
-                        Total Invested: ${formatCurrency(result.totalInvested)}<br/>
+                            Total Invested: ${formatCurrency(result.cumulativeInvested != null ? result.cumulativeInvested : result.totalInvested)}<br/>
                         Stock Price: ${formatCurrency(result.close)}<br/>
                         Previous Close: ${formatCurrency(result.previousClose)}<br/>
                         Shares Owned: ${result.totalShares.toFixed(4)}<br/>
@@ -1055,6 +1149,7 @@
                 {
                     name: 'Portfolio Value',
                     type: 'line',
+                    smooth: false,
                     data: portfolioValues,
                     yAxisIndex: 0,
                     lineStyle: { color: '#00aa00', width: 2 }
@@ -1062,6 +1157,8 @@
                 {
                     name: 'Total Invested',
                     type: 'line',
+                    step: 'end',
+                    smooth: false,
                     data: totalInvested,
                     yAxisIndex: 0,
                     lineStyle: { color: '#0077cc', type: 'dashed' }
@@ -1103,25 +1200,26 @@
         
         let csvContent = headers.join(',') + '\n';
         
+        function safeNumberFormat(v) { if (v == null || v === '' || isNaN(Number(v))) return ''; return Number(v).toFixed(2); }
+
         calculationResults.trades.forEach(row => {
             const tradesDesc = row.tradesExecuted ? row.tradesExecuted.map(t => 
                 `${t.shares}@$${t.purchasePrice.toFixed(2)}(-${t.actualDecline.toFixed(1)}%)`
             ).join(';') : '';
-            
             const values = [
                 row.date,
-                row.open.toFixed(2),
-                row.high.toFixed(2),
-                row.low.toFixed(2),
-                row.close.toFixed(2),
-                row.previousClose.toFixed(2),
-                row.dayInvested.toFixed(2),
-                row.dayShares.toFixed(6),
-                row.totalShares.toFixed(6),
-                row.totalInvested.toFixed(2),
-                row.portfolioValue.toFixed(2),
-                row.gain.toFixed(2),
-                row.gainPercent.toFixed(2),
+                safeNumberFormat(row.open),
+                safeNumberFormat(row.high),
+                safeNumberFormat(row.low),
+                safeNumberFormat(row.close),
+                safeNumberFormat(row.previousClose),
+                (row.dayInvested != null ? Number(row.dayInvested).toFixed(2) : ''),
+                (row.dayShares != null ? Number(row.dayShares).toFixed(6) : ''),
+                (row.totalShares != null ? Number(row.totalShares).toFixed(6) : ''),
+                (row.totalInvested != null ? Number(row.totalInvested).toFixed(2) : ''),
+                (row.portfolioValue != null ? Number(row.portfolioValue).toFixed(2) : ''),
+                (row.gain != null ? Number(row.gain).toFixed(2) : ''),
+                (row.gainPercent != null ? Number(row.gainPercent).toFixed(2) : ''),
                 `"${tradesDesc}"`
             ];
             csvContent += values.join(',') + '\n';
@@ -1146,8 +1244,6 @@
         const startInput = document.getElementById('startDate');
         if (startInput) startInput.value = ytd;
     setActivePeriodButton('ytd-btn');
-    // If a ticker is selected, recompute
-    if (document.getElementById('tickerSelect').value) calculateStrategy();
     }
 
     // Shift start date back by n years (keeps month/day as Jan 1)
@@ -1160,7 +1256,7 @@
         const idMap = {5: '5y-btn', 10: '10y-btn', 15: '15y-btn', 20: '20y-btn'};
         const btnId = idMap[n] || null;
         if (btnId) setActivePeriodButton(btnId);
-        if (document.getElementById('tickerSelect').value) calculateStrategy();
+    // Do NOT auto-run calculation on period change; user must click Calculate
     }
 
     function setActivePeriodButton(id) {
