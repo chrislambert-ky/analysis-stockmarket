@@ -37,7 +37,7 @@ for sym in etf_list:
     try:
         t = yf.Ticker(sym)
         # Fetch data from January 1, 2015 to present day
-        start_date = "2015-01-01"
+        start_date = "2005-01-01"
         end_date = datetime.now().strftime("%Y-%m-%d")
         df = t.history(start=start_date, end=end_date, interval="1d", auto_adjust=True)
         if df is None or df.empty:
