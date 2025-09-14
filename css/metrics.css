@@ -1,17 +1,4 @@
 /* Shared metric card styles used by BOD and DCA pages */
-:root {
-    --blue: #003764;
-    --light-blue: #5EB3E4;
-    --golden-yellow: #FFC600;
-    --black: #000000;
-    --gray: #969595;
-    --light-gray: #E0E1E1;
-    --bright-green: #92D050;
-    --orange: #F25C05;
-    --purple: #AA2E9C;
-    --red: #C00000;
-    --dark-gray: #595959;
-}
 
 /* Metric grid and card shared styles */
 .metric-grid {

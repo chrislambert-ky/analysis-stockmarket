@@ -2,10 +2,19 @@
 
 **Interactive tools for analyzing Dollar Cost Averaging and Buy-on-Dip investment strategies**
 
-*This project provides interactive tools for analyzing investment strategies including Dollar Cost Averaging and Buy-on-Dip approaches. It includes various calculators and visualizations to help users understand different investment methodologies and their historical performance.*
+*This project providesWhat each page does
+- `pages/dca.html` — Interactive DCA overview, per‑ticker chart and single‑ticker analysis.
+- `pages/dca-tickers.html` — Grid of per‑ticker DCA mini‑charts (YTD default).
+- `pages/dca-strat.html` — Advanced DCA configurator (custom weekly amounts, day selection).
+- `pages/bod.html` — Buy-on-Dip overview (grid of tickers, per‑ticker detail, timeframe controls).
+- `pages/bod-tickers.html` — Grid of per‑ticker BOD mini‑charts (YTD default).
+- `pages/bod-strat.html` — Advanced BOD configurator (configure declines 1%–10% and share quantities). Uses `data/all_buy_on_dip.csv` fast‑path when available.
+- `pages/metrics.html` — Comprehensive metrics dashboard with statistical analysis, price drop frequency, and individual ticker performance analytics.
+- `pages/about.html` — Project explanation, methodology, contact.tive tools for analyzing investment strategies including Dollar Cost Averaging and Buy-on-Dip approaches. It includes various calculators and visualizations to help users understand different investment methodologies and their historical performance.*
 
 ## 🆕 Recent Updates
 
+- **Metrics Dashboard**: New comprehensive metrics page with statistical analysis for individual tickers including price drop frequency, volatility metrics, and performance analytics
 - **Enhanced Week-over-Week Analysis**: DCA strategy now calculates week-over-week success based on total weeks available in selected date range, providing more accurate market trend analysis
 - **CSS Design System**: Implemented consistent styling across all strategy pages with unified navigation classes and standardized title/subtitle formatting
 - **Professional Navigation**: Updated all pages with .main-nav and .nav-link classes for consistent user experience
@@ -40,6 +49,7 @@
 - **Multi-Ticker Analysis**: Compare strategy performance across multiple ETFs (QQQ, SPLG, XLG) simultaneously with unified charting
 - **Advanced Calculators**: Fully customizable tools allowing users to test their own investment amounts, frequencies, decline percentages, and date ranges
 - **Interactive Charts**: ECharts-powered visualizations showing portfolio growth, purchase timing, and comparative analysis with real-time updates
+- **Metrics Dashboard**: Comprehensive statistical analysis page with price drop frequency, volatility metrics, and individual ticker performance analytics
 - **Market Pattern Analytics**: Advanced metrics including:
   - **Up Days vs Down Days**: Daily market direction analysis (open to close price comparison)
   - **Monday-Friday Success Rate**: Weekly trading pattern analysis (Monday close to Friday close profitability)
@@ -73,7 +83,7 @@ analysis-stockmarket/
 ├── data/                  # CSV data files
 │   └── history_tickers.csv # Historical price data with weekday analysis
 ├── js/                    # JavaScript utilities
-├── pages/                 # Analysis pages (8 total)
+├── pages/                 # Analysis pages (9 total)
 │   ├── dca.html          # Dollar Cost Averaging analysis ($25/week default)
 │   ├── bod.html          # Buy-on-Dip analysis (1-5% decline default)
 │   ├── dca-vs-bod.html   # Strategy comparison visualization
@@ -81,6 +91,7 @@ analysis-stockmarket/
 │   ├── bod-tickers.html  # BOD all tickers comparison
 │   ├── dca-strat.html    # Advanced DCA calculator (customizable amounts/days)
 │   ├── bod-strat.html    # Advanced BOD calculator (configurable decline %s)
+│   ├── metrics.html      # Comprehensive metrics dashboard with statistical analysis
 │   └── about.html        # About page with project documentation
 ├── py/                   # Python ETL scripts
 ├── etl-market-data.py    # Main data collection script with yfinance
@@ -117,7 +128,7 @@ This repository contains a small ETL pipeline that collects OHLCV history and a 
 
 Quick links
 - Local site entry: `index.html`
-- Pages: `pages/dca.html`, `pages/bod.html`, `pages/dca-strat.html`, `pages/bod-strat.html`, `pages/dca-tickers.html`, `pages/bod-tickers.html`, `pages/about.html`
+- Pages: `pages/dca.html`, `pages/bod.html`, `pages/dca-strat.html`, `pages/bod-strat.html`, `pages/dca-tickers.html`, `pages/bod-tickers.html`, `pages/metrics.html`, `pages/about.html`
 - ETL: `etl-market-data.py` (generates `data/history_tickers.csv` and `data/all_buy_on_dip.csv`)
 
 Minimum requirements

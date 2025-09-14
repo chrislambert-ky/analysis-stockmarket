@@ -1,0 +1,124 @@
+/* 
+Stock Market Analysis Generic Styles
+Consolidated common styles for all pages
+*/
+
+/* Color Palette - Using the professional design system */
+:root 
+{
+  --blue: #003764;
+  --light-blue: #5EB3E4;
+  --golden-yellow: #FFC600;
+  --black: #000000;
+  --gray: #969595;
+  --light-gray: #E0E1E1;
+  --bright-green: #92D050;
+  --orange: #F25C05;
+  --purple: #AA2E9C;
+  --red: #C00000;
+  --dark-gray: #595959;
+}
+
+/* Base Styles */
+body, html 
+{
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #fff;
+  color: #000;
+  margin: 0;
+  padding: 0;
+}
+
+h1
+{
+  font-size: 2.1rem;
+  font-weight: bold;
+  color: var(--blue);
+  margin: 1rem 0;
+  text-align: center;
+}
+
+h2
+{
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--light-blue);
+  margin: 0.5rem 0;
+  text-align: center;
+}
+
+h3
+{
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--orange);
+  margin: 0.5rem 20px 0.5rem 20px;
+  text-align: center;
+}
+
+p
+{
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0.5rem 20px;
+  text-align: center;
+}
+
+/* Navigation Bar Styles */
+nav, .main-nav 
+{
+  background: var(--light-gray);
+  padding: 1rem 0;
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  border-bottom: 2px solid var(--blue);
+}
+
+nav a, .main-nav .nav-link 
+{
+  color: var(--blue);
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+nav a:hover, nav a:focus, .main-nav .nav-link:hover, .main-nav .nav-link:focus 
+{
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Responsive Design for Navigation */
+@media (max-width: 700px) 
+{
+  nav, .main-nav 
+  {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+  }
+  
+  nav a, .main-nav .nav-link 
+  {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    text-align: center;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 400px) 
+{
+  nav a, .main-nav .nav-link 
+  {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.5rem;
+  }
+}

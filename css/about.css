@@ -3,22 +3,6 @@ Stock Market Analysis About Page CSS
 Adapted from road closures project for investment analysis toolkit
 */
 
-/* Color Palette - Using the professional design system */
-:root 
-{
-  --blue: #003764;
-  --light-blue: #5EB3E4;
-  --golden-yellow: #FFC600;
-  --black: #000000;
-  --gray: #969595;
-  --light-gray: #E0E1E1;
-  --bright-green: #92D050;
-  --orange: #F25C05;
-  --purple: #AA2E9C;
-  --red: #C00000;
-  --dark-gray: #595959;
-}
-
 /* Base Styles */
 body, html 
 {
@@ -44,6 +28,7 @@ h2
   font-weight: bold;
   color: var(--light-blue);
   margin: 0.5rem 20px 0.5rem 20px;
+  text-align: left;
 }
 
 h3
@@ -186,4 +171,46 @@ li
   {
     margin: 1.5rem 5px;
   }
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+thead tr {
+  background-color: var(--light-blue);
+  color: white;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+td {
+  padding: 8px;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Social Links Adjustments */
+.social-links a:nth-child(2),
+.social-links a:nth-child(3) {
+  margin-left: 18px;
+}
+
+.social-links a svg {
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+/* Left-aligned paragraphs */
+p.left-align {
+  text-align: left;
 }
