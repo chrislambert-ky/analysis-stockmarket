@@ -125,7 +125,7 @@
     <div id="ticker-selection-area" style="text-align: center; margin: 15px 0; display: block;">
         <!-- Compact layout: Selection, Period buttons, and Download all on same line -->
     <div class="period-controls">
-            <h3 id="selected-ticker-display" style="color: var(--blue); margin: 0;">Selected: ALL Tickers</h3>
+            <h3 id="selected-ticker-display" style="color: var(--blue); margin: 0;">Selected: None</h3>
             <div>
                 <button id="ytd-btn" class="period-btn">YTD</button>
                 <button id="5y-btn" class="period-btn">5 Years</button>
@@ -174,15 +174,24 @@
         document.getElementById('progress-text').textContent = text;
     }
 
-    // Fetch small ETL index (data/tickers/etl-index.json) to quickly enumerate tickers
+    // Fetch small tickers index (data/tickers_index.json) to quickly enumerate tickers
     let cachedTickerIndex = null;
     async function fetchTickerIndex() {
         if (cachedTickerIndex) return cachedTickerIndex;
         try {
-            const res = await fetch('../data/tickers/etl-index.json');
+            const res = await fetch('../data/tickers_index.json');
             if (!res.ok) throw new Error('No index');
             const j = await res.json();
-            cachedTickerIndex = Array.isArray(j) ? j : [];
+            // Normalize to array of symbols. tickers_index.json is an object mapping SYMBOL -> path
+            if (j && typeof j === 'object' && !Array.isArray(j)) {
+                cachedTickerIndex = Object.keys(j).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+            } else if (Array.isArray(j)) {
+                cachedTickerIndex = j.map(e => (typeof e === 'string' ? e : e && e.symbol ? String(e.symbol) : ''))
+                                      .filter(Boolean)
+                                      .sort((a,b)=>a.localeCompare(b));
+            } else {
+                cachedTickerIndex = [];
+            }
             return cachedTickerIndex;
         } catch (e) {
             return null;
@@ -263,11 +272,11 @@
         allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
         tickerGrid.appendChild(allBox);
 
-    // Create individual ticker boxes (symbols only) - prefer ETL index when available
+        // Create individual ticker boxes (symbols only) - prefer tickers index when available
         let tickers = [];
         try {
             const idx = await fetchTickerIndex();
-            if (idx && idx.length) tickers = idx.map(e => String(e.symbol).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+            if (idx && idx.length) tickers = idx.map(s => String(s).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
         } catch (e) { }
         if (!tickers || tickers.length === 0) tickers = Object.keys(processedData).sort((a,b) => a.localeCompare(b));
 
@@ -339,7 +348,7 @@
     }
     
     // Global variables to track selection
-    let currentSelectedTicker = 'ALL';
+    let currentSelectedTicker = null;
     let currentSelectedPeriod = 'YTD';
     
     // Function to handle ticker selection
@@ -1200,49 +1209,16 @@
         }
     });
     
-    // Initial setup: load YTD analysis for all tickers by default
+    // Initial setup: do not auto-select a ticker or run analysis.
+    // The user must click a ticker to begin.
     (async function initialDcaLoad() {
         try {
+            // Set initial period button visual state to YTD without triggering analysis
             updatePeriodButtonStates('ytd-btn');
-            // Ensure visual selection shows ALL
-            try { selectTicker('ALL'); } catch (e) { /* ignore */ }
-            // Run the period analysis and wait for processedData to be available
-            await renderPeriodAnalysis('YTD');
-
-            // After renderPeriodAnalysis completes, window.currentProcessedData should be set
-                try {
-                const processed = window.currentProcessedData || {};
-                // Aggregate totals across all tickers and display metrics
-                let totalWeeks = 0, totalInvested = 0, totalEndValue = 0, totalShares = 0;
-                const weekSet3 = new Set();
-                Object.keys(processed).forEach(sym => {
-                    const arr = processed[sym] || [];
-                    if (arr.length === 0) return;
-                    const last = arr[arr.length - 1];
-                    arr.forEach(r => { if (r && r.date) weekSet3.add(r.date); });
-                    totalInvested += Number(last.cumulativeInvested || 0);
-                    totalEndValue += Number(last.cumulativeValue || 0);
-                    totalShares += Number(last.cumulativeShares || 0);
-                });
-                totalWeeks = weekSet3.size;
-
-                const gainAmount = totalEndValue - totalInvested;
-                const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
-
-                displayDetailedMetrics([{
-                    ticker: 'ALL',
-                    weeksMondays: totalWeeks,
-                    totalInvested: totalInvested,
-                    totalEndValue: totalEndValue,
-                    totalShares: totalShares,
-                    gainAmount: gainAmount,
-                    gainPercent: gainPercent
-                }]);
-            } catch (e) {
-                console.error('Failed to compute ALL aggregated metrics on initial load:', e);
-            }
+            // Populate ticker grid using the tickers index; no default selection
+            await populateTickerBoxes({}, 'YTD');
         } catch (e) {
-            console.error('Initial DCA load failed:', e);
+            console.error('Initial setup failed:', e);
         }
     })();
     

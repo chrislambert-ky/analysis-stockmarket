@@ -398,16 +398,25 @@
         }
     }
 
-    // Fetch small ETL index (data/tickers/etl-index.json) to quickly enumerate tickers
+    // Fetch small tickers index (data/tickers_index.json) to quickly enumerate tickers
     let cachedTickerIndex = null;
     async function fetchTickerIndex() {
         if (cachedTickerIndex) return cachedTickerIndex;
         try {
-            const res = await fetch('../data/tickers/etl-index.json');
+            const res = await fetch('../data/tickers_index.json');
             if (!res.ok) throw new Error('No index');
             const j = await res.json();
-            // normalize to array of symbols
-            cachedTickerIndex = Array.isArray(j) ? j : [];
+            // Normalize to array of symbols. tickers_index.json is an object mapping SYMBOL -> path
+            if (j && typeof j === 'object' && !Array.isArray(j)) {
+                cachedTickerIndex = Object.keys(j).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+            } else if (Array.isArray(j)) {
+                // Fallback in case of unexpected array format
+                cachedTickerIndex = j.map(e => (typeof e === 'string' ? e : e && e.symbol ? String(e.symbol) : ''))
+                                      .filter(Boolean)
+                                      .sort((a,b)=>a.localeCompare(b));
+            } else {
+                cachedTickerIndex = [];
+            }
             return cachedTickerIndex;
         } catch (e) {
             // Index missing or unreadable — return null so caller falls back
@@ -572,12 +581,13 @@
             referenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : referenceEnd;
         } catch (e) { /* ignore - proceed with precomputed */ }
 
-        // Prefer the small ETL index if available (fast). Fallback to merging precomputed and history.
+        // Prefer the small tickers index if available (fast). Fallback to merging precomputed and history.
         let tickers = [];
         try {
             const index = await fetchTickerIndex();
             if (index && index.length) {
-                tickers = index.map(e => String(e.symbol).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+                // fetchTickerIndex returns an array of SYMBOL strings
+                tickers = index.map(s => String(s).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
             }
         } catch (e) { /* ignore */ }
 
