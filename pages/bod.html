@@ -109,7 +109,7 @@
     <!-- Period buttons and download CSV -->
     <div id="ticker-selection-area" style="text-align:center; margin:15px 0; display: block;">
     <div class="period-controls">
-            <h3 id="selected-ticker-display" style="color: var(--blue); margin:0;">Selected: ALL</h3>
+            <h3 id="selected-ticker-display" style="color: var(--blue); margin:0;">Selected: None</h3>
             <div>
                 <button id="ytd-btn" class="period-btn">YTD</button>
                 <button id="5y-btn" class="period-btn">5 Years</button>
@@ -151,8 +151,9 @@
     // those filtered events. See docs/ai-instruction.md for the project rule.
     // Last rendered filtered BOD events (so downloads match the chart when we computed from history)
         let lastRenderedBodData = [];
-    // Global selected ticker from the grid (default ALL)
-    let selectedTickerGlobal = 'ALL';
+    // Global selected ticker from the grid (no default selection on load)
+    // Start empty so the grid is populated but nothing is auto-selected or auto-run.
+    let selectedTickerGlobal = '';
     // Active period (e.g. 'YTD', '5Y', '10Y', etc.) - default to YTD so users see data on load
     let activePeriod = 'YTD';
 
@@ -536,28 +537,17 @@
             try { showLoading(); } catch(e) {}
             updateProgress(5, 'Loading precomputed BOD data...');
             const historicalData = await fetchHistoricalData();
-            // Ensure defaults: show ALL and YTD on load
-            selectedTickerGlobal = selectedTickerGlobal || 'ALL';
+            // Ensure defaults: do not auto-select ANY ticker on load; keep period default
+            // Leave selectedTickerGlobal as-is (empty) so no ticker is selected by default
             activePeriod = activePeriod || 'YTD';
             // Build ticker grid similar to DCA page (buildTickerGrid will compute counts using activePeriod)
             updateProgress(25, 'Preparing ticker list...');
             await buildTickerGrid(historicalData);
             document.getElementById('ticker-metrics-grid').style.display = '';
             document.getElementById('ticker-selection-area').style.display = '';
-            // Enable download
-            document.getElementById('download-analysis-btn').disabled = false;
-            // ensure ALL box is visually selected
-            try {
-                const allBox = document.querySelector('#ticker-metrics-grid [data-ticker="ALL"]');
-                if (allBox) {
-                    document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
-                    allBox.classList.add('selected');
-                }
-            } catch (e) { /* ignore */ }
-            // Render initial chart for ALL using the default period and wait so we hide loader after it finishes
-            updateProgress(60, 'Rendering initial chart...');
-            await renderChart('ALL');
-            updateProgress(100, 'Complete!');
+            // Do NOT auto-select ALL or run the analysis on load.
+            // Leave the download button disabled until the user explicitly selects a ticker.
+            try { updateProgress(100, 'Ticker grid ready'); } catch(e) {}
             try { hideLoading(); } catch(e) {}
         } catch (err) {
             console.error(err);
@@ -702,11 +692,11 @@
     activePeriod = name;
     }
 
-    document.getElementById('ytd-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('YTD'); renderChart(selectedTickerGlobal); });
-    document.getElementById('5y-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('5Y'); renderChart(selectedTickerGlobal); });
-    document.getElementById('10y-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('10Y'); renderChart(selectedTickerGlobal); });
-    document.getElementById('15y-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('15Y'); renderChart(selectedTickerGlobal); });
-    document.getElementById('20y-btn').addEventListener('click', ()=>{ try { showLoading(); } catch(e){}; setPeriod('20Y'); renderChart(selectedTickerGlobal); });
+    document.getElementById('ytd-btn').addEventListener('click', ()=>{ setPeriod('YTD'); if (selectedTickerGlobal) { try { showLoading(); } catch(e){}; renderChart(selectedTickerGlobal); } });
+    document.getElementById('5y-btn').addEventListener('click', ()=>{ setPeriod('5Y'); if (selectedTickerGlobal) { try { showLoading(); } catch(e){}; renderChart(selectedTickerGlobal); } });
+    document.getElementById('10y-btn').addEventListener('click', ()=>{ setPeriod('10Y'); if (selectedTickerGlobal) { try { showLoading(); } catch(e){}; renderChart(selectedTickerGlobal); } });
+    document.getElementById('15y-btn').addEventListener('click', ()=>{ setPeriod('15Y'); if (selectedTickerGlobal) { try { showLoading(); } catch(e){}; renderChart(selectedTickerGlobal); } });
+    document.getElementById('20y-btn').addEventListener('click', ()=>{ setPeriod('20Y'); if (selectedTickerGlobal) { try { showLoading(); } catch(e){}; renderChart(selectedTickerGlobal); } });
 
     // Download CSV - will download currently displayed all_buy_on_dip filtered by selection
     async function downloadCSVForSelection() {
