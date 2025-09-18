@@ -195,17 +195,24 @@
             <!-- Tickers will be populated here -->
         </div>
 
-        <!-- Timeframe Selection -->
-        <div class="timeframe-buttons">
-            <button class="timeframe-btn active" data-period="ytd">YTD</button>
-            <button class="timeframe-btn" data-period="3m">3M</button>
-            <button class="timeframe-btn" data-period="6m">6M</button>
-            <button class="timeframe-btn" data-period="1y">1Y</button>
-            <button class="timeframe-btn" data-period="3y">3Y</button>
-            <button class="timeframe-btn" data-period="5y">5Y</button>
-            <button class="timeframe-btn" data-period="10y">10Y</button>
-            <button class="timeframe-btn" data-period="15y">15Y</button>
-            <button class="timeframe-btn" data-period="20y">20Y</button>
+        <!-- History Slider (replaces fixed timeframe buttons) -->
+        <div class="timeframe-slider" style="text-align:center; margin:12px 0;">
+            <label for="historyRange" id="historyRangeLabel">History: YTD</label>
+            <div style="display:flex; align-items:center; gap:12px; justify-content:center; margin-top:6px;">
+                <input id="historyRange" type="range" min="0" max="25" value="0" step="1" style="width:420px;" />
+                <div id="historyRangeValue" style="min-width:80px; color:var(--gray);">YTD</div>
+            </div>
+            <div style="font-size:0.85em; color:var(--gray); margin-top:6px;">Use the slider to pick how many years of history to include (YTD = current year only)</div>
+        </div>
+
+        <!-- Date range display -->
+        <div id="dateRangeDisplay" style="text-align:center; margin-top:8px; color:var(--gray); font-size:0.95em;">
+            Date Range: -
+        </div>
+
+        <!-- Record count display -->
+        <div id="recordCountDisplay" style="text-align:center; margin-top:4px; color:var(--gray); font-size:0.95em;">
+            Records: -
         </div>
 
         <!-- Progress Bar -->
@@ -233,14 +240,34 @@
         let tickerData = null;
         let currentPeriod = 'ytd';
 
-        // Load tickers index
+        // Load tickers index (supports new per-ticker/year index at data/tickers/tickers_index.json)
         async function loadTickersIndex() {
+            // Try new index location first
+            const newIndexPath = '../data/tickers/tickers_index.json';
+            const legacyIndexPath = '../data/tickers_index.json';
+
             try {
-                const response = await fetch('../data/tickers_index.json');
-                tickersIndex = await response.json();
+                let response = await fetch(newIndexPath);
+                if (response.ok) {
+                    tickersIndex = await response.json();
+                    console.log('Loaded tickers index (per-ticker):', newIndexPath);
+                } else {
+                    // fallback to legacy flat index
+                    response = await fetch(legacyIndexPath);
+                    if (response.ok) {
+                        tickersIndex = await response.json();
+                        console.log('Loaded legacy tickers index:', legacyIndexPath);
+                    } else {
+                        throw new Error('No tickers index found');
+                    }
+                }
+
                 populateTickerGrid();
             } catch (error) {
                 console.error('Error loading tickers index:', error);
+                document.getElementById('metricsContainer').innerHTML = `
+                    <div class="no-data">Unable to load tickers index</div>
+                `;
             }
         }
 
@@ -264,6 +291,9 @@
         async function selectTicker(ticker) {
             selectedTicker = ticker;
 
+            // adjust slider based on selected ticker's available years
+            try { adjustSliderForTicker(ticker); } catch (e) { /* ignore */ }
+
             // Update UI
             document.querySelectorAll('.ticker-box').forEach(box => {
                 box.classList.remove('selected');
@@ -272,28 +302,290 @@
                 }
             });
 
-            // Show progress
+            // Load only the years required for the current period
             showProgress();
-
             try {
-                // Load ticker data
-                const response = await fetch(`../${tickersIndex[ticker]}`);
-                const csvText = await response.text();
-
-                // Parse CSV
-                tickerData = parseCSV(csvText);
-
-                // Calculate and display metrics
+                await loadTickerDataForPeriod(ticker, currentPeriod);
                 calculateMetrics();
-
-            } catch (error) {
-                console.error('Error loading ticker data:', error);
+            } catch (err) {
+                console.error('Error loading ticker data for period:', err);
                 document.getElementById('metricsContainer').innerHTML = `
                     <div class="no-data">Error loading data for ${ticker}</div>
                 `;
             }
-
             hideProgress();
+        }
+
+        // Load ticker data for a given period (only necessary years)
+        async function loadTickerDataForPeriod(ticker, period) {
+            // Determine date range for period
+            const now = new Date();
+            let startDate;
+            switch (period) {
+                case 'ytd':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    break;
+                case '3m':
+                    startDate = new Date(now.getTime() - (90 * 24 * 60 * 60 * 1000));
+                    break;
+                case '6m':
+                    startDate = new Date(now.getTime() - (180 * 24 * 60 * 60 * 1000));
+                    break;
+                case '1y':
+                    startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+                    break;
+                case '3y':
+                    startDate = new Date(now.getFullYear() - 3, now.getMonth(), now.getDate());
+                    break;
+                case '5y':
+                    startDate = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
+                    break;
+                case '10y':
+                    startDate = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
+                    break;
+                case '15y':
+                    startDate = new Date(now.getFullYear() - 15, now.getMonth(), now.getDate());
+                    break;
+                case '20y':
+                    startDate = new Date(now.getFullYear() - 20, now.getMonth(), now.getDate());
+                    break;
+                default:
+                    // leave default for now; will check for numeric-year patterns below
+                    startDate = new Date(now.getFullYear(), 0, 1);
+            }
+
+            // Support generic period strings like '3y', '7y' produced by the slider.
+            // Interpret 'Ny' as a span of N calendar years including the current year and previous N-1 years.
+            try {
+                const m = String(period).match(/^(\d+)y$/);
+                if (m) {
+                    const n = parseInt(m[1], 10);
+                    if (!isNaN(n) && n > 0) {
+                        // Start at Jan 1 of (currentYear - n + 1)
+                        startDate = new Date(now.getFullYear() - n + 1, 0, 1);
+                    }
+                }
+            } catch (e) {
+                // ignore
+            }
+
+            // Compute years to load
+            const startYear = startDate.getFullYear();
+            const endYear = now.getFullYear();
+            const yearsToLoad = [];
+            for (let y = startYear; y <= endYear; y++) yearsToLoad.push(y);
+
+            // Build combined CSV text from selected years only
+            let csvText = '';
+
+            const entry = tickersIndex[ticker];
+            if (entry && typeof entry === 'object' && entry.files) {
+                // Use only years that both we want and are available
+                const availableYears = Object.keys(entry.files).map(y => parseInt(y, 10));
+                const years = yearsToLoad.filter(y => availableYears.includes(y));
+                if (years.length === 0) {
+                    throw new Error('No available yearly files for selected period');
+                }
+
+                // track incremental date bounds while loading each year's file
+                let incrementalMin = null;
+                let incrementalMax = null;
+
+                for (let i = 0; i < years.length; i++) {
+                    const yr = years[i];
+                    const fileEntry = entry.files[String(yr)];
+
+                    // fileEntry may be a string (legacy path) or an object with metadata { path, min_date, max_date, row_count }
+                    let fpPath = null;
+                    if (typeof fileEntry === 'string') fpPath = fileEntry;
+                    else if (fileEntry && typeof fileEntry === 'object') fpPath = fileEntry.path || null;
+
+                    updateProgress(Math.round((i / years.length) * 100), `Loading ${ticker} ${yr} (${i+1}/${years.length})`);
+
+                    // If metadata is available, use it to update the UI immediately (date bounds and approximate record count)
+                    try {
+                        if (fileEntry && typeof fileEntry === 'object') {
+                            if (fileEntry.min_date) {
+                                const fileMin = new Date(fileEntry.min_date);
+                                if (!incrementalMin || (fileMin && fileMin < incrementalMin)) incrementalMin = fileMin;
+                            }
+                            if (fileEntry.max_date) {
+                                const fileMax = new Date(fileEntry.max_date);
+                                if (!incrementalMax || (fileMax && fileMax > incrementalMax)) incrementalMax = fileMax;
+                            }
+                            if (typeof fileEntry.row_count !== 'undefined') {
+                                // update approximate count from metadata
+                                incrementallyShowRecordCount(Number(fileEntry.row_count) || 0);
+                            }
+                            if (incrementalMin && incrementalMax) updateDateRangeDisplayBounds(incrementalMin, incrementalMax);
+                        }
+                    } catch (err) {
+                        // ignore metadata parsing errors
+                        console.warn('Error applying file metadata', err);
+                    }
+
+                    if (!fpPath) {
+                        console.warn('No path for', ticker, yr, fileEntry);
+                        continue;
+                    }
+
+                    // Fetch the CSV text for this year
+                    try {
+                        const resp = await fetch('../' + fpPath);
+                        if (!resp.ok) {
+                            console.warn('Failed to fetch', fpPath, resp.status);
+                            continue;
+                        }
+                        const txt = await resp.text();
+
+                        // compute this file's date bounds without fully parsing the CSV (fallback when metadata missing)
+                        try {
+                            const lines = txt.trim().split('\n').filter(l => l.trim());
+                            if (lines.length > 1) {
+                                const headers = lines[0].split(',').map(h => h.trim());
+                                const dateIdx = headers.findIndex(h => h.toLowerCase() === 'date');
+                                if (dateIdx >= 0) {
+                                    let fileMin = null;
+                                    let fileMax = null;
+                                    for (let li = 1; li < lines.length; li++) {
+                                        const cols = lines[li].split(',');
+                                        const raw = cols[dateIdx]?.trim();
+                                        if (!raw) continue;
+                                        const d = new Date(raw);
+                                        if (isNaN(d)) continue;
+                                        if (!fileMin || d < fileMin) fileMin = d;
+                                        if (!fileMax || d > fileMax) fileMax = d;
+                                    }
+
+                                    if (fileMin) {
+                                        if (!incrementalMin || fileMin < incrementalMin) incrementalMin = fileMin;
+                                    }
+                                    if (fileMax) {
+                                        if (!incrementalMax || fileMax > incrementalMax) incrementalMax = fileMax;
+                                    }
+
+                                    // update display so user sees expanding range
+                                    if (incrementalMin && incrementalMax) {
+                                        updateDateRangeDisplayBounds(incrementalMin, incrementalMax);
+                                    }
+
+                                    // update record count incrementally (approximate by lines) when metadata did not already provide it
+                                    try {
+                                        // If metadata provided row_count we already showed it; otherwise estimate from lines
+                                        if (!fileEntry || typeof fileEntry.row_count === 'undefined') {
+                                            const lineCount = txt.trim().split('\n').filter(l => l.trim()).length - 1; // exclude header
+                                            incrementallyShowRecordCount(lineCount);
+                                        }
+                                    } catch (e) {
+                                        // ignore
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            console.warn('Error computing file date bounds', err);
+                        }
+
+                        if (i === 0) {
+                            csvText += txt.trim();
+                        } else {
+                            const lines = txt.trim().split('\n');
+                            if (lines.length > 1) csvText += '\n' + lines.slice(1).join('\n');
+                        }
+                    } catch (err) {
+                        console.warn('Fetch error for', fpPath, err);
+                        continue;
+                    }
+                }
+
+            } else if (entry && typeof entry === 'string') {
+                // legacy single-file index value
+                const resp = await fetch('../' + entry);
+                if (!resp.ok) throw new Error('Failed to fetch legacy ticker file');
+                csvText = await resp.text();
+            } else {
+                // fallback to flat per-symbol CSV
+                const fallbackPath = `../data/tickers/${ticker}.csv`;
+                const resp = await fetch(fallbackPath);
+                if (!resp.ok) throw new Error('No data files found for ' + ticker);
+                const txt = await resp.text();
+                // compute bounds for fallback single file
+                try {
+                    const lines = txt.trim().split('\n').filter(l => l.trim());
+                    if (lines.length > 1) {
+                        const headers = lines[0].split(',').map(h => h.trim());
+                        const dateIdx = headers.findIndex(h => h.toLowerCase() === 'date');
+                        if (dateIdx >= 0) {
+                            let fileMin = null;
+                            let fileMax = null;
+                            for (let li = 1; li < lines.length; li++) {
+                                const cols = lines[li].split(',');
+                                const raw = cols[dateIdx]?.trim();
+                                if (!raw) continue;
+                                const d = new Date(raw);
+                                if (isNaN(d)) continue;
+                                if (!fileMin || d < fileMin) fileMin = d;
+                                if (!fileMax || d > fileMax) fileMax = d;
+                            }
+                            if (fileMin && fileMax) updateDateRangeDisplayBounds(fileMin, fileMax);
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Error computing fallback file date bounds', err);
+                }
+                csvText = txt;
+            }
+
+            updateProgress(95, 'Parsing CSV...');
+            tickerData = parseCSV(csvText);
+            updateProgress(100, 'Loaded');
+
+            // Update date range display
+            updateDateRangeDisplay();
+            // Show final record count
+            updateRecordCountDisplay(tickerData.length);
+        }
+
+        function updateDateRangeDisplay() {
+            const el = document.getElementById('dateRangeDisplay');
+            if (!tickerData || tickerData.length === 0) {
+                el.textContent = 'Date Range: -';
+                return;
+            }
+
+            const dates = tickerData.map(r => r.Date).filter(d => d instanceof Date && !isNaN(d));
+            if (dates.length === 0) {
+                el.textContent = 'Date Range: -';
+                return;
+            }
+            const min = new Date(Math.min(...dates.map(d => d.getTime())));
+            const max = new Date(Math.max(...dates.map(d => d.getTime())));
+
+            const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            el.textContent = `Date Range: ${fmt(min)} through ${fmt(max)}`;
+        }
+
+        function updateDateRangeDisplayBounds(minDate, maxDate) {
+            const el = document.getElementById('dateRangeDisplay');
+            if (!minDate || !maxDate) {
+                el.textContent = 'Date Range: -';
+                return;
+            }
+            const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            el.textContent = `Date Range: ${fmt(minDate)} through ${fmt(maxDate)}`;
+        }
+
+        // Incremental record count UI helpers
+        let _incrementalCount = 0;
+        function incrementallyShowRecordCount(additional) {
+            _incrementalCount += Number(additional) || 0;
+            const el = document.getElementById('recordCountDisplay');
+            el.textContent = `Records: ${_incrementalCount}`;
+        }
+
+        function updateRecordCountDisplay(finalCount) {
+            _incrementalCount = Number(finalCount) || 0;
+            const el = document.getElementById('recordCountDisplay');
+            el.textContent = `Records: ${_incrementalCount}`;
         }
 
         // Parse CSV
@@ -334,7 +626,6 @@
         function filterDataByPeriod(data, period) {
             const now = new Date();
             let startDate;
-
             switch (period) {
                 case 'ytd':
                     startDate = new Date(now.getFullYear(), 0, 1);
@@ -364,7 +655,21 @@
                     startDate = new Date(now.getTime() - (20 * 365 * 24 * 60 * 60 * 1000));
                     break;
                 default:
+                    // fallback to year-based interpretation below
                     startDate = new Date(now.getFullYear(), 0, 1);
+            }
+
+            // If period is like 'Ny' (e.g. '7y'), interpret it as N calendar years including current year
+            try {
+                const m = String(period).match(/^(\d+)y$/);
+                if (m) {
+                    const n = parseInt(m[1], 10);
+                    if (!isNaN(n) && n > 0) {
+                        startDate = new Date(now.getFullYear() - n + 1, 0, 1);
+                    }
+                }
+            } catch (e) {
+                // ignore
             }
 
             return data.filter(row => row.Date >= startDate);
@@ -564,23 +869,156 @@
             // Load tickers index
             loadTickersIndex();
 
-            // Timeframe button event listeners
-            document.querySelectorAll('.timeframe-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Update active button
-                    document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
+            // Initialize history slider
+            const slider = document.getElementById('historyRange');
+            const sliderVal = document.getElementById('historyRangeValue');
+            const sliderLabel = document.getElementById('historyRangeLabel');
 
-                    // Update current period
-                    currentPeriod = this.dataset.period;
+            function sliderValueToPeriod(val) {
+                // val 0 = YTD, val 1 = 1Y (current + previous?), val n = n years
+                if (Number(val) === 0) return 'ytd';
+                return `${val}y`;
+            }
 
-                    // Recalculate metrics if ticker is selected
-                    if (selectedTicker && tickerData) {
-                        calculateMetrics();
+            slider.addEventListener('input', function() {
+                const p = sliderValueToPeriod(this.value);
+                sliderVal.textContent = (p === 'ytd') ? 'YTD' : `${this.value}Y`;
+                sliderLabel.textContent = `History: ${(p === 'ytd') ? 'YTD' : this.value + ' years'}`;
+
+                // Immediate UI estimate: compute expected date range and approximate record count
+                try {
+                    if (selectedTicker && tickersIndex && tickersIndex[selectedTicker]) {
+                        const est = estimateRangeAndCountForSlider(selectedTicker, Number(this.value));
+                        if (est) {
+                            updateDateRangeDisplayBounds(est.minDate, est.maxDate);
+                            // show estimated record count with a '~' prefix
+                            const el = document.getElementById('recordCountDisplay');
+                            el.textContent = `Records: ~${est.estimatedCount}`;
+                        }
                     }
-                });
+                } catch (e) {
+                    // ignore estimation errors
+                    console.warn('Estimation error', e);
+                }
+            });
+
+            slider.addEventListener('change', function() {
+                currentPeriod = sliderValueToPeriod(this.value);
+                // If a ticker is selected, reload data for the chosen period
+                if (selectedTicker) {
+                    showProgress();
+                    loadTickerDataForPeriod(selectedTicker, currentPeriod).then(() => {
+                        calculateMetrics();
+                        hideProgress();
+                    }).catch(err => {
+                        console.error('Error loading data for slider period', err);
+                        hideProgress();
+                    });
+                }
             });
         });
+
+        // When a ticker is selected, adjust slider max to available history (in years)
+        function adjustSliderForTicker(ticker) {
+                    const slider = document.getElementById('historyRange');
+                    const sliderVal = document.getElementById('historyRangeValue');
+                    const sliderLabel = document.getElementById('historyRangeLabel');
+
+                    const entry = tickersIndex && tickersIndex[ticker];
+                    if (!entry || !entry.years || entry.years.length === 0) {
+                        // default
+                        if (slider) slider.max = 25;
+                        return;
+                    }
+
+                    const availableYears = entry.years.map(y => Number(y)).sort((a,b) => a - b);
+                    const minYear = Math.min(...availableYears);
+                    const maxYear = Math.max(...availableYears);
+                    const spanYears = Math.max(0, maxYear - minYear + 1);
+                    const maxSlider = Math.min(25, spanYears);
+
+                    if (slider) {
+                        slider.max = maxSlider;
+                        // clamp current value
+                        if (Number(slider.value) > maxSlider) slider.value = String(maxSlider);
+                    }
+
+                    // update visible label/value
+                    if (sliderVal && slider) {
+                        const p = (Number(slider.value) === 0) ? 'YTD' : `${slider.value}Y`;
+                        sliderVal.textContent = p;
+                    }
+                    if (sliderLabel && slider) {
+                        const p = (Number(slider.value) === 0) ? 'YTD' : `${slider.value} years`;
+                        sliderLabel.textContent = `History: ${p}`;
+                    }
+
+                    // Update the displayed date range and estimated/exact record count for the current slider value
+                    try {
+                        const est = estimateRangeAndCountForSlider(ticker, Number(slider ? slider.value : 0));
+                        if (est) {
+                            updateDateRangeDisplayBounds(est.minDate, est.maxDate);
+                            const el = document.getElementById('recordCountDisplay');
+                            if (el) el.textContent = `Records: ${est.exact ? est.estimatedCount : '~' + est.estimatedCount}`;
+                        }
+                    } catch (e) {
+                        console.warn('adjustSliderForTicker estimation error', e);
+                    }
+        }
+
+        // Estimate date range and approximate record count for a slider value using tickersIndex
+        function estimateRangeAndCountForSlider(ticker, sliderValue) {
+            // sliderValue 0 => YTD, n => n years (current + previous n-1)
+            const entry = tickersIndex[ticker];
+            if (!entry || !entry.years || entry.years.length === 0) return null;
+
+            const years = entry.years.map(y => Number(y)).sort();
+            const now = new Date();
+            let endYear = now.getFullYear();
+            let span = Number(sliderValue);
+
+            if (span === 0) {
+                // YTD -> only include current year if available
+                if (!years.includes(endYear)) return null;
+                const minDate = new Date(endYear, 0, 1);
+                const maxDate = now;
+                // estimate record count as number of trading days so far in year (~days * 0.7)
+                const daysSoFar = Math.ceil((maxDate - minDate) / (24*60*60*1000));
+                const estimated = Math.round(daysSoFar * 0.7);
+                return { minDate, maxDate, estimatedCount: estimated };
+            }
+
+            // span > 0: want `span` years including current year and previous (span-1)
+            const startYear = Math.max(Math.min(...years), endYear - span + 1);
+            const selectedYears = years.filter(y => y >= startYear && y <= endYear);
+            if (selectedYears.length === 0) return null;
+
+            // If file-level metadata is present, compute exact min/max and exact row_count sum
+            const entryFiles = entry.files || {};
+            const metas = selectedYears.map(y => entryFiles[String(y)]).filter(Boolean);
+            const haveMetaObjects = metas.length === selectedYears.length && metas.every(m => typeof m === 'object' && ('row_count' in m || 'min_date' in m));
+            if (haveMetaObjects) {
+                const minDate = new Date(Math.min(...metas.map(m => m.min_date ? new Date(m.min_date).getTime() : Infinity)));
+                const maxDate = new Date(Math.max(...metas.map(m => m.max_date ? new Date(m.max_date).getTime() : -Infinity)));
+                const totalRows = metas.reduce((s, m) => s + (Number(m.row_count) || 0), 0);
+                return { minDate, maxDate, estimatedCount: totalRows, exact: true };
+            }
+
+            const minDate = new Date(Math.min(...selectedYears.map(y => new Date(y,0,1).getTime())));
+            const maxDate = new Date(endYear, 11, 31);
+
+            // Estimate records: assume ~252 trading days per full year, partial current year count estimated
+            let fullYears = selectedYears.filter(y => y < endYear).length;
+            let estimated = fullYears * 252;
+            if (selectedYears.includes(endYear)) {
+                // estimate current year trading days so far
+                const startOfYear = new Date(endYear, 0, 1);
+                const daysSoFar = Math.ceil((now - startOfYear) / (24*60*60*1000));
+                estimated += Math.round(daysSoFar * 0.7);
+            }
+
+            return { minDate, maxDate, estimatedCount: estimated, exact: false };
+        }
 
         // Progress bar functions
         function showProgress() {

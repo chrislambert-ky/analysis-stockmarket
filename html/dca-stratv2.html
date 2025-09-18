@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-468B94S87K"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-468B94S87K');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dollar Cost Average - Advanced</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* Page Styles */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.1rem;
+            font-weight: bold;
+            color: var(--blue);
+            margin: 1rem 20px;
+            text-align: center;
+        }
+        
+        h2 {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--light-blue);
+            margin: 0.5rem 20px 0.5rem 20px;
+            text-align: center;
+        }
+        
+        .container > p {
+            font-size: 1rem;
+            line-height: 1.5;
+            margin: 0.5rem 20px;
+            text-align: center;
+            color: var(--dark-gray);
+        }
+        
+        .controls {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto 1fr auto 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .form-row label {
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+        
+        .form-row input, .form-row select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-row-dates {
+            display: grid;
+            grid-template-columns: auto auto 1fr auto 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .form-row-dates label {
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+        
+        .form-row-dates input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* Period Selection Styles */
+        .period-selection {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: flex-start;
+        }
+        
+        .period-selection-label {
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .period-btn {
+            background-color: var(--gray);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .period-btn:hover {
+            background-color: var(--blue);
+            transform: translateY(-1px);
+        }
+
+        .period-btn.active {
+            background-color: var(--orange);
+            color: white;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+        .input-group label {
+            font-weight: bold;
+            margin-bottom: 0;
+            margin-right: 5px;
+            color: #333;
+            white-space: nowrap;
+            min-width: fit-content;
+        }
+        .input-group input, .input-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .button-group {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #005aa3;
+        }
+        .results {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .result-item {
+            text-align: center;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .ticker-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .ticker-metric-item {
+            text-align: center;
+            padding: 10px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .disclaimer {
+            font-size: 0.85em;
+            color: var(--gray);
+            text-align: center;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+        .result-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0077cc;
+        }
+        .result-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        #chartContainer {
+            margin-top: 20px;
+            /* Use viewport-relative sizing so charts scale on small devices */
+            height: 60vh;
+            min-height: 300px;
+            max-height: 700px;
+        }
+
+        /* Mobile menu toggle - hidden on larger screens */
+        #mobileMenuBtn {
+            display: none;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        /* Responsive Design for Navigation */
+        @media (max-width: 700px) {
+            .main-nav {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 0;
+            }
+            .main-nav .nav-link {
+                font-size: 1rem;
+                padding: 0.5rem 1rem;
+                width: 100%;
+                text-align: center;
+                border-radius: 0;
+            }
+            /* show a compact menu button and allow toggling nav visibility */
+            #mobileMenuBtn { display: inline-block; }
+            .main-nav.nav-closed .nav-link { display: none; }
+        }
+
+        @media (max-width: 400px) {
+            .main-nav .nav-link {
+                font-size: 0.95rem;
+                padding: 0.5rem 0.5rem;
+            }
+        }
+        /* Responsive improvements for form controls to avoid horizontal scrolling */
+        @media (max-width: 900px) {
+            .form-row, .form-row-dates {
+                /* collapse to two columns on medium screens */
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .form-row label, .form-row-dates label, .input-group label {
+                /* allow labels to wrap instead of forcing width */
+                white-space: normal;
+            }
+            .input-group {
+                flex-wrap: wrap;
+            }
+            .period-selection {
+                flex-wrap: wrap;
+                gap: 8px;
+                row-gap: 8px;
+                justify-content: center;
+            }
+        }
+        @media (max-width: 480px) {
+            .form-row, .form-row-dates {
+                /* stack everything vertically on small screens */
+                grid-template-columns: 1fr;
+            }
+            .button-group { grid-column: 1 / -1; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="main-nav">
+        <a class="nav-link" href="../index.html">Home</a>
+        <a class="nav-link" href="dca.html">Dollar Cost Averaging Analysis</a>
+        <a class="nav-link" href="bod.html">Buy-on-Dip Analysis</a>
+        <a class="nav-link" href="dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
+        <a class="nav-link" href="bod-tickers.html">Buy-on-Dip (All Tickers)</a>
+        <a class="nav-link" href="dca-strat.html">Advanced Dollar Cost Averaging</a>
+        <a class="nav-link" href="bod-strat.html">Advanced Buy-on-Dip</a>
+        <a class="nav-link" href="metrics.html">Metrics Dashboard</a>
+        <a class="nav-link" href="about.html">About</a>
+    </nav>
+    <button id="mobileMenuBtn" aria-expanded="false">Menu</button>
+    
+    <div>
+        <h1>Advanced Dollar Cost Averaging Strategy</h1>
+        <h2>Customize your DCA strategy and see real-time results. Some tickers are new and may not have enough historical data.</h2>
+    </div>
+    
+    <div class="container">
+
+        <div class="controls">
+            <!-- Row 1: Ticker, Investment Day, Investment Amount -->
+            <div class="form-row">
+                <label for="tickerSelect">Ticker:</label>
+                <select id="tickerSelect">
+                    <option value="">-- Select Ticker --</option>
+                </select>
+                
+                <label for="investmentDay">Investment Day:</label>
+                <select id="investmentDay">
+                    <option value="1" selected>Monday</option>
+                    <option value="2">Tuesday</option>
+                    <option value="3">Wednesday</option>
+                    <option value="4">Thursday</option>
+                    <option value="5">Friday</option>
+                </select>
+                
+                <label for="investmentAmount">Investment Amount ($):</label>
+                <input type="number" id="investmentAmount" value="10" min="1" step="1">
+            </div>
+            
+            <!-- Row 2: Quick Pick Buttons, Begin Date, End Date -->
+            <div class="form-row-dates">
+                <div class="period-selection">
+                    <button id="ytd-btn" class="period-btn">YTD</button>
+                    <button id="5y-btn" class="period-btn">5Y</button>
+                    <button id="10y-btn" class="period-btn">10Y</button>
+                    <button id="20y-btn" class="period-btn">20Y</button>
+                </div>
+                
+                <label for="startDate">Begin Date:</label>
+                <input type="date" id="startDate" value="2025-01-01">
+                
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" value="2025-09-01">
+            </div>
+            
+            <div class="button-group">
+                <button onclick="calculateStrategy()">Calculate Strategy</button>
+                <button onclick="downloadCSV()" id="downloadBtn" style="display:none;">Download CSV</button>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <!-- General Ticker Metrics -->
+            <div class="disclaimer">
+                Up Days, Down Days, Mon-Fri, and Week-over-week are general metrics for the selected ticker and date range. These values reflect the stock's overall performance during the chosen period, independent of your strategy settings.
+            </div>
+            <div class="ticker-metrics">
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="upDays">0 (0%)</div>
+                    <div class="result-label">Up Days (Open→Close)</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="downDays">0 (0%)</div>
+                    <div class="result-label">Down Days (Open→Close)</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="mondayFridaySuccess">0 (0%)</div>
+                    <div class="result-label">Monday→Friday Success</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="weekOverWeekSuccess">0 (0%)</div>
+                    <div class="result-label">Week-over-Week Success</div>
+                </div>
+            </div>
+
+            <!-- Strategy-Specific Results -->
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="result-value" id="totalInvested">$0</div>
+                    <div class="result-label">Total Invested</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="totalShares">0</div>
+                    <div class="result-label">Total Shares</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="portfolioValue">$0</div>
+                    <div class="result-label">Portfolio Value</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="totalReturn">$0</div>
+                    <div class="result-label">Total Return</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="returnPercent">0%</div>
+                    <div class="result-label">Return %</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="avgPrice">$0</div>
+                    <div class="result-label">Avg Purchase Price</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="chartContainer"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script>
+    // Simple mobile nav toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const nav = document.querySelector('.main-nav');
+        mobileBtn && mobileBtn.addEventListener('click', () => {
+            const closed = nav.classList.toggle('nav-closed');
+            mobileBtn.setAttribute('aria-expanded', (!closed).toString());
+        });
+    });
+
+    // Track charts created on the page so we can resize them on viewport changes
+    const _responsiveCharts = [];
+    let stockData = [];
+    let calculationResults = [];
+
+    // Helper function to format currency with commas
+    function formatCurrency(amount) {
+        return '$' + amount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    // Load stock data and populate ticker dropdown
+    async function loadStockData() {
+        try {
+            const response = await fetch('../data/history_tickers.csv');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            let text = await response.text();
+            text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const rows = text.split('\n').filter(r => r.trim().length > 0);
+            
+            if (rows.length === 0) return;
+            
+            const headers = rows[0].split(',').map(h => h.trim());
+            stockData = rows.slice(1).map(row => {
+                const values = row.split(',').map(v => (v ?? '').trim());
+                const obj = {};
+                headers.forEach((h, i) => obj[h] = values[i] ?? '');
+                return obj;
+            });
+            
+            // Populate ticker dropdown - sort alphabetically
+            const tickers = [...new Set(stockData.map(row => row.Symbol))].sort((a,b) => a.localeCompare(b));
+            const select = document.getElementById('tickerSelect');
+            tickers.forEach(ticker => {
+                const option = document.createElement('option');
+                option.value = ticker;
+                option.textContent = ticker;
+                select.appendChild(option);
+            });
+            
+            console.log(`Loaded ${stockData.length} records for ${tickers.length} tickers`);
+        } catch (error) {
+            console.error('Error loading stock data:', error);
+        }
+    }
+
+    function calculateStrategy() {
+        const amount = parseFloat(document.getElementById('investmentAmount').value);
+        const startDate = new Date(document.getElementById('startDate').value);
+        const endDate = new Date(document.getElementById('endDate').value);
+        const investmentDay = parseInt(document.getElementById('investmentDay').value);
+        const selectedTicker = document.getElementById('tickerSelect').value;
+        
+        if (!selectedTicker) {
+            alert('Please select a ticker');
+            return;
+        }
+        
+        if (amount <= 0) {
+            alert('Please enter a valid investment amount');
+            return;
+        }
+        
+        if (startDate >= endDate) {
+            alert('End date must be after start date');
+            return;
+        }
+        
+        calculationResults = calculateDCA(selectedTicker, amount, startDate, endDate, investmentDay);
+        displayResults(calculationResults);
+        showChart(calculationResults.trades, selectedTicker);
+        
+        document.getElementById('downloadBtn').style.display = 'inline-block';
+    }
+
+    function calculateDCA(ticker, weeklyAmount, startDate, endDate, targetDay) {
+        const results = [];
+        let totalShares = 0;
+        let totalInvested = 0;
+        
+        // Filter data for selected ticker and date range
+        const tickerData = stockData.filter(row => {
+            if (row.Symbol !== ticker) return false;
+            const rowDate = new Date(row.Date_add);
+            return rowDate >= startDate && rowDate <= endDate;
+        }).sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+        
+        if (tickerData.length === 0) {
+            alert('No data found for selected ticker and date range');
+            return [];
+        }
+        
+        // Find investment dates (weekly on target day)
+        let currentDate = new Date(startDate);
+        while (currentDate.getDay() !== targetDay) {
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        while (currentDate <= endDate) {
+            const dateStr = currentDate.toISOString().split('T')[0];
+            
+            // Find closest trading day data
+            const closestData = findClosestTradingDay(tickerData, dateStr);
+            
+            if (closestData) {
+                // Use average daily price for DCA purchases (consistent with other DCA pages)
+                const purchasePrice = parseFloat(closestData.avg_daily_price);
+                const closingPrice = parseFloat(closestData.Close);
+                
+                const shares = weeklyAmount / purchasePrice;
+                totalShares += shares;
+                totalInvested += weeklyAmount;
+                const portfolioValue = totalShares * closingPrice;
+                
+                results.push({
+                    date: dateStr,
+                    actualDate: closestData.Date_add,
+                    open: parseFloat(closestData.Open),
+                    high: parseFloat(closestData.High),
+                    low: parseFloat(closestData.Low),
+                    close: parseFloat(closestData.Close),
+                    purchasePrice: purchasePrice,
+                    invested: weeklyAmount,
+                    shares: shares,
+                    totalShares: totalShares,
+                    totalInvested: totalInvested,
+                    portfolioValue: portfolioValue,
+                    gain: portfolioValue - totalInvested,
+                    gainPercent: ((portfolioValue - totalInvested) / totalInvested * 100)
+                });
+            }
+            
+            // Move to next week
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
+        
+        // Calculate additional metrics using the filtered ticker data
+        const additionalMetrics = calculateAdditionalMetrics(tickerData, targetDay, results);
+        
+        return { trades: results, metrics: additionalMetrics };
+    }
+
+    function calculateAdditionalMetrics(tickerData, targetDay, tradeResults) {
+        // 1. Up days vs down days (open to close)
+        let upDays = 0;
+        let downDays = 0;
+        
+        tickerData.forEach(row => {
+            const open = parseFloat(row.Open);
+            const close = parseFloat(row.Close);
+            if (close > open) {
+                upDays++;
+            } else if (close < open) {
+                downDays++;
+            }
+        });
+        
+        const totalDays = upDays + downDays;
+        const upDaysPercent = totalDays > 0 ? (upDays / totalDays * 100).toFixed(1) : 0;
+        const downDaysPercent = totalDays > 0 ? (downDays / totalDays * 100).toFixed(1) : 0;
+        
+        // 2. Monday to Friday success rate
+        let mondayFridaySuccess = 0;
+        let mondayFridayTotal = 0;
+        
+        // Find all Mondays using the Weekday column
+        const mondays = tickerData.filter(row => row.Weekday === 'Monday');
+        
+        // Find all Fridays using the Weekday column  
+        const fridays = tickerData.filter(row => row.Weekday === 'Friday');
+        
+        // For each Monday, find the closest Friday after it
+        mondays.forEach(monday => {
+            const mondayDate = new Date(monday.Date_add);
+            let closestFriday = null;
+            let minDaysDiff = Infinity;
+            
+            fridays.forEach(friday => {
+                const fridayDate = new Date(friday.Date_add);
+                if (fridayDate > mondayDate) { // Friday must be after Monday
+                    const daysDiff = (fridayDate - mondayDate) / (1000 * 60 * 60 * 24);
+                    if (daysDiff < minDaysDiff && daysDiff <= 7) { // Within 7 days
+                        minDaysDiff = daysDiff;
+                        closestFriday = friday;
+                    }
+                }
+            });
+            
+            if (closestFriday) {
+                mondayFridayTotal++;
+                const mondayClose = parseFloat(monday.Close);
+                const fridayClose = parseFloat(closestFriday.Close);
+                if (fridayClose > mondayClose) {
+                    mondayFridaySuccess++;
+                }
+            }
+        });
+        
+        const mondayFridayPercent = mondayFridayTotal > 0 ? (mondayFridaySuccess / mondayFridayTotal * 100).toFixed(1) : 0;
+        
+        // 3. Week-over-week success rate (based on all available weeks in date range)
+        let weekOverWeekSuccess = 0;
+        let weekOverWeekTotal = 0;
+        
+        // Group data by weeks to get all available weeks in the selected date range
+        const weeklyData = new Map();
+        
+        tickerData.forEach(row => {
+            const date = new Date(row.Date_add);
+            // Get Monday of the week (start of week)
+            const monday = new Date(date);
+            monday.setDate(date.getDate() - date.getDay() + 1);
+            const weekKey = monday.toISOString().split('T')[0];
+            
+            if (!weeklyData.has(weekKey)) {
+                weeklyData.set(weekKey, []);
+            }
+            weeklyData.get(weekKey).push(row);
+        });
+        
+        // Convert to array and sort by week
+        const sortedWeeks = Array.from(weeklyData.entries()).sort();
+        
+        // For each week, check if the next week had better performance
+        for (let i = 0; i < sortedWeeks.length - 1; i++) {
+            const currentWeekData = sortedWeeks[i][1];
+            const nextWeekData = sortedWeeks[i + 1][1];
+            
+            if (currentWeekData.length > 0 && nextWeekData.length > 0) {
+                // Use last trading day of each week for comparison
+                const currentWeekLast = currentWeekData[currentWeekData.length - 1];
+                const nextWeekLast = nextWeekData[nextWeekData.length - 1];
+                
+                const currentWeekClose = parseFloat(currentWeekLast.Close);
+                const nextWeekClose = parseFloat(nextWeekLast.Close);
+                
+                weekOverWeekTotal++;
+                if (nextWeekClose > currentWeekClose) {
+                    weekOverWeekSuccess++;
+                }
+            }
+        }
+        
+        const weekOverWeekPercent = weekOverWeekTotal > 0 ? (weekOverWeekSuccess / weekOverWeekTotal * 100).toFixed(1) : 0;
+        
+        return {
+            upDays: { count: upDays, percent: upDaysPercent },
+            downDays: { count: downDays, percent: downDaysPercent },
+            mondayFriday: { success: mondayFridaySuccess, total: mondayFridayTotal, percent: mondayFridayPercent },
+            weekOverWeek: { success: weekOverWeekSuccess, total: weekOverWeekTotal, percent: weekOverWeekPercent }
+        };
+    }
+
+    function findClosestTradingDay(tickerData, targetDate) {
+        const target = new Date(targetDate);
+        let closest = null;
+        let minDiff = Infinity;
+        
+        for (const row of tickerData) {
+            const rowDate = new Date(row.Date_add);
+            const diff = Math.abs(rowDate - target);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closest = row;
+            }
+        }
+        
+        return closest;
+    }
+
+    function displayResults(calculationData) {
+        if (!calculationData || calculationData.trades.length === 0) return;
+        
+        const results = calculationData.trades;
+        const metrics = calculationData.metrics;
+        const lastResult = results[results.length - 1];
+        const avgPurchasePrice = lastResult.totalInvested / lastResult.totalShares;
+        
+        document.getElementById('totalInvested').textContent = formatCurrency(lastResult.totalInvested);
+        document.getElementById('totalShares').textContent = lastResult.totalShares.toFixed(4);
+        document.getElementById('portfolioValue').textContent = formatCurrency(lastResult.portfolioValue);
+        document.getElementById('totalReturn').textContent = formatCurrency(lastResult.gain);
+        document.getElementById('returnPercent').textContent = `${lastResult.gainPercent.toFixed(2)}%`;
+        document.getElementById('avgPrice').textContent = formatCurrency(avgPurchasePrice);
+        
+        // Display new metrics
+        document.getElementById('upDays').textContent = `${metrics.upDays.count} (${metrics.upDays.percent}%)`;
+        document.getElementById('downDays').textContent = `${metrics.downDays.count} (${metrics.downDays.percent}%)`;
+        document.getElementById('mondayFridaySuccess').textContent = `${metrics.mondayFriday.success}/${metrics.mondayFriday.total} (${metrics.mondayFriday.percent}%)`;
+        document.getElementById('weekOverWeekSuccess').textContent = `${metrics.weekOverWeek.success}/${metrics.weekOverWeek.total} (${metrics.weekOverWeek.percent}%)`;
+        
+        document.getElementById('results').style.display = 'block';
+    }
+
+    function showChart(results, ticker) {
+        const chartContainer = document.getElementById('chartContainer');
+        chartContainer.innerHTML = '<div id="chart" style="width: 100%; height: 500px;"></div>';
+        
+        const dates = results.map(r => r.actualDate);
+        const portfolioValues = results.map(r => r.portfolioValue);
+        const totalInvested = results.map(r => r.totalInvested);
+        const stockPrices = results.map(r => r.close);
+        
+    const chartEl = document.getElementById('chart');
+    const chart = echarts.init(chartEl);
+    // remember chart instances for responsive resize
+    _responsiveCharts.push(chart);
+        
+        const option = {
+            title: {
+                text: `DCA Strategy Results - ${ticker}`,
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'cross' },
+                formatter: function(params) {
+                    const index = params[0].dataIndex;
+                    const result = results[index];
+                    return `
+                        Date: ${result.actualDate}<br/>
+                        Portfolio Value: ${formatCurrency(result.portfolioValue)}<br/>
+                        Total Invested: ${formatCurrency(result.totalInvested)}<br/>
+                        Purchase Price: ${formatCurrency(result.purchasePrice)}<br/>
+                        Stock Price: ${formatCurrency(result.close)}<br/>
+                        Shares Owned: ${result.totalShares.toFixed(4)}<br/>
+                        Gain: ${formatCurrency(result.gain)} (${result.gainPercent.toFixed(2)}%)
+                    `;
+                }
+            },
+            legend: {
+                data: ['Portfolio Value', 'Total Invested', 'Stock Price'],
+                top: 30
+            },
+            xAxis: {
+                type: 'category',
+                data: dates,
+                name: 'Date'
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'Portfolio Value ($)',
+                    position: 'left'
+                },
+                {
+                    type: 'value',
+                    name: 'Stock Price ($)',
+                    position: 'right'
+                }
+            ],
+            series: [
+                {
+                    name: 'Portfolio Value',
+                    type: 'line',
+                    data: portfolioValues,
+                    yAxisIndex: 0,
+                    lineStyle: { color: '#00aa00', width: 2 }
+                },
+                {
+                    name: 'Total Invested',
+                    type: 'line',
+                    data: totalInvested,
+                    yAxisIndex: 0,
+                    lineStyle: { color: '#0077cc', type: 'dashed' }
+                },
+                {
+                    name: 'Stock Price',
+                    type: 'line',
+                    data: stockPrices,
+                    yAxisIndex: 1,
+                    lineStyle: { color: '#ff6b6b' }
+                }
+            ]
+        };
+        
+        chart.setOption(option);
+    }
+
+    // Resize charts on window resize / orientation change
+    let _resizeTimeout = null;
+    window.addEventListener('resize', () => {
+        if (_resizeTimeout) clearTimeout(_resizeTimeout);
+        _resizeTimeout = setTimeout(() => {
+            _responsiveCharts.forEach(c => c.resize());
+        }, 150);
+    });
+
+    function downloadCSV() {
+        if (!calculationResults || calculationResults.trades.length === 0) {
+            alert('No results to download');
+            return;
+        }
+        
+        const ticker = document.getElementById('tickerSelect').value;
+        const headers = [
+            'Date', 'Actual Date', 'Open', 'High', 'Low', 'Close', 'Purchase Price',
+            'Invested', 'Shares', 'Total Shares', 'Total Invested', 
+            'Portfolio Value', 'Gain', 'Gain %'
+        ];
+        
+        let csvContent = headers.join(',') + '\n';
+        
+        calculationResults.trades.forEach(row => {
+            const values = [
+                row.date,
+                row.actualDate,
+                row.open.toFixed(2),
+                row.high.toFixed(2),
+                row.low.toFixed(2),
+                row.close.toFixed(2),
+                row.purchasePrice.toFixed(2),
+                row.invested.toFixed(2),
+                row.shares.toFixed(6),
+                row.totalShares.toFixed(6),
+                row.totalInvested.toFixed(2),
+                row.portfolioValue.toFixed(2),
+                row.gain.toFixed(2),
+                row.gainPercent.toFixed(2)
+            ];
+            csvContent += values.join(',') + '\n';
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dca_strategy_${ticker}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    // Period quick pick functions
+    function updatePeriodButtonStates(activeButtonId) {
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        if (activeButtonId) {
+            document.getElementById(activeButtonId).classList.add('active');
+        }
+    }
+
+    function setDatePeriod(yearsBack) {
+        const endDate = new Date();
+        const startDate = new Date();
+        
+        if (yearsBack === 'YTD') {
+            // Year to date - start from January 1st of current year
+            startDate.setFullYear(endDate.getFullYear(), 0, 1);
+        } else {
+            // Calculate years back from current date
+            startDate.setFullYear(endDate.getFullYear() - yearsBack);
+        }
+        
+        // Format dates for input fields (YYYY-MM-DD)
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
+        
+        document.getElementById('startDate').value = startDateStr;
+        document.getElementById('endDate').value = endDateStr;
+    }
+
+    // Load data when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadStockData();
+        
+        // Add period button event listeners
+        document.getElementById('ytd-btn').addEventListener('click', function() {
+            setDatePeriod('YTD');
+            updatePeriodButtonStates('ytd-btn');
+        });
+
+        document.getElementById('5y-btn').addEventListener('click', function() {
+            setDatePeriod(5);
+            updatePeriodButtonStates('5y-btn');
+        });
+
+        document.getElementById('10y-btn').addEventListener('click', function() {
+            setDatePeriod(10);
+            updatePeriodButtonStates('10y-btn');
+        });
+
+        document.getElementById('20y-btn').addEventListener('click', function() {
+            setDatePeriod(20);
+            updatePeriodButtonStates('20y-btn');
+        });
+        
+        // Set YTD as default active button since start date defaults to 2025-01-01
+        updatePeriodButtonStates('ytd-btn');
+    });
+    </script>
+</body>
+</html>

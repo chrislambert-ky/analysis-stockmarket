@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-468B94S87K"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-468B94S87K');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy-on-Dip - Advanced</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        /* Page Styles */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            font-size: 2.1rem;
+            font-weight: bold;
+            color: var(--blue);
+            margin: 1rem 20px;
+            text-align: center;
+        }
+        
+        h2 {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--light-blue);
+            margin: 0.5rem 20px 0.5rem 20px;
+            text-align: center;
+        }
+        
+        .container > p {
+            font-size: 1rem;
+            line-height: 1.5;
+            margin: 0.5rem 20px;
+            text-align: center;
+            color: var(--dark-gray);
+        }
+        
+        .controls {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .input-group input, .input-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        /* Period button styles (match dca-strat.html) */
+        .period-selection {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: flex-end;
+        }
+
+        .period-btn {
+            background-color: var(--gray);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            margin: 0 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.25s ease;
+            font-size: 13px;
+        }
+
+        .period-btn:hover { background-color: var(--blue); transform: translateY(-1px); }
+        .period-btn.active { background-color: var(--orange); color: white; }
+        .decline-settings {
+            grid-column: 1 / -1;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .decline-settings h4 {
+            margin-top: 0;
+            color: #0077cc;
+        }
+        .decline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .decline-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .decline-item label {
+            font-weight: normal;
+            margin: 0;
+            font-size: 14px;
+        }
+        .decline-item input {
+            width: 60px;
+            padding: 4px;
+        }
+        .button-group {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #005aa3;
+        }
+        .results {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .result-item {
+            text-align: center;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .result-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0077cc;
+        }
+        .result-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .ticker-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .ticker-metric-item {
+            text-align: center;
+            padding: 10px;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        #chartContainer {
+            margin-top: 20px;
+            height: 60vh;
+            min-height: 300px;
+            max-height: 700px;
+        }
+
+        /* Mobile menu toggle - hidden on larger screens */
+        #mobileMenuBtn {
+            display: none;
+            background: var(--blue);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Responsive Design for Navigation */
+        @media (max-width: 700px) {
+            .main-nav {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.5rem 0;
+            }
+            .nav-link {
+                font-size: 1rem;
+                padding: 0.5rem 1rem;
+                width: 100%;
+                text-align: center;
+                border-radius: 0;
+            }
+            #mobileMenuBtn { display: inline-block; }
+            .main-nav.nav-closed .nav-link { display: none; }
+        }
+
+        @media (max-width: 400px) {
+            .nav-link {
+                font-size: 0.95rem;
+                padding: 0.5rem 0.5rem;
+            }
+        }
+        /* Responsive tweaks for selection row to prevent horizontal scrolling */
+        @media (max-width: 900px) {
+            .flex-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            .flex-row .input-group {
+                flex: 1 1 200px !important;
+                min-width: 160px;
+            }
+            .period-selection {
+                flex: 1 1 100%;
+                justify-content: center !important;
+                margin-left: 0 !important;
+                gap: 8px;
+                row-gap: 8px;
+            }
+        }
+        @media (max-width: 480px) {
+            .flex-row .input-group { flex-basis: 100% !important; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="main-nav">
+        <a class="nav-link" href="../index.html">Home</a>
+        <a class="nav-link" href="dca.html">Dollar Cost Averaging Analysis</a>
+        <a class="nav-link" href="bod.html">Buy-on-Dip Analysis</a>
+        <a class="nav-link" href="dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
+        <a class="nav-link" href="bod-tickers.html">Buy-on-Dip (All Tickers)</a>
+        <a class="nav-link" href="dca-strat.html">Advanced Dollar Cost Averaging</a>
+        <a class="nav-link" href="bod-strat.html">Advanced Buy-on-Dip</a>
+        <a class="nav-link" href="metrics.html">Metrics Dashboard</a>
+        <a class="nav-link" href="about.html">About</a>
+    </nav>
+    <button id="mobileMenuBtn" aria-expanded="false">Menu</button>
+    
+    <div>
+        <h1>Advanced Buy-on-Dip Strategy</h1>
+        <h2>Set up limit orders based on percentage declines from previous day's close and see real-time results. Some tickers may be new and may not have enough historical data.</h2>
+    </div>
+    
+    <div class="container">
+
+        <div class="controls">
+            <div class="input-group">
+                <label for="tickerSelect">Ticker:</label>
+                <select id="tickerSelect">
+                    <option value="">-- Select Ticker --</option>
+                </select>
+            </div>
+            
+            <div class="flex-row" style="display:flex;align-items:center;gap:20px;">
+                <div class="input-group" style="flex:0 0 260px;">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" value="2020-01-01" style="width:220px;">
+                </div>
+
+                <div class="input-group" style="flex:0 0 260px;">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate" value="2024-12-31" style="width:220px;">
+                </div>
+
+                <div class="period-selection" style="margin-left:auto;gap:10px;">
+                    <button id="ytd-btn" class="period-btn active" onclick="setStartToYTD()">YTD</button>
+                    <button id="5y-btn" class="period-btn" onclick="shiftStartYears(5)">5Y</button>
+                    <button id="10y-btn" class="period-btn" onclick="shiftStartYears(10)">10Y</button>
+                    <button id="15y-btn" class="period-btn" onclick="shiftStartYears(15)">15Y</button>
+                    <button id="20y-btn" class="period-btn" onclick="shiftStartYears(20)">20Y</button>
+                </div>
+            </div>
+            
+            <div class="decline-settings">
+                <h4>Limit Order Settings</h4>
+                <div class="help-text">Set number of shares to buy at each percentage decline from previous day's close</div>
+                <div class="decline-grid">
+                    <div class="decline-item">
+                        <label>-1%:</label>
+                        <input type="number" id="decline1" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-2%:</label>
+                        <input type="number" id="decline2" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-3%:</label>
+                        <input type="number" id="decline3" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-4%:</label>
+                        <input type="number" id="decline4" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-5%:</label>
+                        <input type="number" id="decline5" value="1" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-6%:</label>
+                        <input type="number" id="decline6" value="0" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-7%:</label>
+                        <input type="number" id="decline7" value="0" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-8%:</label>
+                        <input type="number" id="decline8" value="0" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-9%:</label>
+                        <input type="number" id="decline9" value="0" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                    <div class="decline-item">
+                        <label>-10%:</label>
+                        <input type="number" id="decline10" value="0" min="0" step="1">
+                        <span>shares</span>
+                    </div>
+                </div>
+                <div class="help-text">Example: If previous close was $100 and you set 10 shares at -2%, you'll buy 10 shares if the stock hits $98 or lower</div>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="calculateStrategy()">Calculate Strategy</button>
+                <button onclick="downloadCSV()" id="downloadBtn" style="display:none;">Download CSV</button>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <h3>Results Summary</h3>
+            <div class="disclaimer">
+                Up Days, Down Days, Mon-Fri, and Week-over-week are general metrics for the selected ticker and date range. These values reflect the stock's overall performance during the chosen period, independent of your strategy settings.
+            </div>
+            <div class="ticker-metrics">
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="upDays">0 (0%)</div>
+                    <div class="result-label">Up Days (Open→Close)</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="downDays">0 (0%)</div>
+                    <div class="result-label">Down Days (Open→Close)</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="mondayFridaySuccess">0 (0%)</div>
+                    <div class="result-label">Monday→Friday Success</div>
+                </div>
+                <div class="ticker-metric-item">
+                    <div class="result-value" id="tradeWeekSuccess">0 (0%)</div>
+                    <div class="result-label">Trade→Next Week Success</div>
+                </div>
+            </div>
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="result-value" id="totalInvested">$0</div>
+                    <div class="result-label">Total Invested</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="totalShares">0</div>
+                    <div class="result-label">Total Shares</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="portfolioValue">$0</div>
+                    <div class="result-label">Portfolio Value</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="totalReturn">$0</div>
+                    <div class="result-label">Total Return</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="returnPercent">0%</div>
+                    <div class="result-label">Return %</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="avgPrice">$0</div>
+                    <div class="result-label">Avg Purchase Price</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="totalTrades">0</div>
+                    <div class="result-label">Total Trades</div>
+                </div>
+                <!-- Additional summary metrics are shown above in the ticker-metrics section -->
+            </div>
+        </div>
+        
+        <div id="chartContainer"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script>
+    // Mobile nav toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const nav = document.querySelector('.main-nav');
+        mobileBtn && mobileBtn.addEventListener('click', () => {
+            const closed = nav.classList.toggle('nav-closed');
+            mobileBtn.setAttribute('aria-expanded', (!closed).toString());
+        });
+
+        // Keep endDate defaulted to today and set start date to YTD so the selected period matches the date range
+        try {
+            const endInput = document.getElementById('endDate');
+            if (endInput) endInput.value = new Date().toISOString().split('T')[0];
+            // ensure YTD start is applied on load (will also set the active button)
+            if (typeof setStartToYTD === 'function') setStartToYTD();
+        } catch(e){}
+    });
+
+    // Keep track of charts for responsive resizing
+    const _responsiveCharts = [];
+    let stockData = [];
+    let allBodEvents = []; // precomputed buy-on-dip events (fast-path)
+    let calculationResults = [];
+
+    // Global date parsing helpers (used by multiple functions)
+    function parseDateStringAsLocal(s) {
+        if (!s) return null;
+        if (s instanceof Date) return s;
+        const str = String(s).trim();
+        let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+        const parsed = new Date(str);
+        if (isNaN(parsed)) return null;
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+    }
+
+    function toYMDFromString(s) {
+        const d = parseDateStringAsLocal(s);
+        if (!d) return s;
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // Helper function to format currency with commas
+    function formatCurrency(amount) {
+        return '$' + amount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    // Load stock data and populate ticker dropdown
+    async function loadStockData() {
+        // Ensure end date defaults to today
+        try {
+            const endInput = document.getElementById('endDate');
+            if (endInput) endInput.value = new Date().toISOString().split('T')[0];
+        } catch (e) {
+            console.warn('Could not set endDate to today', e);
+        }
+        try {
+            const response = await fetch('../data/history_tickers.csv');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            let text = await response.text();
+            text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const rows = text.split('\n').filter(r => r.trim().length > 0);
+            
+            if (rows.length === 0) return;
+            
+            const headers = rows[0].split(',').map(h => h.trim());
+            // Basic CSV line parser (supports quoted fields) and numeric coercion
+            function parseCsvLine(line) {
+                const out = [];
+                let cur = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const ch = line[i];
+                    if (ch === '"') {
+                        if (inQuotes && i + 1 < line.length && line[i + 1] === '"') { cur += '"'; i++; }
+                        else { inQuotes = !inQuotes; }
+                    } else if (ch === ',' && !inQuotes) {
+                        out.push(cur);
+                        cur = '';
+                    } else {
+                        cur += ch;
+                    }
+                }
+                out.push(cur);
+                return out.map(s => (s ?? '').trim());
+            }
+
+            const numericKeys = new Set(['Open','High','Low','Close','Previous_Close','avg_daily_price','Volume','Adj Close','Adj_Close']);
+            stockData = rows.slice(1).map(line => {
+                const values = parseCsvLine(line);
+                const obj = {};
+                headers.forEach((h, i) => {
+                    const key = h || `col${i}`;
+                    const val = values[i] ?? '';
+                    if (key.toLowerCase() === 'date' || key.toLowerCase() === 'date_add') {
+                        obj['Date_add'] = val;
+                        return;
+                    }
+                    if (numericKeys.has(key)) {
+                        const n = val === '' ? null : Number(val.replace(/\"/g, ''));
+                        obj[key] = (n === null || isNaN(n)) ? null : n;
+                    } else {
+                        obj[key] = val;
+                    }
+                });
+                if (!obj.Date_add) obj.Date_add = obj['Date'] || obj['date'] || '';
+                return obj;
+            });
+            
+            // IMPORTANT: Note about cumulative fields
+            // The precomputed `all_buy_on_dip.csv` file may include cumulative fields
+            // such as `Cumulative Shares` and `Cumulative Invested`. These are
+            // intended only for troubleshooting and auditing. Do NOT use those
+            // cumulatives directly in UI charts or period summaries. Instead,
+            // filter per-event rows to the user's timeframe and recompute totals
+            // (sum shares, sum dollars invested, use last close in period for value).
+            // See docs/ai-instruction.md for the official rule.
+            // Populate ticker dropdown
+            const tickers = [...new Set(stockData.map(row => row.Symbol))].sort((a,b) => a.localeCompare(b));
+            const select = document.getElementById('tickerSelect');
+            tickers.forEach(ticker => {
+                const option = document.createElement('option');
+                option.value = ticker;
+                option.textContent = ticker;
+                select.appendChild(option);
+            });
+            
+            console.log(`Loaded ${stockData.length} records for ${tickers.length} tickers`);
+            // Try loading precomputed buy-on-dip events for a fast-path
+            try {
+                const resp2 = await fetch('../data/all_buy_on_dip.csv');
+                if (resp2.ok) {
+                    let txt = await resp2.text();
+                    txt = txt.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                    const rows2 = txt.split('\n').filter(r => r.trim().length > 0);
+                    if (rows2.length > 0) {
+                        const headers2 = rows2[0].split(',').map(h => h.trim());
+                        // small helpers for timezone-safe parsing
+                        function parseDateStringAsLocal(s) {
+                            if (!s) return null;
+                            if (s instanceof Date) return s;
+                            const str = String(s).trim();
+                            let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+                            if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+                            m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                            if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+                            const parsed = new Date(str);
+                            if (isNaN(parsed)) return null;
+                            return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+                        }
+                        function toYMDFromString(s) {
+                            const d = parseDateStringAsLocal(s);
+                            if (!d) return s;
+                            const yyyy = d.getFullYear();
+                            const mm = String(d.getMonth() + 1).padStart(2, '0');
+                            const dd = String(d.getDate()).padStart(2, '0');
+                            return `${yyyy}-${mm}-${dd}`;
+                        }
+
+                        allBodEvents = rows2.slice(1).map(row => {
+                            const values = row.split(',').map(v => (v ?? '').trim());
+                            const obj = {};
+                            headers2.forEach((h, i) => obj[h.trim()] = values[i] ?? '');
+                            // normalize date
+                            const rawDate = obj['Date_add'] || obj['Date'] || obj['date'] || '';
+                            try { obj.Date_add = rawDate ? toYMDFromString(rawDate) : ''; } catch(e) { obj.Date_add = rawDate; }
+                            // coerce numeric fields
+                            ['Buy_Price','Executed_Price','Low','Previous_Close','Close','Open','High','Dollars Invested','Dollars_Invested'].forEach(k => {
+                                if (obj[k] != null && obj[k] !== '') {
+                                    const n = Number(obj[k]); obj[k] = isNaN(n) ? obj[k] : n;
+                                }
+                            });
+                            // Normalize level fields like '1%' -> 1 (number) and ensure consistent keys
+                            const levelKeys = ['Executed_Level','Buy_Level','Level','Decline_Level','DeclinePercent','Executed Level','Buy Level'];
+                            for (const k of levelKeys) {
+                                if (k in obj && obj[k] != null && obj[k] !== '') {
+                                    const raw = String(obj[k]).trim();
+                                    const matched = raw.match(/^(\d+(?:\.\d+)?)/);
+                                    if (matched) obj['Executed_Level'] = Number(matched[1]);
+                                }
+                            }
+                            // Remove audit-only cumulative fields if present in the precomputed CSV
+                            // These cumulative columns (if present) are for troubleshooting only and
+                            // must not be used directly by UI charts or period summaries. The UI
+                            // should recompute totals from per-event rows filtered to the timeframe.
+                            ['Cumulative Shares','Cumulative Invested','Cumulative Value','Cumulative Return','Cumulative Current Value'].forEach(k => {
+                                if (k in obj) delete obj[k];
+                            });
+                            return normalizeBodEvent(obj);
+                        });
+                        console.log(`Loaded ${allBodEvents.length} precomputed BOD events`);
+                    }
+                }
+            } catch (err) {
+                console.warn('no all_buy_on_dip.csv fast-path available or parse failed', err);
+            }
+        } catch (error) {
+            console.error('Error loading stock data:', error);
+        }
+    }
+
+    function calculateStrategy() {
+        const startDate = new Date(document.getElementById('startDate').value);
+        const endDate = new Date(document.getElementById('endDate').value);
+        const selectedTicker = document.getElementById('tickerSelect').value;
+        
+        if (!selectedTicker) {
+            alert('Please select a ticker');
+            return;
+        }
+        
+        if (startDate >= endDate) {
+            alert('End date must be after start date');
+            return;
+        }
+        
+        // Get decline settings
+        const declineSettings = {};
+        for (let i = 1; i <= 10; i++) {
+            const shares = parseInt(document.getElementById(`decline${i}`).value) || 0;
+            if (shares > 0) {
+                declineSettings[i] = shares;
+            }
+        }
+        
+        if (Object.keys(declineSettings).length === 0) {
+            alert('Please set at least one decline percentage with shares > 0');
+            return;
+        }
+        
+    calculationResults = calculateBuyOnDip(selectedTicker, startDate, endDate, declineSettings);
+        displayResults(calculationResults, declineSettings);
+        showChart(calculationResults.trades, selectedTicker);
+        
+        document.getElementById('downloadBtn').style.display = 'inline-block';
+    }
+
+    function calculateBuyOnDip(ticker, startDate, endDate, declineSettings) {
+        // Fast-path: if precomputed events exist, use them for this ticker and date range
+        const results = [];
+        let totalShares = 0;
+        let totalInvested = 0;
+        let totalTrades = 0;
+
+        const eventsForTicker = allBodEvents.filter(e => e.Symbol === ticker && new Date(e.Date_add) >= startDate && new Date(e.Date_add) <= endDate)
+                .sort((a,b) => {
+                    const da = parseDateStringAsLocal(a.Date_add);
+                    const db = parseDateStringAsLocal(b.Date_add);
+                    return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+                });
+
+        if (eventsForTicker.length > 0) {
+            // events include per-event executed price and decline level; apply user's declineSettings
+            for (const ev of eventsForTicker) {
+                // the ETL may include a field like 'Executed_Level' or 'Buy_Level' indicating the decline percent
+                // support values like '1%' or '1' or numeric 1
+                let declineLevelRaw = ev.Executed_Level ?? ev.Buy_Level ?? ev.Level ?? ev.Decline_Level ?? ev.DeclinePercent ?? ev['Executed Level'] ?? ev['Buy Level'] ?? '';
+                if (typeof declineLevelRaw === 'string') {
+                    const m = declineLevelRaw.match(/^(\d+(?:\.\d+)?)/);
+                    declineLevelRaw = m ? Number(m[1]) : declineLevelRaw;
+                }
+                const declineLevel = Number(declineLevelRaw) || 0;
+                // Only consider declines that the user has configured (1..10)
+                if (!declineSettings[declineLevel]) continue;
+
+                const shares = Number(declineSettings[declineLevel]) || 0;
+                if (shares <= 0) continue;
+
+                const purchasePrice = Number(ev.Executed_Price || ev.Buy_Price || ev.purchasePrice || ev.Purchase_Price || ev.Buy_Price || ev.BuyPrice || ev['Executed Price']) || Number(ev.Buy_Price || ev.BuyPrice || ev.purchasePrice) || 0;
+                const cost = round2(shares * purchasePrice);
+
+                totalShares += shares;
+                totalInvested = round2(totalInvested + cost);
+                totalTrades++;
+
+                const portfolioValue = round2(totalShares * Number(ev.Close || ev.Close_Price || ev.ClosePrice || ev.close || ev.LastClose || 0));
+
+                results.push({
+                    date: ev.Date_add,
+                    // OHLC may be missing from precomputed CSV; try to fill from stockData (history) when absent
+                    open: (ev.Open != null && ev.Open !== '') ? Number(ev.Open) : null,
+                    high: (ev.High != null && ev.High !== '') ? Number(ev.High) : null,
+                    low: (ev.Low != null && ev.Low !== '') ? Number(ev.Low) : null,
+                    close: (ev.Close != null && ev.Close !== '') ? Number(ev.Close) : (ev.Close_Price != null && ev.Close_Price !== '' ? Number(ev.Close_Price) : null),
+                    previousClose: (ev.Previous_Close != null && ev.Previous_Close !== '') ? Number(ev.Previous_Close) : (ev.PreviousClose != null && ev.PreviousClose !== '' ? Number(ev.PreviousClose) : null),
+                    dayInvested: cost,
+                    dayShares: shares,
+                    totalShares: totalShares,
+                    totalInvested: totalInvested,
+                    cumulativeInvested: totalInvested,
+                    portfolioValue: portfolioValue,
+                    gain: round2(portfolioValue - totalInvested),
+                    gainPercent: totalInvested > 0 ? round2((portfolioValue - totalInvested) / totalInvested * 100) : 0,
+                    tradesExecuted: [{ declinePercent: declineLevel, purchasePrice: purchasePrice, shares: shares, cost: cost, actualDecline: declineLevel }],
+                    totalTrades: totalTrades
+                });
+            }
+
+            // After collecting results, attempt to populate missing OHLC/Previous_Close from stockData
+            for (let i = 0; i < results.length; i++) {
+                const r = results[i];
+                if ((r.open == null || r.high == null || r.low == null || r.previousClose == null) && stockData && stockData.length) {
+                    // find exact matching row in stockData for same symbol and date
+                    const match = stockData.find(sd => sd.Symbol === ticker && (sd.Date_add === r.date || sd.Date_add === r.Date_add));
+                    if (match) {
+                        if (r.open == null && match.Open != null && match.Open !== '') r.open = Number(match.Open);
+                        if (r.high == null && match.High != null && match.High !== '') r.high = Number(match.High);
+                        if (r.low == null && match.Low != null && match.Low !== '') r.low = Number(match.Low);
+                        if (r.close == null && match.Close != null && match.Close !== '') r.close = Number(match.Close);
+                        if (r.previousClose == null && (match.Previous_Close != null && match.Previous_Close !== '')) r.previousClose = Number(match.Previous_Close);
+                    }
+                }
+            }
+            // If multiple fills occurred on the same Date_add, merge them so the UI shows all trades executed that day
+            function mergeResultsByDate(rows) {
+                const map = new Map();
+                for (const r of rows) {
+                    const d = r.date || r.Date_add || '';
+                    if (!map.has(d)) {
+                        // shallow copy and ensure arrays are copied
+                        map.set(d, Object.assign({}, r, { tradesExecuted: Array.isArray(r.tradesExecuted) ? r.tradesExecuted.slice() : [] }));
+                        continue;
+                    }
+                    const agg = map.get(d);
+                    // append trades
+                    if (r.tradesExecuted && r.tradesExecuted.length) agg.tradesExecuted = agg.tradesExecuted.concat(r.tradesExecuted);
+                    // sum dayInvested/dayShares
+                    agg.dayInvested = round2((Number(agg.dayInvested) || 0) + (Number(r.dayInvested) || 0));
+                    agg.dayShares = round2((Number(agg.dayShares) || 0) + (Number(r.dayShares) || 0));
+                    // totals should reflect the latest cumulative values
+                    agg.totalShares = r.totalShares != null ? r.totalShares : agg.totalShares;
+                    agg.totalInvested = r.totalInvested != null ? r.totalInvested : agg.totalInvested;
+                    agg.cumulativeInvested = r.cumulativeInvested != null ? r.cumulativeInvested : agg.cumulativeInvested;
+                    agg.portfolioValue = r.portfolioValue != null ? r.portfolioValue : agg.portfolioValue;
+                    // reconcile OHLC: prefer non-null values; for high take max, for low take min
+                    agg.open = agg.open != null ? agg.open : r.open;
+                    agg.high = (agg.high != null && r.high != null) ? Math.max(agg.high, r.high) : (agg.high != null ? agg.high : r.high);
+                    agg.low = (agg.low != null && r.low != null) ? Math.min(agg.low, r.low) : (agg.low != null ? agg.low : r.low);
+                    agg.close = r.close != null ? r.close : agg.close;
+                    // recompute gain/gainPercent
+                    const inv = agg.cumulativeInvested != null ? agg.cumulativeInvested : agg.totalInvested;
+                    agg.gain = round2((agg.portfolioValue != null ? agg.portfolioValue : 0) - (inv != null ? inv : 0));
+                    agg.gainPercent = inv > 0 ? round2((agg.gain / inv) * 100) : 0;
+                    agg.totalTrades = r.totalTrades != null ? r.totalTrades : agg.totalTrades;
+                    map.set(d, agg);
+                }
+                // return items in original chronological order
+                const ordered = [];
+                for (const r of rows) {
+                    const d = r.date || r.Date_add || '';
+                    if (map.has(d)) {
+                        ordered.push(map.get(d));
+                        map.delete(d);
+                    }
+                }
+                return ordered;
+            }
+
+            const mergedResults = mergeResultsByDate(results);
+
+            // Compute additional metrics using tickerData fallback
+            const tickerData = stockData.filter(row => row.Symbol === ticker && new Date(row.Date_add) >= startDate && new Date(row.Date_add) <= endDate)
+                    .sort((a,b) => {
+                        const da = parseDateStringAsLocal(a.Date_add);
+                        const db = parseDateStringAsLocal(b.Date_add);
+                        return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+                    });
+            const additionalMetrics = calculateBODAdditionalMetrics(tickerData, mergedResults);
+            return { trades: mergedResults, metrics: additionalMetrics };
+        }
+
+        // Fallback: original day-by-day simulation if no precomputed events
+        // Filter data for selected ticker and date range
+        const tickerData = stockData.filter(row => {
+            if (row.Symbol !== ticker) return false;
+            const rowDate = parseDateStringAsLocal(row.Date_add);
+            return rowDate && rowDate >= startDate && rowDate <= endDate;
+        }).sort((a, b) => {
+            const da = parseDateStringAsLocal(a.Date_add);
+            const db = parseDateStringAsLocal(b.Date_add);
+            return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+        });
+
+        if (tickerData.length === 0) {
+            alert('No data found for selected ticker and date range');
+            return { trades: [], metrics: {} };
+        }
+
+        // Process each trading day
+        for (let i = 1; i < tickerData.length; i++) {
+            const currentDay = tickerData[i];
+            const previousDay = tickerData[i - 1];
+
+            const previousClose = Number(previousDay.Close);
+            const currentLow = Number(currentDay.Low);
+            const currentClose = Number(currentDay.Close);
+
+            let dayInvested = 0;
+            let dayShares = 0;
+            const tradesExecuted = [];
+
+            // Check each decline percentage
+            Object.entries(declineSettings).forEach(([declinePercentRaw, sharesRaw]) => {
+                const declinePercent = Number(declinePercentRaw);
+                const shares = Number(sharesRaw) || 0;
+                const limitOrderPrice = previousClose * (1 - declinePercent / 100);
+
+                // If the low of the day hit our limit order price, execute the trade at the limit price
+                if (currentLow <= limitOrderPrice) {
+                    const purchasePrice = round2(limitOrderPrice); // Limit orders execute at the limit price
+                    const cost = round2(shares * purchasePrice);
+
+                    dayInvested = round2(dayInvested + cost);
+                    dayShares += shares;
+                    totalTrades++;
+
+                    const actualDecline = round2(((previousClose - purchasePrice) / previousClose) * 100);
+
+                    tradesExecuted.push({
+                        declinePercent: declinePercent,
+                        targetPrice: limitOrderPrice,
+                        purchasePrice: purchasePrice,
+                        shares: shares,
+                        cost: cost,
+                        actualDecline: actualDecline
+                    });
+                }
+            });
+
+            totalShares = round2(totalShares + dayShares);
+            totalInvested = round2(totalInvested + dayInvested);
+            const portfolioValue = round2(totalShares * currentClose);
+
+            results.push({
+                date: currentDay.Date_add,
+                open: (currentDay.Open != null && currentDay.Open !== '') ? Number(currentDay.Open) : null,
+                high: (currentDay.High != null && currentDay.High !== '') ? Number(currentDay.High) : null,
+                low: (currentDay.Low != null && currentDay.Low !== '') ? Number(currentDay.Low) : null,
+                close: currentClose,
+                previousClose: previousClose,
+                dayInvested: dayInvested,
+                dayShares: dayShares,
+                totalShares: totalShares,
+                totalInvested: totalInvested,
+                cumulativeInvested: totalInvested, // explicit alias for clarity
+                portfolioValue: portfolioValue,
+                gain: round2(portfolioValue - totalInvested),
+                gainPercent: totalInvested > 0 ? round2((portfolioValue - totalInvested) / totalInvested * 100) : 0,
+                tradesExecuted: tradesExecuted,
+                totalTrades: totalTrades
+            });
+        }
+
+        // Calculate additional metrics using the filtered ticker data
+        const additionalMetrics = calculateBODAdditionalMetrics(tickerData, results);
+
+        return { trades: results, metrics: additionalMetrics };
+    }
+
+    // Helper: round to 2 decimals
+    function round2(v) {
+        return Math.round((v + Number.EPSILON) * 100) / 100;
+    }
+
+    // Normalize event fields we expect from all_buy_on_dip.csv
+    function normalizeBodEvent(obj) {
+        // ensure numeric fields are numbers and normalized keys exist
+        const normalized = Object.assign({}, obj);
+        // standardize common fields
+        if (normalized.Date) normalized.Date_add = normalized.Date;
+        if (!normalized.Date_add && normalized.date) normalized.Date_add = normalized.date;
+        if (normalized['Executed Price']) normalized.Executed_Price = normalized['Executed Price'];
+        if (normalized['Executed Level']) normalized.Executed_Level = normalized['Executed Level'];
+        // Normalize Date_add using local parsing helper
+        try {
+            if (normalized.Date_add) normalized.Date_add = toYMDFromString(normalized.Date_add);
+        } catch(e) { /* keep existing */ }
+        // Coerce numeric fields
+        ['Low','Previous_Close','Close','Buy_Price','Executed_Price'].forEach(k => {
+            if (normalized[k] != null && normalized[k] !== '') {
+                const n = Number(normalized[k]);
+                normalized[k] = isNaN(n) ? normalized[k] : n;
+            }
+        });
+        return normalized;
+    }
+
+    function calculateBODAdditionalMetrics(tickerData, tradeResults) {
+        // 1. Up days vs down days (open to close)
+        let upDays = 0;
+        let downDays = 0;
+        
+        tickerData.forEach(row => {
+            const open = parseFloat(row.Open);
+            const close = parseFloat(row.Close);
+            if (close > open) {
+                upDays++;
+            } else if (close < open) {
+                downDays++;
+            }
+        });
+        
+        const totalDays = upDays + downDays;
+        const upDaysPercent = totalDays > 0 ? (upDays / totalDays * 100).toFixed(1) : 0;
+        const downDaysPercent = totalDays > 0 ? (downDays / totalDays * 100).toFixed(1) : 0;
+        
+        // 2. Monday to Friday success rate
+        let mondayFridaySuccess = 0;
+        let mondayFridayTotal = 0;
+        
+        // Find all Mondays using the Weekday column
+        const mondays = tickerData.filter(row => row.Weekday === 'Monday');
+        
+        // Find all Fridays using the Weekday column
+        const fridays = tickerData.filter(row => row.Weekday === 'Friday');
+        
+        // For each Monday, find the closest Friday after it
+        mondays.forEach(monday => {
+            const mondayDate = new Date(monday.Date_add);
+            let closestFriday = null;
+            let minDaysDiff = Infinity;
+            
+            fridays.forEach(friday => {
+                const fridayDate = new Date(friday.Date_add);
+                if (fridayDate > mondayDate) { // Friday must be after Monday
+                    const daysDiff = (fridayDate - mondayDate) / (1000 * 60 * 60 * 24);
+                    if (daysDiff < minDaysDiff && daysDiff <= 7) { // Within 7 days
+                        minDaysDiff = daysDiff;
+                        closestFriday = friday;
+                    }
+                }
+            });
+            
+            if (closestFriday) {
+                mondayFridayTotal++;
+                const mondayClose = parseFloat(monday.Close);
+                const fridayClose = parseFloat(closestFriday.Close);
+                if (fridayClose > mondayClose) {
+                    mondayFridaySuccess++;
+                }
+            }
+        });
+        
+        const mondayFridayPercent = mondayFridayTotal > 0 ? (mondayFridaySuccess / mondayFridayTotal * 100).toFixed(1) : 0;
+        
+        // 3. Trade to next week success (for BOD, check if trades would be profitable one week later)
+        let tradeWeekSuccess = 0;
+        let tradeWeekTotal = 0;
+        
+        tradeResults.forEach(trade => {
+            if (trade.tradesExecuted && trade.tradesExecuted.length > 0) {
+                trade.tradesExecuted.forEach(executedTrade => {
+                    const tradeDate = new Date(trade.date);
+                    const oneWeekLater = new Date(tradeDate);
+                    oneWeekLater.setDate(oneWeekLater.getDate() + 7);
+                    
+                    // Find closest trading day data one week later
+                    const laterData = findClosestTradingDay(tickerData, oneWeekLater.toISOString().split('T')[0]);
+                    
+                    if (laterData) {
+                        tradeWeekTotal++;
+                        const laterClose = parseFloat(laterData.Close);
+                        if (laterClose > executedTrade.purchasePrice) {
+                            tradeWeekSuccess++;
+                        }
+                    }
+                });
+            }
+        });
+        
+        const tradeWeekPercent = tradeWeekTotal > 0 ? (tradeWeekSuccess / tradeWeekTotal * 100).toFixed(1) : 0;
+        
+        return {
+            upDays: { count: upDays, percent: upDaysPercent },
+            downDays: { count: downDays, percent: downDaysPercent },
+            mondayFriday: { success: mondayFridaySuccess, total: mondayFridayTotal, percent: mondayFridayPercent },
+            tradeWeek: { success: tradeWeekSuccess, total: tradeWeekTotal, percent: tradeWeekPercent }
+        };
+    }
+
+    function findClosestTradingDay(tickerData, targetDate) {
+        const target = new Date(targetDate);
+        let closest = null;
+        let minDiff = Infinity;
+        
+        for (const row of tickerData) {
+            const rowDate = new Date(row.Date_add);
+            const diff = Math.abs(rowDate - target);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closest = row;
+            }
+        }
+        
+        return closest;
+    }
+
+    function displayResults(calculationData, declineSettings) {
+        if (!calculationData || calculationData.trades.length === 0) return;
+        
+        const results = calculationData.trades;
+        const metrics = calculationData.metrics;
+    const lastResult = results[results.length - 1];
+    const cumulativeInv = (lastResult.cumulativeInvested != null) ? lastResult.cumulativeInvested : lastResult.totalInvested;
+    const avgPurchasePrice = cumulativeInv > 0 ? cumulativeInv / lastResult.totalShares : 0;
+
+    document.getElementById('totalInvested').textContent = formatCurrency(cumulativeInv);
+        document.getElementById('totalShares').textContent = lastResult.totalShares.toFixed(4);
+        document.getElementById('portfolioValue').textContent = formatCurrency(lastResult.portfolioValue);
+        document.getElementById('totalReturn').textContent = formatCurrency(lastResult.gain);
+        document.getElementById('returnPercent').textContent = `${lastResult.gainPercent.toFixed(2)}%`;
+        document.getElementById('avgPrice').textContent = formatCurrency(avgPurchasePrice);
+        document.getElementById('totalTrades').textContent = lastResult.totalTrades;
+        
+        // Display new metrics
+        document.getElementById('upDays').textContent = `${metrics.upDays.count} (${metrics.upDays.percent}%)`;
+        document.getElementById('downDays').textContent = `${metrics.downDays.count} (${metrics.downDays.percent}%)`;
+        document.getElementById('mondayFridaySuccess').textContent = `${metrics.mondayFriday.success}/${metrics.mondayFriday.total} (${metrics.mondayFriday.percent}%)`;
+        document.getElementById('tradeWeekSuccess').textContent = `${metrics.tradeWeek.success}/${metrics.tradeWeek.total} (${metrics.tradeWeek.percent}%)`;
+        
+        document.getElementById('results').style.display = 'block';
+    }
+
+    function showChart(results, ticker) {
+        const chartContainer = document.getElementById('chartContainer');
+        chartContainer.innerHTML = '<div id="chart" style="width: 100%; height: 500px;"></div>';
+        
+    const dates = results.map(r => r.date);
+    const portfolioValues = results.map(r => r.portfolioValue);
+    // Prefer explicit cumulativeInvested where available
+    const totalInvested = results.map(r => (r.cumulativeInvested != null ? r.cumulativeInvested : r.totalInvested));
+        const stockPrices = results.map(r => r.close);
+        
+    const chartEl = document.getElementById('chart');
+    const chart = echarts.init(chartEl);
+    _responsiveCharts.push(chart);
+        
+        const option = {
+            title: {
+                text: `Buy on Dip Strategy Results - ${ticker}`,
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'cross' },
+                formatter: function(params) {
+                    const index = params[0].dataIndex;
+                    const result = results[index];
+                    
+                    let tradesInfo = '';
+                    if (result.tradesExecuted && result.tradesExecuted.length > 0) {
+                        tradesInfo = '<br/><strong>Trades Executed:</strong><br/>';
+                        result.tradesExecuted.forEach(trade => {
+                            tradesInfo += `${trade.shares} shares @ ${formatCurrency(trade.purchasePrice)} (-${trade.actualDecline.toFixed(1)}%)<br/>`;
+                        });
+                    }
+                    
+                    return `
+                        Date: ${result.date}<br/>
+                        Portfolio Value: ${formatCurrency(result.portfolioValue)}<br/>
+                            Total Invested: ${formatCurrency(result.cumulativeInvested != null ? result.cumulativeInvested : result.totalInvested)}<br/>
+                        Stock Price: ${formatCurrency(result.close)}<br/>
+                        Previous Close: ${formatCurrency(result.previousClose)}<br/>
+                        Shares Owned: ${result.totalShares.toFixed(4)}<br/>
+                        Gain: ${formatCurrency(result.gain)} (${result.gainPercent.toFixed(2)}%)
+                        ${tradesInfo}
+                    `;
+                }
+            },
+            legend: {
+                data: ['Portfolio Value', 'Total Invested', 'Stock Price'],
+                top: 30
+            },
+            xAxis: {
+                type: 'category',
+                data: dates,
+                name: 'Date'
+            },
+            yAxis: [
+                {
+                    type: 'value',
+                    name: 'Portfolio Value ($)',
+                    position: 'left'
+                },
+                {
+                    type: 'value',
+                    name: 'Stock Price ($)',
+                    position: 'right'
+                }
+            ],
+            series: [
+                {
+                    name: 'Portfolio Value',
+                    type: 'line',
+                    smooth: false,
+                    data: portfolioValues,
+                    yAxisIndex: 0,
+                    lineStyle: { color: '#00aa00', width: 2 }
+                },
+                {
+                    name: 'Total Invested',
+                    type: 'line',
+                    step: 'end',
+                    smooth: false,
+                    data: totalInvested,
+                    yAxisIndex: 0,
+                    lineStyle: { color: '#0077cc', type: 'dashed' }
+                },
+                {
+                    name: 'Stock Price',
+                    type: 'line',
+                    data: stockPrices,
+                    yAxisIndex: 1,
+                    lineStyle: { color: '#ff6b6b' }
+                }
+            ]
+        };
+        
+        chart.setOption(option);
+        
+        // Resize all tracked charts on viewport changes
+        let _resizeTimer = null;
+        window.addEventListener('resize', () => {
+            if (_resizeTimer) clearTimeout(_resizeTimer);
+            _resizeTimer = setTimeout(() => {
+                _responsiveCharts.forEach(c => c.resize());
+            }, 120);
+        });
+    }
+
+    function downloadCSV() {
+        if (!calculationResults || calculationResults.trades.length === 0) {
+            alert('No results to download');
+            return;
+        }
+        
+        const ticker = document.getElementById('tickerSelect').value;
+        const headers = [
+            'Date', 'Open', 'High', 'Low', 'Close', 'Previous Close',
+            'Day Invested', 'Day Shares', 'Total Shares', 'Total Invested', 
+            'Portfolio Value', 'Gain', 'Gain %', 'Trades Executed'
+        ];
+        
+        let csvContent = headers.join(',') + '\n';
+        
+        function safeNumberFormat(v) { if (v == null || v === '' || isNaN(Number(v))) return ''; return Number(v).toFixed(2); }
+
+        calculationResults.trades.forEach(row => {
+            const tradesDesc = row.tradesExecuted ? row.tradesExecuted.map(t => 
+                `${t.shares}@$${t.purchasePrice.toFixed(2)}(-${t.actualDecline.toFixed(1)}%)`
+            ).join(';') : '';
+            const values = [
+                row.date,
+                safeNumberFormat(row.open),
+                safeNumberFormat(row.high),
+                safeNumberFormat(row.low),
+                safeNumberFormat(row.close),
+                safeNumberFormat(row.previousClose),
+                (row.dayInvested != null ? Number(row.dayInvested).toFixed(2) : ''),
+                (row.dayShares != null ? Number(row.dayShares).toFixed(6) : ''),
+                (row.totalShares != null ? Number(row.totalShares).toFixed(6) : ''),
+                (row.totalInvested != null ? Number(row.totalInvested).toFixed(2) : ''),
+                (row.portfolioValue != null ? Number(row.portfolioValue).toFixed(2) : ''),
+                (row.gain != null ? Number(row.gain).toFixed(2) : ''),
+                (row.gainPercent != null ? Number(row.gainPercent).toFixed(2) : ''),
+                `"${tradesDesc}"`
+            ];
+            csvContent += values.join(',') + '\n';
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bod_strategy_${ticker}_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+
+    // Load data when page loads
+    document.addEventListener('DOMContentLoaded', loadStockData);
+
+    // Set start date to Jan 1 of current year (YTD)
+    function setStartToYTD() {
+        const now = new Date();
+        const ytd = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+        const startInput = document.getElementById('startDate');
+        if (startInput) startInput.value = ytd;
+    setActivePeriodButton('ytd-btn');
+    }
+
+    // Shift start date back by n years (keeps month/day as Jan 1)
+    function shiftStartYears(n) {
+        const now = new Date();
+        const target = new Date(now.getFullYear() - n, 0, 1).toISOString().split('T')[0];
+        const startInput = document.getElementById('startDate');
+        if (startInput) startInput.value = target;
+        // map n to button id
+        const idMap = {5: '5y-btn', 10: '10y-btn', 15: '15y-btn', 20: '20y-btn'};
+        const btnId = idMap[n] || null;
+        if (btnId) setActivePeriodButton(btnId);
+    // Do NOT auto-run calculation on period change; user must click Calculate
+    }
+
+    function setActivePeriodButton(id) {
+        ['ytd-btn','5y-btn','10y-btn','15y-btn','20y-btn'].forEach(bid => {
+            const el = document.getElementById(bid);
+            if (!el) return;
+            if (bid === id) el.classList.add('active'); else el.classList.remove('active');
+        });
+    }
+    </script>
+</body>
+</html>

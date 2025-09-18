@@ -4,6 +4,7 @@
 # =============================
 import os
 import json
+import argparse
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta
@@ -32,41 +33,63 @@ etf_list = ["AAPL","ALLY","AMZN","ARKK","FBCG","FMAG","GGLL",
 #    return str(dt)
 
 # %%
+def parse_args():
+    p = argparse.ArgumentParser(description="ETL v2 - fetch and split per-ticker yearly files")
+    p.add_argument("--force", action="store_true", help="Force re-fetch from Yahoo even if today's raw CSV exists")
+    return p.parse_args()
+
+
+def raw_csv_is_fresh(path):
+    if not os.path.exists(path):
+        return False
+    # consider the raw CSV fresh if it was modified today (local date)
+    mtime = datetime.fromtimestamp(os.path.getmtime(path))
+    return mtime.date() == datetime.now().date()
+
+
+args = parse_args()
+
 rows = []
-for sym in etf_list:
-    try:
-        t = yf.Ticker(sym)
-        # Fetch data from January 1, 2015 to present day
-        start_date = "2005-01-01"
-        end_date = datetime.now().strftime("%Y-%m-%d")
-        df = t.history(start=start_date, end=end_date, interval="1d", auto_adjust=True)
-        if df is None or df.empty:
-            continue
-
-        df = df.reset_index()
-        df["Symbol"] = sym
-
-        keep_cols = ["Symbol", "Date", "Open", "High", "Low", "Close", "Volume"]
-        for c in keep_cols:
-            if c not in df.columns:
-                df[c] = pd.NA
-        df = df[keep_cols]
-
-        rows.append(df)
-    except Exception as e:
-        print(f"  error fetching {sym}: {e}")
-
-if rows:
-    combined = pd.concat(rows, ignore_index=True)
-    combined.to_csv(RAW_COMBINED_CSV, index=False)
-    print(f"Wrote raw combined CSV -> {RAW_COMBINED_CSV}")
+if raw_csv_is_fresh(RAW_COMBINED_CSV) and not args.force:
+    print(f"Raw combined CSV is fresh ({RAW_COMBINED_CSV}) - skipping download. Use --force to override.")
 else:
-    print("No data downloaded.")
+    for sym in etf_list:
+        try:
+            t = yf.Ticker(sym)
+            # Fetch full history from 2005-01-01 to present
+            start_date = "2005-01-01"
+            end_date = datetime.now().strftime("%Y-%m-%d")
+            df = t.history(start=start_date, end=end_date, interval="1d", auto_adjust=True)
+            if df is None or df.empty:
+                print(f"  no data for {sym}")
+                continue
+
+            df = df.reset_index()
+            df["Symbol"] = sym
+
+            keep_cols = ["Symbol", "Date", "Open", "High", "Low", "Close", "Volume"]
+            for c in keep_cols:
+                if c not in df.columns:
+                    df[c] = pd.NA
+            df = df[keep_cols]
+
+            rows.append(df)
+            print(f"  fetched {len(df)} rows for {sym}")
+        except Exception as e:
+            print(f"  error fetching {sym}: {e}")
+
+    if rows:
+        combined = pd.concat(rows, ignore_index=True)
+        combined.to_csv(RAW_COMBINED_CSV, index=False)
+        print(f"Wrote raw combined CSV -> {RAW_COMBINED_CSV}")
+    else:
+        print("No data downloaded.")
 
 
 # %%
 from datetime import datetime, timedelta
 
+# Load raw CSV
 # Load raw CSV
 df = pd.read_csv(RAW_COMBINED_CSV)
 
@@ -232,72 +255,110 @@ if 'avg_daily_price' not in combined.columns:
     combined[["Open", "High", "Low", "Close"]] = combined[["Open", "High", "Low", "Close"]].apply(pd.to_numeric, errors='coerce')
     combined['avg_daily_price'] = combined[["Open", "High", "Low", "Close"]].mean(axis=1).round(4)
 
-# Create output directory for tickers
+# Create output directory for tickers (per-symbol folders)
 tickers_dir = os.path.join(OUTPUT_FOLDER, 'tickers')
 os.makedirs(tickers_dir, exist_ok=True)
 
-# Write one CSV per Symbol and build an index
+# Build index metadata mapping symbol -> { years: [...], last_updated: ISO8601 }
 index = {}
 for sym, grp in combined.groupby('Symbol'):
-    fname = f"{sym}.csv"
-    path = os.path.join(tickers_dir, fname)
+    sym_dir = os.path.join(tickers_dir, sym)
+    os.makedirs(sym_dir, exist_ok=True)
 
-    # Reorder columns: move Shares_Purchased and Total_Value_Purchased to the left of any BOD* columns
-    cols = list(grp.columns)
+    # Ensure Date is parsed
+    grp['Date'] = pd.to_datetime(grp['Date'], errors='coerce')
+    grp = grp.sort_values('Date')
 
-    # Helper to find the actual column name when variants exist (underscores vs spaces, different casing)
-    def find_variant(preferred_names, available_cols):
-        for n in preferred_names:
-            if n in available_cols:
-                return n
-        # try normalized match
-        norm_map = {c.lower().replace(' ', '').replace('_', ''): c for c in available_cols}
-        for n in preferred_names:
-            key = n.lower().replace(' ', '').replace('_', '')
-            if key in norm_map:
-                return norm_map[key]
-        return None
+    years = sorted(grp['Date'].dt.year.dropna().unique().astype(int).tolist())
+    index[sym] = {
+        'years': years,
+        'last_updated': datetime.now().isoformat(),
+        'files': {}
+    }
 
-    shares_col = find_variant(['Shares_Purchased', 'Shares Purchased', 'shares_purchased', 'SharesPurchased'], cols)
-    total_col = find_variant(['Total_Value_Purchased', 'Total Value Purchased', 'TotalValuePurchased', 'total_value_purchased'], cols)
+    # For each year, write a per-year CSV for this symbol
+    for year in years:
+        year_grp = grp[grp['Date'].dt.year == int(year)]
+        if year_grp.empty:
+            continue
+        fname = f"{sym}-{year}.csv"
+        path = os.path.join(sym_dir, fname)
+        # Find possible column variants
+        def find_variant(preferred_names, available_cols):
+            for n in preferred_names:
+                if n in available_cols:
+                    return n
+            norm_map = {c.lower().replace(' ', '').replace('_', ''): c for c in available_cols}
+            for n in preferred_names:
+                key = n.lower().replace(' ', '').replace('_', '')
+                if key in norm_map:
+                    return norm_map[key]
+            return None
 
-    # Find BOD-like columns (start with 'BOD' or contain 'BOD[' )
-    bod_cols = [c for c in cols if isinstance(c, str) and (c.startswith('BOD') or 'BOD[' in c or c.upper().startswith('BOD'))]
+        shares_col = find_variant(['Shares_Purchased', 'Shares Purchased', 'shares_purchased', 'SharesPurchased'], cols)
+        total_col = find_variant(['Total_Value_Purchased', 'Total Value Purchased', 'TotalValuePurchased', 'total_value_purchased'], cols)
 
-    if (shares_col or total_col):
-        # Build new column order
-        remaining = [c for c in cols if c not in (shares_col, total_col)]
-        if bod_cols:
-            # find first index of any bod col in remaining
-            bod_indices = [remaining.index(b) for b in bod_cols if b in remaining]
-            insert_idx = min(bod_indices) if bod_indices else 0
-        else:
-            # No BOD columns found: place at front
-            insert_idx = 0
+        bod_cols = [c for c in cols if isinstance(c, str) and (c.startswith('BOD') or 'BOD[' in c or c.upper().startswith('BOD'))]
 
-        insert_cols = []
-        if shares_col:
-            insert_cols.append(shares_col)
-        if total_col and total_col != shares_col:
-            insert_cols.append(total_col)
+        if (shares_col or total_col):
+            remaining = [c for c in cols if c not in (shares_col, total_col)]
+            if bod_cols:
+                bod_indices = [remaining.index(b) for b in bod_cols if b in remaining]
+                insert_idx = min(bod_indices) if bod_indices else 0
+            else:
+                insert_idx = 0
 
-        new_order = remaining[:insert_idx] + insert_cols + remaining[insert_idx:]
-        # Reindex grp to new order (only include columns that actually exist)
-        new_order = [c for c in new_order if c in grp.columns]
-        grp = grp.reindex(columns=new_order)
+            insert_cols = []
+            if shares_col:
+                insert_cols.append(shares_col)
+            if total_col and total_col != shares_col:
+                insert_cols.append(total_col)
 
-    # Write CSV and record index path
-    grp.to_csv(path, index=False)
-    # Use a web-friendly, repo-relative path so a hosted UI can fetch it
-    index[sym] = f"{OUTPUT_FOLDER}/tickers/{fname}"
+            new_order = remaining[:insert_idx] + insert_cols + remaining[insert_idx:]
+            new_order = [c for c in new_order if c in year_grp.columns]
+            year_grp = year_grp.reindex(columns=new_order)
 
-# Save index.json in data/
-index_path = os.path.join(OUTPUT_FOLDER, 'tickers_index.json')
+        year_grp.to_csv(path, index=False)
+
+        # compute file metadata
+        try:
+            min_date = year_grp['Date'].min()
+            max_date = year_grp['Date'].max()
+            if hasattr(min_date, 'strftime'):
+                min_date_s = min_date.strftime('%Y-%m-%d')
+            else:
+                min_date_s = str(min_date)
+            if hasattr(max_date, 'strftime'):
+                max_date_s = max_date.strftime('%Y-%m-%d')
+            else:
+                max_date_s = str(max_date)
+        except Exception:
+            min_date_s = ''
+            max_date_s = ''
+
+        row_count = int(len(year_grp))
+        size_bytes = None
+        try:
+            size_bytes = os.path.getsize(path)
+        except Exception:
+            size_bytes = None
+
+        index[sym]['files'][str(year)] = {
+            'path': os.path.join(OUTPUT_FOLDER, 'tickers', sym, fname).replace('\\', '/'),
+            'min_date': min_date_s,
+            'max_date': max_date_s,
+            'row_count': row_count,
+            'size_bytes': size_bytes,
+            'last_updated': datetime.now().isoformat()
+        }
+
+# Save tickers_index.json in data/tickers
+index_path = os.path.join(tickers_dir, 'tickers_index.json')
 with open(index_path, 'w') as f:
     json.dump(index, f, indent=2)
 
-print(f"Wrote {len(index)} ticker files -> {tickers_dir}")
-print(f"Index file -> {index_path}")
+print(f"Wrote per-ticker per-year files -> {tickers_dir}")
+print(f"Tickers index file -> {index_path}")
 
 # %%
 # Incremental Update Code
