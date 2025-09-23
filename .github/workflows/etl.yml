@@ -22,6 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -42,17 +43,44 @@ jobs:
           echo "Running ETL v2 script..."
           python etl-market-data-v2.py
 
+      - name: Show data directory (post-ETL)
+        run: |
+          echo 'Listing data/ (top-level):'
+          ls -la data || true
+          echo 'Recursive listing (first 200 lines):'
+          ls -R data | head -n 200 || true
+
+      - name: Validate generated data
+        run: |
+          echo 'Running data validation script...'
+          python scripts/validate_index.py
+          echo 'Copying report to workspace for debug'
+          ls -la data || true
+          cat data/data_report.json || true
+
+      - name: Upload data report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-report
+          path: data/data_report.json
+
       - name: Commit and push changes (data folder only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Stage only data folder
-          git add data/
-          # Check if there are changes in data/
-          if [ -n "$(git status --porcelain data/)" ]; then
+          # Stage all changes under data/ (including deletions)
+          git add -A data/
+          echo 'Staged files (git status --porcelain):'
+          git status --porcelain data/ || true
+          # Show names of staged files
+          echo 'Staged file list:'
+          git diff --name-only --cached || true
+          # Commit only if there are staged changes
+          if [ -n "$(git diff --cached --name-only)" ]; then
             git commit -m "Daily ETL: update data ($(date -u +'%Y-%m-%d %H:%M:%S') UTC)"
+            echo 'Pushing changes...'
             git push
           else
             echo "No changes to commit in data/"
