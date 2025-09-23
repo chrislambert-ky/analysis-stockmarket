@@ -240,6 +240,134 @@
         let tickerData = null;
         let currentPeriod = 'ytd';
 
+        // --- Minimal IndexedDB helper for caching parsed rows and metadata ---
+        const IDB_NAME = 'stockmarket-cache';
+        const IDB_VERSION = 1;
+        const STORE_FILES = 'files';
+
+        function openDb() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+                req.onupgradeneeded = (ev) => {
+                    const db = ev.target.result;
+                    if (!db.objectStoreNames.contains(STORE_FILES)) {
+                        const s = db.createObjectStore(STORE_FILES, { keyPath: 'id' });
+                        s.createIndex('last_updated', 'last_updated', { unique: false });
+                        s.createIndex('accessed', 'accessed', { unique: false });
+                    }
+                };
+                req.onsuccess = (ev) => resolve(ev.target.result);
+                req.onerror = (ev) => reject(ev.target.error);
+            });
+        }
+
+        async function idbGet(id) {
+            try {
+                const db = await openDb();
+                return await new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_FILES, 'readonly');
+                    const req = tx.objectStore(STORE_FILES).get(id);
+                    req.onsuccess = () => resolve(req.result || null);
+                    req.onerror = () => reject(req.error);
+                });
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function idbPut(obj) {
+            try {
+                const db = await openDb();
+                return await new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_FILES, 'readwrite');
+                    obj.accessed = Date.now();
+                    tx.objectStore(STORE_FILES).put(obj);
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = (e) => reject(e.target.error);
+                });
+            } catch (e) {
+                return false;
+            }
+        }
+
+        async function idbDelete(id) {
+            try {
+                const db = await openDb();
+                return await new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_FILES, 'readwrite');
+                    tx.objectStore(STORE_FILES).delete(id);
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = (e) => reject(e.target.error);
+                });
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Find cached entry for a given file path (any last_updated). Returns the most recent cached entry for that path if found.
+        async function idbGetByPath(fpPath) {
+            try {
+                const db = await openDb();
+                return await new Promise((resolve, reject) => {
+                    const tx = db.transaction(STORE_FILES, 'readonly');
+                    const store = tx.objectStore(STORE_FILES);
+                    const req = store.openCursor();
+                    let best = null;
+                    req.onsuccess = (ev) => {
+                        const cur = ev.target.result;
+                        if (!cur) {
+                            resolve(best);
+                            return;
+                        }
+                        const rec = cur.value;
+                        if (rec && rec.id && rec.id.startsWith(fpPath + '::')) {
+                            // pick one with greatest last_updated or accessed
+                            if (!best) best = rec;
+                            else {
+                                const a = best.last_updated || best.last_updated || 0;
+                                const b = rec.last_updated || rec.last_updated || 0;
+                                if (b > a) best = rec;
+                            }
+                        }
+                        cur.continue();
+                    };
+                    req.onerror = (e) => reject(e.target.error);
+                });
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // visit record key helper
+        function visitKey(ticker) { return `visit::${ticker}`; }
+
+        // Deduplicate rows by calendar date (keep the latest entry for a given day)
+        function dedupeRows(rows) {
+            if (!Array.isArray(rows) || rows.length === 0) return [];
+            // normalize dates and group by yyyy-mm-dd
+            const map = new Map();
+            rows.forEach(r => {
+                if (!r || !r.Date) return;
+                const d = (r.Date instanceof Date) ? r.Date : new Date(r.Date);
+                if (isNaN(d)) return;
+                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                // keep the last-seen row for that calendar date (assume rows are chronological, but we'll ensure latest by timestamp)
+                const prev = map.get(key);
+                if (!prev) map.set(key, { row: r, ts: d.getTime() });
+                else {
+                    // if this row's timestamp is newer, replace
+                    const curTs = d.getTime();
+                    if (curTs >= prev.ts) map.set(key, { row: r, ts: curTs });
+                }
+            });
+            const out = Array.from(map.values()).map(v => v.row);
+            // sort by Date
+            out.forEach(r => { if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date); });
+            return out.sort((a, b) => a.Date - b.Date);
+        }
+
+        // End IndexedDB helper
+
         // Load tickers index (supports new per-ticker/year index at data/tickers/tickers_index.json)
         async function loadTickersIndex() {
             // Try new index location first
@@ -375,8 +503,8 @@
             const yearsToLoad = [];
             for (let y = startYear; y <= endYear; y++) yearsToLoad.push(y);
 
-            // Build combined CSV text from selected years only
-            let csvText = '';
+            // Build combined rows array from selected years only (use IndexedDB cache when possible)
+            let allRows = [];
 
             const entry = tickersIndex[ticker];
             if (entry && typeof entry === 'object' && entry.files) {
@@ -391,16 +519,25 @@
                 let incrementalMin = null;
                 let incrementalMax = null;
 
+                // read last visit timestamp for this ticker (may be null)
+                let lastVisitRec = null;
+                try { lastVisitRec = await idbGet(visitKey(ticker)); } catch (e) { lastVisitRec = null; }
+                const lastVisit = lastVisitRec ? (lastVisitRec.ts || lastVisitRec.ts === 0 ? lastVisitRec.ts : null) : null;
+
                 for (let i = 0; i < years.length; i++) {
                     const yr = years[i];
                     const fileEntry = entry.files[String(yr)];
 
-                    // fileEntry may be a string (legacy path) or an object with metadata { path, min_date, max_date, row_count }
+                    // fileEntry may be a string (legacy path) or an object with metadata { path, min_date, max_date, row_count, last_updated }
                     let fpPath = null;
+                    let fileLastUpdated = null;
                     if (typeof fileEntry === 'string') fpPath = fileEntry;
-                    else if (fileEntry && typeof fileEntry === 'object') fpPath = fileEntry.path || null;
+                    else if (fileEntry && typeof fileEntry === 'object') {
+                        fpPath = fileEntry.path || null;
+                        fileLastUpdated = fileEntry.last_updated || null;
+                    }
 
-                    updateProgress(Math.round((i / years.length) * 100), `Loading ${ticker} ${yr} (${i+1}/${years.length})`);
+                    updateProgress(Math.round((i / years.length) * 90), `Loading ${ticker} ${yr} (${i+1}/${years.length})`);
 
                     // If metadata is available, use it to update the UI immediately (date bounds and approximate record count)
                     try {
@@ -429,71 +566,106 @@
                         continue;
                     }
 
-                    // Fetch the CSV text for this year
+                    // Try to use cached parsed rows when file has a last_updated metadata value
+                    let rowsForYear = null;
                     try {
-                        const resp = await fetch('../' + fpPath);
-                        if (!resp.ok) {
-                            console.warn('Failed to fetch', fpPath, resp.status);
-                            continue;
-                        }
-                        const txt = await resp.text();
-
-                        // compute this file's date bounds without fully parsing the CSV (fallback when metadata missing)
-                        try {
-                            const lines = txt.trim().split('\n').filter(l => l.trim());
-                            if (lines.length > 1) {
-                                const headers = lines[0].split(',').map(h => h.trim());
-                                const dateIdx = headers.findIndex(h => h.toLowerCase() === 'date');
-                                if (dateIdx >= 0) {
-                                    let fileMin = null;
-                                    let fileMax = null;
-                                    for (let li = 1; li < lines.length; li++) {
-                                        const cols = lines[li].split(',');
-                                        const raw = cols[dateIdx]?.trim();
-                                        if (!raw) continue;
-                                        const d = new Date(raw);
-                                        if (isNaN(d)) continue;
-                                        if (!fileMin || d < fileMin) fileMin = d;
-                                        if (!fileMax || d > fileMax) fileMax = d;
-                                    }
-
-                                    if (fileMin) {
+                        if (fileLastUpdated) {
+                            const cacheId = `${fpPath}::${fileLastUpdated}`;
+                            const cached = await idbGet(cacheId);
+                            if (cached && Array.isArray(cached.parsed) && cached.parsed.length > 0) {
+                                rowsForYear = cached.parsed.map(r => {
+                                    // ensure Date objects
+                                    if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date);
+                                    return r;
+                                });
+                                // update incremental UI from cache
+                                try {
+                                    const mins = rowsForYear.map(r => r.Date).filter(d => d instanceof Date && !isNaN(d));
+                                    if (mins.length > 0) {
+                                        const fileMin = new Date(Math.min(...mins.map(d => d.getTime())));
+                                        const fileMax = new Date(Math.max(...mins.map(d => d.getTime())));
                                         if (!incrementalMin || fileMin < incrementalMin) incrementalMin = fileMin;
-                                    }
-                                    if (fileMax) {
                                         if (!incrementalMax || fileMax > incrementalMax) incrementalMax = fileMax;
-                                    }
-
-                                    // update display so user sees expanding range
-                                    if (incrementalMin && incrementalMax) {
                                         updateDateRangeDisplayBounds(incrementalMin, incrementalMax);
                                     }
+                                    incrementallyShowRecordCount(rowsForYear.length);
+                                } catch (e) { /* ignore UI update errors */ }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('IDB read error', e);
+                    }
 
-                                    // update record count incrementally (approximate by lines) when metadata did not already provide it
-                                    try {
-                                        // If metadata provided row_count we already showed it; otherwise estimate from lines
-                                        if (!fileEntry || typeof fileEntry.row_count === 'undefined') {
-                                            const lineCount = txt.trim().split('\n').filter(l => l.trim()).length - 1; // exclude header
-                                            incrementallyShowRecordCount(lineCount);
-                                        }
-                                    } catch (e) {
-                                        // ignore
+                    // If we don't have cached rows, fetch and parse the CSV for this year
+                    if (!rowsForYear) {
+                        try {
+                            const resp = await fetch('../' + fpPath);
+                            if (!resp.ok) {
+                                console.warn('Failed to fetch', fpPath, resp.status);
+                                continue;
+                            }
+                            const txt = await resp.text();
+
+                            // parse CSV for this year's rows
+                            const parsed = parseCSV(txt);
+
+                            // update incremental UI from parsed
+                            try {
+                                if (parsed.length > 0) {
+                                    const mins = parsed.map(r => r.Date).filter(d => d instanceof Date && !isNaN(d));
+                                    if (mins.length > 0) {
+                                        const fileMin = new Date(Math.min(...mins.map(d => d.getTime())));
+                                        const fileMax = new Date(Math.max(...mins.map(d => d.getTime())));
+                                        if (!incrementalMin || fileMin < incrementalMin) incrementalMin = fileMin;
+                                        if (!incrementalMax || fileMax > incrementalMax) incrementalMax = fileMax;
+                                        updateDateRangeDisplayBounds(incrementalMin, incrementalMax);
+                                    }
+                                    incrementallyShowRecordCount(parsed.length);
+                                }
+                            } catch (e) { /* ignore UI update errors */ }
+
+                            rowsForYear = parsed;
+
+                            // If this is the current year and we have a lastVisit, only keep rows newer than lastVisit when merging with a cached older dataset
+                            try {
+                                const isCurrentYear = (yr === now.getFullYear());
+                                if (isCurrentYear && lastVisit && Array.isArray(rowsForYear)) {
+                                    // If we had an older cached version (different last_updated) we want to append only new rows since lastVisit
+                                    const existingCached = await idbGetByPath(fpPath);
+                                    if (existingCached && Array.isArray(existingCached.parsed)) {
+                                        // Keep cached rows that are before or equal to lastVisit, then append the freshly parsed rows after lastVisit
+                                        const cachedRows = existingCached.parsed.map(r => { if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date); return r; });
+                                        const newRows = rowsForYear.filter(r => r.Date && r.Date.getTime() > lastVisit);
+                                        // Merge cachedRows and newRows and deduplicate by calendar date
+                                        const merged = cachedRows.concat(newRows);
+                                        const deduped = dedupeRows(merged);
+                                        // If deduped is empty but cachedRows existed, fallback to cachedRows
+                                        if (deduped.length === 0 && cachedRows.length > 0) rowsForYear = cachedRows;
+                                        else rowsForYear = deduped;
                                     }
                                 }
+                            } catch (e) {
+                                // ignore merge errors
+                            }
+
+                            // store parsed rows into IDB if we had a last_updated value to key by
+                            try {
+                                if (fileLastUpdated) {
+                                    const cacheId = `${fpPath}::${fileLastUpdated}`;
+                                    await idbPut({ id: cacheId, path: fpPath, parsed: rowsForYear, last_updated: fileLastUpdated });
+                                }
+                            } catch (e) {
+                                console.warn('IDB write error', e);
                             }
                         } catch (err) {
-                            console.warn('Error computing file date bounds', err);
+                            console.warn('Fetch/parse error for', fpPath, err);
+                            continue;
                         }
+                    }
 
-                        if (i === 0) {
-                            csvText += txt.trim();
-                        } else {
-                            const lines = txt.trim().split('\n');
-                            if (lines.length > 1) csvText += '\n' + lines.slice(1).join('\n');
-                        }
-                    } catch (err) {
-                        console.warn('Fetch error for', fpPath, err);
-                        continue;
+                    // Append this year's rows to the global array
+                    if (rowsForYear && rowsForYear.length > 0) {
+                        allRows = allRows.concat(rowsForYear);
                     }
                 }
 
@@ -535,14 +707,30 @@
                 csvText = txt;
             }
 
-            updateProgress(95, 'Parsing CSV...');
-            tickerData = parseCSV(csvText);
+            updateProgress(95, 'Finalizing data...');
+            // If we built rows from cached/parsed per-year files, use them directly
+            if (Array.isArray(allRows) && allRows.length > 0) {
+                // ensure Date objects
+                allRows.forEach(r => { if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date); });
+                tickerData = allRows.sort((a, b) => a.Date - b.Date);
+            } else if (typeof csvText === 'string' && csvText.trim().length > 0) {
+                updateProgress(96, 'Parsing CSV...');
+                tickerData = parseCSV(csvText);
+            } else {
+                tickerData = [];
+            }
             updateProgress(100, 'Loaded');
 
             // Update date range display
             updateDateRangeDisplay();
             // Show final record count
             updateRecordCountDisplay(tickerData.length);
+            // Record last visit time for this ticker so future loads can do delta merges
+            try {
+                await idbPut({ id: visitKey(ticker), ts: Date.now() });
+            } catch (e) {
+                console.warn('Failed to store visit record', e);
+            }
         }
 
         function updateDateRangeDisplay() {
