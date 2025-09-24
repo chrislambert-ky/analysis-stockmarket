@@ -28,7 +28,12 @@ def extract_all_historical_data():
     for ticker_symbol in etf_list:
         print(f"Downloading data for {ticker_symbol}...")
         ticker = yf.Ticker(ticker_symbol)
-        data = ticker.history(period="20y", interval="1d")
+        # Use explicit start/end dates to ensure we include today's row when available
+        today_utc = datetime.utcnow().date()
+        start_dt = (today_utc - timedelta(days=365 * 20 + 10)).strftime('%Y-%m-%d')
+        # set end to tomorrow (UTC) so the library includes today's full-day row when providers have published it
+        end_dt = (today_utc + timedelta(days=1)).strftime('%Y-%m-%d')
+        data = ticker.history(start=start_dt, end=end_dt, interval="1d")
 
         if data.empty:
             print(f"No data found for {ticker_symbol}, skipping...")
@@ -36,6 +41,18 @@ def extract_all_historical_data():
 
         df = data.copy()
         df.reset_index(inplace=True)
+        # Optionally drop rows with missing Close (incomplete current-day data).
+        # If you want to keep an incomplete today's row (e.g., for intra-day analysis), remove this line.
+        df = df[df['Close'].notna()]
+        # Log latest fetched row for this ticker to help verify if today's close was included
+        try:
+            latest = df['Date'].max()
+            if hasattr(latest, 'strftime'):
+                print(f"Latest row for {ticker_symbol}: {latest.strftime('%Y-%m-%d %H:%M:%S')}")
+            else:
+                print(f"Latest row for {ticker_symbol}: {latest}")
+        except Exception as e:
+            print(f"Could not determine latest date for {ticker_symbol}:", e)
         
         # Use datetime library for more efficient date extraction
         df['Date_add'] = df['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
