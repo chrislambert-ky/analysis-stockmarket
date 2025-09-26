@@ -1,7 +1,7 @@
 import os
 import yfinance as yf
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # =============================
 # CONFIGURATION
@@ -29,7 +29,7 @@ def extract_all_historical_data():
         print(f"Downloading data for {ticker_symbol}...")
         ticker = yf.Ticker(ticker_symbol)
         # Use explicit start/end dates to ensure we include today's row when available
-        today_utc = datetime.utcnow().date()
+        today_utc = datetime.now(timezone.utc).date()
         start_dt = (today_utc - timedelta(days=365 * 20 + 10)).strftime('%Y-%m-%d')
         # set end to tomorrow (UTC) so the library includes today's full-day row when providers have published it
         end_dt = (today_utc + timedelta(days=1)).strftime('%Y-%m-%d')

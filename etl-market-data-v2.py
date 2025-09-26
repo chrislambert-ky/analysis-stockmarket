@@ -50,40 +50,38 @@ def raw_csv_is_fresh(path):
 args = parse_args()
 
 rows = []
-if raw_csv_is_fresh(RAW_COMBINED_CSV) and not args.force:
-    print(f"Raw combined CSV is fresh ({RAW_COMBINED_CSV}) - skipping download. Use --force to override.")
+print("Downloading raw combined CSV (overwriting any existing file)...")
+for sym in etf_list:
+    try:
+        t = yf.Ticker(sym)
+        # Fetch full history from 2005-01-01 to present
+        start_date = "2005-01-01"
+        end_date = datetime.now().strftime("%Y-%m-%d")
+        df = t.history(start=start_date, end=end_date, interval="1d", auto_adjust=True)
+        if df is None or df.empty:
+            print(f"  no data for {sym}")
+            continue
+
+        df = df.reset_index()
+        df["Symbol"] = sym
+
+        keep_cols = ["Symbol", "Date", "Open", "High", "Low", "Close", "Volume"]
+        for c in keep_cols:
+            if c not in df.columns:
+                df[c] = pd.NA
+        df = df[keep_cols]
+
+        rows.append(df)
+        print(f"  fetched {len(df)} rows for {sym}")
+    except Exception as e:
+        print(f"  error fetching {sym}: {e}")
+
+if rows:
+    combined = pd.concat(rows, ignore_index=True)
+    combined.to_csv(RAW_COMBINED_CSV, index=False)
+    print(f"Wrote raw combined CSV -> {RAW_COMBINED_CSV}")
 else:
-    for sym in etf_list:
-        try:
-            t = yf.Ticker(sym)
-            # Fetch full history from 2005-01-01 to present
-            start_date = "2005-01-01"
-            end_date = datetime.now().strftime("%Y-%m-%d")
-            df = t.history(start=start_date, end=end_date, interval="1d", auto_adjust=True)
-            if df is None or df.empty:
-                print(f"  no data for {sym}")
-                continue
-
-            df = df.reset_index()
-            df["Symbol"] = sym
-
-            keep_cols = ["Symbol", "Date", "Open", "High", "Low", "Close", "Volume"]
-            for c in keep_cols:
-                if c not in df.columns:
-                    df[c] = pd.NA
-            df = df[keep_cols]
-
-            rows.append(df)
-            print(f"  fetched {len(df)} rows for {sym}")
-        except Exception as e:
-            print(f"  error fetching {sym}: {e}")
-
-    if rows:
-        combined = pd.concat(rows, ignore_index=True)
-        combined.to_csv(RAW_COMBINED_CSV, index=False)
-        print(f"Wrote raw combined CSV -> {RAW_COMBINED_CSV}")
-    else:
-        print("No data downloaded.")
+    print("No data downloaded.")
 
 
 # %%
