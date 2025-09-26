@@ -1,21 +1,21 @@
-name: Daily ETL and Data Commit
+name: Daily ETL-v2 and Data Commit
 
 on:
   schedule:
-  # Runs every day at 23:00 UTC which corresponds to 19:00 (7:00 PM) US Eastern local time during DST
-  - cron: "0 23 * * *"
+    # Runs every day at 23:00 UTC which corresponds to 19:00 (7:00 PM) US Eastern local time during DST
+    - cron: "0 23 * * *"
   workflow_dispatch: {}
 
 permissions:
   contents: write  # allow pushing updates back to the repo
 
 concurrency:
-  group: etl-daily
+  group: etl-daily-v2
   cancel-in-progress: false
 
 jobs:
-  run-etl:
-    name: Run ETL and commit data
+  run-etl-v2:
+    name: Run ETL-v2 and commit data
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -34,12 +34,12 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Run ETL v1 script
+      - name: Run ETL v2 script
         env:
           PYTHONUNBUFFERED: '1'
         run: |
-          echo "Running ETL v1 script..."
-          python etl-market-data.py
+          echo "Running ETL v2 script..."
+          python etl-market-data-v2.py
 
       - name: Show data directory (post-ETL)
         run: |
@@ -59,7 +59,7 @@ jobs:
       - name: Upload data report artifact
         uses: actions/upload-artifact@v4
         with:
-          name: data-report
+          name: data-report-v2
           path: data/data_report.json
 
       - name: Commit and push changes (data folder only)
@@ -77,7 +77,7 @@ jobs:
           git diff --name-only --cached || true
           # Commit only if there are staged changes
           if [ -n "$(git diff --cached --name-only)" ]; then
-            git commit -m "Daily ETL: update data ($(date -u +'%Y-%m-%d %H:%M:%S') UTC)"
+            git commit -m "Daily ETL-v2: update data ($(date -u +'%Y-%m-%d %H:%M:%S') UTC)"
             echo 'Pushing changes...'
             git push
           else
