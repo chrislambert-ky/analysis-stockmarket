@@ -7,7 +7,7 @@ import json
 import argparse
 import yfinance as yf
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # =============================
 # Configuration
@@ -54,9 +54,10 @@ print("Downloading raw combined CSV (overwriting any existing file)...")
 for sym in etf_list:
     try:
         t = yf.Ticker(sym)
-        # Fetch full history from 2005-01-01 to present
+        # Fetch full history from 2005-01-01 through tomorrow (UTC) to include today's row when available
         start_date = "2005-01-01"
-        end_date = datetime.now().strftime("%Y-%m-%d")
+        today_utc = datetime.now(timezone.utc).date()
+        end_date = (today_utc + timedelta(days=1)).strftime("%Y-%m-%d")
         df = t.history(start=start_date, end=end_date, interval="1d", auto_adjust=True)
         if df is None or df.empty:
             print(f"  no data for {sym}")
@@ -270,7 +271,7 @@ for sym, grp in combined.groupby('Symbol'):
     years = sorted(grp['Date'].dt.year.dropna().unique().astype(int).tolist())
     index[sym] = {
         'years': years,
-        'last_updated': datetime.now().isoformat(),
+        'last_updated': datetime.now(timezone.utc).isoformat(),
         'files': {}
     }
 
@@ -347,7 +348,7 @@ for sym, grp in combined.groupby('Symbol'):
             'max_date': max_date_s,
             'row_count': row_count,
             'size_bytes': size_bytes,
-            'last_updated': datetime.now().isoformat()
+            'last_updated': datetime.now(timezone.utc).isoformat()
         }
 
 # Save tickers_index.json in data/tickers

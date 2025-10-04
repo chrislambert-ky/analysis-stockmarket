@@ -2,8 +2,8 @@ name: Daily ETL-v2 and Data Commit
 
 on:
   schedule:
-    # Runs every day at 23:00 UTC which corresponds to 19:00 (7:00 PM) US Eastern local time during DST
-    - cron: "0 23 * * *"
+    # Runs every day at 23:30 UTC (30 minutes after ETL v1) to avoid race conditions
+    - cron: "30 23 * * *"
   workflow_dispatch: {}
 
 permissions:

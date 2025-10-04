@@ -157,6 +157,37 @@
     <div id="main" style="width: 100%; height: 500px; margin: 20px auto; display: block;"></div>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <script>
+    // Helper: format Date object as YYYY-MM-DD
+    function formatDateToYMD(d) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // Parse a date-like string into a local Date (avoid timezone shifts when parsing ISO YYYY-MM-DD)
+    function parseDateStringAsLocal(s) {
+        if (!s) return null;
+        if (s instanceof Date) return s;
+        const str = String(s).trim();
+        // YYYY-MM-DD
+        let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        // MM/DD/YYYY or M/D/YYYY
+        m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+        // Fallback to Date parser but normalize to local midnight for the parsed date
+        const parsed = new Date(str);
+        if (isNaN(parsed)) return null;
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+    }
+
+    // Convert a date-like string to YYYY-MM-DD using local date parts
+    function toYMDFromString(s) {
+        const d = parseDateStringAsLocal(s);
+        return d ? formatDateToYMD(d) : s;
+    }
+
     // Loading indicator functions
     function showLoading() {
         document.getElementById('loading-container').style.display = 'block';
@@ -788,13 +819,17 @@
             finalStartDate.setFullYear(finalEndDate.getFullYear() - yearsBack);
         }
         
-        // Filter data by date range
+        // Convert to YYYY-MM-DD strings for comparison (avoids timezone issues)
+        const startDateStr = formatDateToYMD(finalStartDate);
+        const endDateStr = formatDateToYMD(finalEndDate);
+        
+        // Filter data by date range using string comparison
         const filteredData = tickerData
             .filter(row => {
-                const rowDate = new Date(row.Date_add);
-                return rowDate >= finalStartDate && rowDate <= finalEndDate;
+                const rowDateStr = row.Date_add;
+                return rowDateStr >= startDateStr && rowDateStr <= endDateStr;
             })
-            .sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+            .sort((a, b) => a.Date_add.localeCompare(b.Date_add));
         
         if (filteredData.length === 0) {
             return [];
