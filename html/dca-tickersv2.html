@@ -279,7 +279,7 @@
         return data;
     }
 
-    // Calculate weekly DCA strategy for a specific ticker
+    // Calculate weekly DCA strategy for a specific ticker (optimized for performance)
     function calculateWeeklyDCA(tickerData, yearsBack = 'YTD') {
         const endDate = new Date();
         let startDate;
@@ -293,7 +293,7 @@
             startDate.setFullYear(endDate.getFullYear() - yearsBack);
         }
         
-        // Filter data by date range
+        // Filter and sort data by date range ONCE (critical optimization)
         const filteredData = tickerData
             .filter(row => {
                 const rowDate = new Date(row.Date_add);
@@ -320,7 +320,7 @@
         while (currentDate <= endDate) {
             const targetDateStr = currentDate.toISOString().split('T')[0];
             
-            // Find closest trading day to this Monday
+            // Use optimized binary search instead of linear search
             const closestTradingDay = findClosestTradingDay(filteredData, targetDateStr);
             
             if (closestTradingDay) {
@@ -351,22 +351,46 @@
         return results;
     }
     
-    // Helper function to find closest trading day to a target date
-    function findClosestTradingDay(tickerData, targetDate) {
-        const target = new Date(targetDate);
-        let closest = null;
-        let minDiff = Infinity;
+    // Helper function to find closest trading day to a target date using binary search
+    function findClosestTradingDay(sortedTickerData, targetDate) {
+        if (!sortedTickerData || sortedTickerData.length === 0) return null;
         
-        for (const row of tickerData) {
-            const rowDate = new Date(row.Date_add);
-            const diff = Math.abs(rowDate - target);
-            if (diff < minDiff) {
-                minDiff = diff;
-                closest = row;
+        const target = new Date(targetDate).getTime();
+        
+        // Binary search for closest date
+        let left = 0;
+        let right = sortedTickerData.length - 1;
+        
+        // Handle edge cases
+        const firstDate = new Date(sortedTickerData[0].Date_add).getTime();
+        const lastDate = new Date(sortedTickerData[right].Date_add).getTime();
+        
+        if (target <= firstDate) return sortedTickerData[0];
+        if (target >= lastDate) return sortedTickerData[right];
+        
+        // Binary search
+        while (left <= right) {
+            const mid = Math.floor((left + right) / 2);
+            const midDate = new Date(sortedTickerData[mid].Date_add).getTime();
+            
+            if (midDate === target) return sortedTickerData[mid];
+            
+            if (midDate < target) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
             }
         }
         
-        return closest;
+        // After binary search, left and right are adjacent
+        // Compare which is closer
+        if (right < 0) return sortedTickerData[left];
+        if (left >= sortedTickerData.length) return sortedTickerData[right];
+        
+        const leftDiff = Math.abs(new Date(sortedTickerData[left].Date_add).getTime() - target);
+        const rightDiff = Math.abs(new Date(sortedTickerData[right].Date_add).getTime() - target);
+        
+        return leftDiff < rightDiff ? sortedTickerData[left] : sortedTickerData[right];
     }
 
     // Global variable to track current period
@@ -430,27 +454,44 @@
                 loadPeriod = '20Y'; // Default to max
             }
             
-            updateProgress(30, 'Loading and calculating all tickers in parallel...');
+            updateProgress(30, 'Loading data from IndexedDB cache...');
             
-            // Load ticker data AND calculate DCA in parallel for all tickers
-            const dcaPromises = tickers.map(async ticker => {
-                try {
-                    const tickerData = await loadTickerDataForPeriod(ticker, loadPeriod);
-                    const dcaResults = calculateWeeklyDCA(tickerData, yearsBack);
-                    return { ticker, dcaResults };
-                } catch (err) {
-                    console.warn('[dca-tickers-v2] Error processing', ticker, ':', err);
-                    return { ticker, dcaResults: [] };
-                }
-            });
-            
-            const allResults = await Promise.all(dcaPromises);
-            
-            // Convert to processedData object
+            // OPTIMIZATION: Process tickers in batches to avoid blocking the main thread
+            const BATCH_SIZE = 5; // Process 5 tickers at a time
             const processedData = {};
-            allResults.forEach(({ ticker, dcaResults }) => {
-                processedData[ticker] = dcaResults;
-            });
+            
+            for (let i = 0; i < tickers.length; i += BATCH_SIZE) {
+                const batch = tickers.slice(i, i + BATCH_SIZE);
+                const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+                const totalBatches = Math.ceil(tickers.length / BATCH_SIZE);
+                
+                updateProgress(
+                    30 + (i / tickers.length) * 45,
+                    `Processing batch ${batchNum}/${totalBatches} (${batch.join(', ')})...`
+                );
+                
+                // Process batch in parallel
+                const batchPromises = batch.map(async ticker => {
+                    try {
+                        const tickerData = await loadTickerDataForPeriod(ticker, loadPeriod);
+                        const dcaResults = calculateWeeklyDCA(tickerData, yearsBack);
+                        return { ticker, dcaResults };
+                    } catch (err) {
+                        console.warn('[dca-tickers-v2] Error processing', ticker, ':', err);
+                        return { ticker, dcaResults: [] };
+                    }
+                });
+                
+                const batchResults = await Promise.all(batchPromises);
+                
+                // Add to processedData
+                batchResults.forEach(({ ticker, dcaResults }) => {
+                    processedData[ticker] = dcaResults;
+                });
+                
+                // Yield to the browser to prevent blocking
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
             
             console.log('[dca-tickers-v2] All calculations complete');
             
@@ -575,7 +616,10 @@
                 const chartProgress = 80 + (chartsRendered / tickersWithData.length) * 15;
                 updateProgress(chartProgress, `Rendering charts... (${chartsRendered}/${tickersWithData.length})`);
                 
-                // Removed artificial delay - rendering is fast enough
+                // Yield to browser every 3 charts to prevent blocking
+                if (chartsRendered % 3 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
             }
             
             updateProgress(100, 'Complete!');
