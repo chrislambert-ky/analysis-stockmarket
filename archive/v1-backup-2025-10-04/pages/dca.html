@@ -104,14 +104,14 @@
 <body>
     <nav>
         <a href="../index.html">Home</a>
-        <a href="dcav2.html">Dollar Cost Averaging Analysis</a>
-        <a href="bodv2.html">Buy-on-Dip Analysis</a>
-        <a href="dca-tickersv2.html">Dollar Cost Averaging (All Tickers)</a>
-        <a href="bod-tickersv2.html">Buy-on-Dip (All Tickers)</a>
-        <a href="dca-stratv2.html">Advanced Dollar Cost Averaging</a>
-        <a href="bod-stratv2.html">Advanced Buy-on-Dip</a>
-        <a href="metricsv2.html">Metrics Dashboard</a>
-        <a href="aboutv2.html">About</a>
+        <a href="dca.html">Dollar Cost Averaging Analysis</a>
+        <a href="bod.html">Buy-on-Dip Analysis</a>
+        <a href="dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
+        <a href="bod-tickers.html">Buy-on-Dip (All Tickers)</a>
+        <a href="dca-strat.html">Advanced Dollar Cost Averaging</a>
+        <a href="bod-strat.html">Advanced Buy-on-Dip</a>
+        <a href="metrics.html">Metrics Dashboard</a>
+        <a href="about.html">About</a>
     </nav>
     <h1>Dollar Cost Averaging</h1>
     <h2>Simulating a $25/week investment (first trading day of each week at average daily price). Use period buttons to change timeframe.</h2>
@@ -155,32 +155,39 @@
     </div>
     
     <div id="main" style="width: 100%; height: 500px; margin: 20px auto; display: block;"></div>
-    <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-    <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=4"></script>
     <script>
-    console.log('=== DCAV2 SCRIPT BLOCK STARTING ===');
-    
-    // Check if V2Shared loaded
-    if (!window.V2Shared) {
-        console.error('CRITICAL ERROR: window.V2Shared is not defined!');
-        alert('Error: V2 shared module failed to load.');
-        throw new Error('V2Shared module not loaded');
+    // Helper: format Date object as YYYY-MM-DD
+    function formatDateToYMD(d) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
     }
-    
-    console.log('[dcav2] V2Shared loaded successfully:', Object.keys(window.V2Shared));
-    
-    // Create local references to the functions we need (no const/let to avoid redeclaration)
-    var loadTickerDataForPeriod = window.V2Shared.loadTickerDataForPeriod;
-    var getTickerSymbols = window.V2Shared.getTickerSymbols;
-    var formatDateToYMD = window.V2Shared.formatDateToYMD;
-    var toYMDFromString = window.V2Shared.toYMDFromString;
-    var parseDateStringAsLocal = window.V2Shared.parseDateStringAsLocal;
-    
-    console.log('[dcav2] Function references created successfully');
-    
+
+    // Parse a date-like string into a local Date (avoid timezone shifts when parsing ISO YYYY-MM-DD)
+    function parseDateStringAsLocal(s) {
+        if (!s) return null;
+        if (s instanceof Date) return s;
+        const str = String(s).trim();
+        // YYYY-MM-DD
+        let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        // MM/DD/YYYY or M/D/YYYY
+        m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+        // Fallback to Date parser but normalize to local midnight for the parsed date
+        const parsed = new Date(str);
+        if (isNaN(parsed)) return null;
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+    }
+
+    // Convert a date-like string to YYYY-MM-DD using local date parts
+    function toYMDFromString(s) {
+        const d = parseDateStringAsLocal(s);
+        return d ? formatDateToYMD(d) : s;
+    }
+
     // Loading indicator functions
     function showLoading() {
         document.getElementById('loading-container').style.display = 'block';
@@ -198,50 +205,111 @@
         document.getElementById('progress-text').textContent = text;
     }
 
+    // Fetch small tickers index (data/tickers_index.json) to quickly enumerate tickers
+    let cachedTickerIndex = null;
+    async function fetchTickerIndex() {
+        if (cachedTickerIndex) return cachedTickerIndex;
+        try {
+            const res = await fetch('../data/tickers_index.json');
+            if (!res.ok) throw new Error('No index');
+            const j = await res.json();
+            // Normalize to array of symbols. tickers_index.json is an object mapping SYMBOL -> path
+            if (j && typeof j === 'object' && !Array.isArray(j)) {
+                cachedTickerIndex = Object.keys(j).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+            } else if (Array.isArray(j)) {
+                cachedTickerIndex = j.map(e => (typeof e === 'string' ? e : e && e.symbol ? String(e.symbol) : ''))
+                                      .filter(Boolean)
+                                      .sort((a,b)=>a.localeCompare(b));
+            } else {
+                cachedTickerIndex = [];
+            }
+            return cachedTickerIndex;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Per-ticker history fetch with fallback to consolidated history
+    const perTickerCache = {};
+    async function fetchTickerHistory(sym) {
+        if (!sym) return null;
+        if (perTickerCache[sym]) return perTickerCache[sym];
+        const candidates = [
+            `../data/${sym}-data-raw.csv`,
+            `../data/${sym}-data-dca.csv`
+        ];
+        for (const url of candidates) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) continue;
+                const text = await res.text();
+                const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+                const mapped = parsed.data.map(row => {
+                    const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'];
+                    let Date_add = null;
+                    try { Date_add = rawDate ? toYMDFromString(rawDate) : null; } catch (e) { Date_add = rawDate; }
+                    return {
+                        Date_add: Date_add,
+                        Symbol: String(row['Symbol'] ?? row['symbol'] ?? sym).trim(),
+                        Close: row['Close'] != null ? Number(row['Close']) : null,
+                        Low: row['Low'] != null ? Number(row['Low']) : null,
+                        Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
+                        Open: row['Open'] != null ? Number(row['Open']) : null,
+                        High: row['High'] != null ? Number(row['High']) : null
+                    };
+                }).filter(r => r && r.Date_add);
+                perTickerCache[sym] = mapped;
+                return mapped;
+            } catch (e) {
+                // try next candidate
+            }
+        }
+        // Fallback to consolidated history
+        try {
+            const res = await fetch('../data/history_tickers.csv');
+            if (!res.ok) throw new Error('history missing');
+            const text = await res.text();
+            const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+            const mapped = parsed.data.map(row => {
+                const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'];
+                let Date_add = null;
+                try { Date_add = rawDate ? toYMDFromString(rawDate) : null; } catch (e) { Date_add = rawDate; }
+                return {
+                    Date_add: Date_add,
+                    Symbol: String(row['Symbol'] ?? row['symbol'] ?? '').trim(),
+                    Close: row['Close'] != null ? Number(row['Close']) : null,
+                    Low: row['Low'] != null ? Number(row['Low']) : null,
+                    Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
+                    Open: row['Open'] != null ? Number(row['Open']) : null,
+                    High: row['High'] != null ? Number(row['High']) : null
+                };
+            }).filter(r => r && r.Date_add && r.Symbol === sym);
+            perTickerCache[sym] = mapped;
+            return mapped;
+        } catch (e) {
+            return [];
+        }
+    }
+    
     // Function to populate simple ticker boxes (no metrics) to keep UI responsive
     async function populateTickerBoxes(processedData, period) {
-        console.log('[populateTickerBoxes] Function called with period:', period);
         const tickerGrid = document.getElementById('ticker-metrics-grid');
-        console.log('[populateTickerBoxes] Found ticker grid element?', !!tickerGrid);
-        
-        if (!tickerGrid) {
-            console.error('[populateTickerBoxes] ERROR: ticker-metrics-grid element not found in DOM!');
-            return;
-        }
-        
         tickerGrid.innerHTML = '';
-        console.log('[populateTickerBoxes] Cleared grid innerHTML');
 
         // Add ALL box first
         const allBox = document.createElement('div');
         allBox.className = 'ticker-box clickable-ticker';
         allBox.dataset.ticker = 'ALL';
         allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
-        allBox.addEventListener('click', function() {
-            selectTicker('ALL');
-        });
         tickerGrid.appendChild(allBox);
-        console.log('[populateTickerBoxes] Added ALL box');
 
-        // Create individual ticker boxes (symbols only) - use V2Shared to get tickers
+        // Create individual ticker boxes (symbols only) - prefer tickers index when available
         let tickers = [];
         try {
-            console.log('[populateTickerBoxes] Loading ticker symbols from index...');
-            tickers = await getTickerSymbols();
-            console.log('[populateTickerBoxes] Loaded', tickers.length, 'tickers:', tickers);
-        } catch (e) {
-            console.error('[populateTickerBoxes] Failed to load ticker symbols:', e);
-        }
-        
-        // Fallback: if no tickers loaded, try processedData keys or show error
-        if (!tickers || tickers.length === 0) {
-            tickers = Object.keys(processedData).sort((a,b) => a.localeCompare(b));
-            if (tickers.length === 0) {
-                console.error('[populateTickerBoxes] ERROR: No tickers available! Check that tickers_index.json exists and is accessible.');
-                tickerGrid.innerHTML = '<div style="color: red; padding: 20px; text-align: center;">Error: Unable to load ticker list. Check console for details.</div>';
-                return;
-            }
-        }
+            const idx = await fetchTickerIndex();
+            if (idx && idx.length) tickers = idx.map(s => String(s).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+        } catch (e) { }
+        if (!tickers || tickers.length === 0) tickers = Object.keys(processedData).sort((a,b) => a.localeCompare(b));
 
         tickers.forEach(ticker => {
             const box = document.createElement('div');
@@ -308,10 +376,6 @@
                 if (selBox) selBox.classList.add('selected');
             }
         } catch (e) { /* ignore */ }
-        
-        console.log('[populateTickerBoxes] COMPLETED. Grid children count:', tickerGrid.children.length);
-        console.log('[populateTickerBoxes] Grid display style:', tickerGrid.style.display);
-        console.log('[populateTickerBoxes] Grid visible in DOM?', tickerGrid.offsetHeight > 0);
     }
     
     // Global variables to track selection
@@ -377,28 +441,20 @@
         showLoading();
         
         try {
-            updateProgress(10, 'Loading ticker metadata...');
+            updateProgress(20, 'Loading historical data...');
+            const rawData = await fetchData();
             
-            // Load data smartly - either single ticker or all tickers
-            let rawData;
-            if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
-                // Single ticker mode - use smart loading with IDB
-                rawData = await fetchTickerDataSmart(currentSelectedTicker, period);
-            } else {
-                // ALL mode - load all tickers with IDB caching
-                rawData = await fetchAllTickersDataSmart(period);
-            }
-            
-            updateProgress(60, 'Processing ticker data...');
-            // Group data by ticker
+            updateProgress(40, 'Processing ticker data...');
+            // Group data by ticker (but if a single ticker is selected, only process that ticker)
             const tickerGroups = {};
-            rawData.forEach(row => {
+            const rowsToGroup = (currentSelectedTicker && currentSelectedTicker !== 'ALL') ? rawData.filter(r => r.Symbol === currentSelectedTicker) : rawData;
+            rowsToGroup.forEach(row => {
                 const ticker = row.Symbol;
                 if (!tickerGroups[ticker]) tickerGroups[ticker] = [];
                 tickerGroups[ticker].push(row);
             });
 
-            updateProgress(70, 'Calculating DCA strategies...');
+            updateProgress(60, 'Calculating DCA strategies...');
             // Calculate DCA results for all tickers with specified period
             const processedData = {};
             const allTickers = Object.keys(tickerGroups);
@@ -409,7 +465,7 @@
             for (const ticker of allTickers) {
                 processedData[ticker] = calculateWeeklyDCA(tickerGroups[ticker], yearsBack);
                 processed++;
-                const progress = 70 + (processed / allTickers.length) * 15;
+                const progress = 60 + (processed / allTickers.length) * 25;
                 updateProgress(progress, `Processing ${ticker}... (${processed}/${allTickers.length})`);
                 
                 // Add small delay to show progress
@@ -720,42 +776,30 @@
         document.getElementById('detailed-metrics').style.display = 'block';
     }
     
-    // Fetch ticker data using V2 smart loading (with IDB caching)
-    // This replaces the old fetchData() that loaded the entire history_tickers.csv
-    async function fetchTickerDataSmart(ticker, period) {
-        console.log(`[DCA] Fetching ${ticker} for period ${period}`);
-        try {
-            const data = await loadTickerDataForPeriod(ticker, period);
-            console.log(`[DCA] Loaded ${data.length} rows for ${ticker}`);
-            return data;
-        } catch (err) {
-            console.error(`[DCA] Error loading ${ticker}:`, err);
+    // Fetch and parse CSV data
+    async function fetchData() {
+    // Cache parsed CSV in memory to avoid refetching large CSV repeatedly
+    if (window._cachedRawData) return window._cachedRawData;
+    const url = '../data/history_tickers.csv';
+    const response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) {
+            console.error('Failed to fetch CSV:', url, response.status, response.statusText);
             return [];
         }
-    }
-    
-    // Load all tickers for ALL mode - loads each ticker independently with caching
-    async function fetchAllTickersDataSmart(period) {
-        console.log(`[DCA] Fetching ALL tickers for period ${period} in parallel`);
-        const tickers = await getTickerSymbols();
-        
-        updateProgress(20, `Loading all ${tickers.length} tickers in parallel...`);
-        
-        // Load all tickers in parallel for maximum speed
-        const tickerDataPromises = tickers.map(ticker => 
-            fetchTickerDataSmart(ticker, period)
-                .catch(err => {
-                    console.warn(`[DCA] Error loading ${ticker}:`, err);
-                    return []; // Return empty array on error, continue with other tickers
-                })
-        );
-        
-        const allTickerData = await Promise.all(tickerDataPromises);
-        const allData = allTickerData.flat();
-        
-        updateProgress(60, `Loaded ${allData.length} rows from ${tickers.length} tickers`);
-        console.log(`[DCA] Loaded ${allData.length} total rows for all tickers`);
-        return allData;
+        let text = await response.text();
+        // Normalize line endings and trim
+        text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        const rows = text.split('\n').filter(r => r.trim().length > 0);
+        if (rows.length === 0) return [];
+        const headers = rows[0].split(',').map(h => h.trim());
+        const data = rows.slice(1).map(row => {
+            const values = row.split(',').map(v => (v ?? '').trim());
+            const obj = {};
+            headers.forEach((h, i) => obj[h] = values[i] ?? '');
+            return obj;
+        });
+    window._cachedRawData = data;
+    return data;
     }
 
     // Calculate weekly DCA strategy for a specific ticker with custom date range
@@ -840,16 +884,11 @@
     // Helper function to find closest trading day to a target date
     function findClosestTradingDay(tickerData, targetDate) {
         const target = new Date(targetDate);
-        const targetStr = formatDateToYMD(target);
         let closest = null;
         let minDiff = Infinity;
         
         for (const row of tickerData) {
-            const rowDateStr = row.Date_add;
-            // Convert both to dates for comparison
-            const rowDate = parseDateStringAsLocal(rowDateStr);
-            if (!rowDate) continue;
-            
+            const rowDate = new Date(row.Date_add);
             const diff = Math.abs(rowDate - target);
             if (diff < minDiff) {
                 minDiff = diff;
@@ -859,9 +898,20 @@
         
         return closest;
     }
-    
-    // Dead code removed: populateDcaTickerDropdown() - not used, referenced deleted fetchData()
-    
+    // Dynamically populate dropdown with all tickers from the CSV
+    async function populateDcaTickerDropdown() {
+        const data = await fetchData();
+        const tickers = Array.from(new Set(data.map(row => row.Symbol))).sort((a,b) => a.localeCompare(b));
+        const select = document.getElementById('dca-ticker-select');
+        // Remove all except the first two options
+        while (select.options.length > 2) select.remove(2);
+        tickers.forEach(ticker => {
+            const opt = document.createElement('option');
+            opt.value = ticker;
+            opt.textContent = ticker;
+            select.appendChild(opt);
+        });
+    }
     function getAllDates(processedData) {
         const allDates = new Set();
         Object.values(processedData).forEach(tickerResults => {
@@ -922,36 +972,51 @@
         showLoading();
         
         try {
-            updateProgress(10, 'Loading ticker data with smart caching...');
-            
-            // Load data using V2 smart loading (per-year files with IDB caching)
-            const tickerData = await fetchTickerDataSmart(selectedTicker, period);
-            
-            if (!tickerData || tickerData.length === 0) {
-                console.warn(`No data loaded for ${selectedTicker}`);
-                hideLoading();
-                alert(`No data available for ${selectedTicker}`);
-                return;
-            }
+            updateProgress(20, 'Loading historical data...');
+            const rawData = await fetchData();
             
             updateProgress(40, 'Processing ticker data...');
-            // Group data by ticker
-            const tickerGroups = {
-                [selectedTicker]: tickerData
-            };
+            // Group data by ticker (or, for single-ticker selection, prefer a per-ticker file)
+            const tickerGroups = {};
+            if (selectedTicker && selectedTicker !== 'ALL') {
+                // Load per-ticker history first
+                const rows = await fetchTickerHistory(selectedTicker);
+                tickerGroups[selectedTicker] = rows || [];
+            }
+            // Only fall back to consolidated rawData grouping for ALL or if per-ticker missing
+            if (!selectedTicker || selectedTicker === 'ALL' || !tickerGroups[selectedTicker] || tickerGroups[selectedTicker].length === 0) {
+                rawData.forEach(row => {
+                    const ticker = row.Symbol;
+                    if (!tickerGroups[ticker]) {
+                        tickerGroups[ticker] = [];
+                    }
+                    tickerGroups[ticker].push(row);
+                });
+            }
 
-            updateProgress(60, 'Calculating DCA strategy...');
-            // Calculate DCA results
+            updateProgress(60, 'Calculating DCA strategies...');
+            // Calculate DCA results for each ticker
             const processedData = {};
+            const allTickers = Object.keys(tickerGroups);
+            const tickersToProcess = (selectedTicker === 'ALL') ? allTickers : [selectedTicker];
+            
+            // Convert period to yearsBack parameter
             const yearsBack = period === 'YTD' ? 'YTD' : parseInt(period.replace('Y', ''));
             
-            processedData[selectedTicker] = calculateWeeklyDCA(tickerData, yearsBack);
-            
-            updateProgress(80, 'Preparing visualization...');
+            let processed = 0;
+            for (const ticker of tickersToProcess) {
+                processedData[ticker] = calculateWeeklyDCA(tickerGroups[ticker], yearsBack);
+                processed++;
+                const progress = 60 + (processed / tickersToProcess.length) * 30;
+                updateProgress(progress, `Processing ${ticker}... (${processed}/${tickersToProcess.length})`);
+                
+                // Add small delay to show progress for fast calculations
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
 
             updateProgress(95, 'Rendering chart...');
             const validTickers = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
-            const tickers = [selectedTicker];
+            const tickers = (selectedTicker === 'ALL') ? validTickers : [selectedTicker];
             const allDates = getAllDates(processedData);
             const showPriceAndRegression = tickers.length === 1;
             const series = prepareSeries(processedData, tickers, allDates, showPriceAndRegression);
@@ -1182,22 +1247,13 @@
     // Initial setup: do not auto-select a ticker or run analysis.
     // The user must click a ticker to begin.
     (async function initialDcaLoad() {
-        console.log('[initialDcaLoad] Starting initial page setup...');
-        console.log('[initialDcaLoad] V2Shared available?', !!window.V2Shared);
-        console.log('[initialDcaLoad] getTickerSymbols available?', typeof getTickerSymbols);
-        
         try {
             // Set initial period button visual state to YTD without triggering analysis
             updatePeriodButtonStates('ytd-btn');
-            console.log('[initialDcaLoad] Period button states updated');
-            
             // Populate ticker grid using the tickers index; no default selection
-            console.log('[initialDcaLoad] Calling populateTickerBoxes...');
             await populateTickerBoxes({}, 'YTD');
-            console.log('[initialDcaLoad] populateTickerBoxes completed');
         } catch (e) {
-            console.error('[initialDcaLoad] Initial setup failed:', e);
-            alert('Page initialization failed. Check console for details.');
+            console.error('Initial setup failed:', e);
         }
     })();
     

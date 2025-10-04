@@ -295,14 +295,14 @@
 <body>
     <nav class="main-nav">
         <a class="nav-link" href="../index.html">Home</a>
-        <a class="nav-link" href="dcav2.html">Dollar Cost Averaging Analysis</a>
-        <a class="nav-link" href="bodv2.html">Buy-on-Dip Analysis</a>
-        <a class="nav-link" href="dca-tickersv2.html">Dollar Cost Averaging (All Tickers)</a>
-        <a class="nav-link" href="bod-tickersv2.html">Buy-on-Dip (All Tickers)</a>
-        <a class="nav-link" href="dca-stratv2.html">Advanced Dollar Cost Averaging</a>
-        <a class="nav-link" href="bod-stratv2.html">Advanced Buy-on-Dip</a>
-        <a class="nav-link" href="metricsv2.html">Metrics Dashboard</a>
-        <a class="nav-link" href="aboutv2.html">About</a>
+        <a class="nav-link" href="dca.html">Dollar Cost Averaging Analysis</a>
+        <a class="nav-link" href="bod.html">Buy-on-Dip Analysis</a>
+        <a class="nav-link" href="dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
+        <a class="nav-link" href="bod-tickers.html">Buy-on-Dip (All Tickers)</a>
+        <a class="nav-link" href="dca-strat.html">Advanced Dollar Cost Averaging</a>
+        <a class="nav-link" href="bod-strat.html">Advanced Buy-on-Dip</a>
+        <a class="nav-link" href="metrics.html">Metrics Dashboard</a>
+        <a class="nav-link" href="about.html">About</a>
     </nav>
     <button id="mobileMenuBtn" aria-expanded="false">Menu</button>
     
@@ -412,24 +412,8 @@
         <div id="chartContainer"></div>
     </div>
 
-    <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-    <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=4"></script>
     <script>
-    console.log('=== DCA-STRAT-V2 SCRIPT STARTING ===');
-    if (!window.V2Shared) {
-        console.error('CRITICAL: V2Shared not loaded!');
-        alert('Error: V2 shared module failed to load.');
-        throw new Error('V2Shared not loaded');
-    }
-    var loadTickerDataForPeriod = window.V2Shared.loadTickerDataForPeriod;
-    var getTickerSymbols = window.V2Shared.getTickerSymbols;
-    var formatDateToYMD = window.V2Shared.formatDateToYMD;
-    var parseDateStringAsLocal = window.V2Shared.parseDateStringAsLocal;
-    console.log('[dca-strat-v2] V2Shared functions imported');
-    
     // Simple mobile nav toggle
     document.addEventListener('DOMContentLoaded', function() {
         const mobileBtn = document.getElementById('mobileMenuBtn');
@@ -453,24 +437,31 @@
         });
     }
 
-    // Load stock data and populate ticker dropdown using V2 smart loading
+    // Load stock data and populate ticker dropdown
     async function loadStockData() {
         try {
-            console.log('[dca-strat-v2] Loading stock data...');
-            const tickerList = await getTickerSymbols();
-            console.log('[dca-strat-v2] Loading data for', tickerList.length, 'tickers');
-            
-            stockData = [];
-            for (const ticker of tickerList) {
-                const tickerData = await loadTickerDataForPeriod(ticker, '20Y'); // Load max history
-                stockData.push(...tickerData);
+            const response = await fetch('../data/history_tickers.csv');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            let text = await response.text();
+            text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const rows = text.split('\n').filter(r => r.trim().length > 0);
             
-            console.log('[dca-strat-v2] Loaded', stockData.length, 'total rows');
+            if (rows.length === 0) return;
             
-            // Populate ticker dropdown - already sorted from getTickerSymbols()
+            const headers = rows[0].split(',').map(h => h.trim());
+            stockData = rows.slice(1).map(row => {
+                const values = row.split(',').map(v => (v ?? '').trim());
+                const obj = {};
+                headers.forEach((h, i) => obj[h] = values[i] ?? '');
+                return obj;
+            });
+            
+            // Populate ticker dropdown - sort alphabetically
+            const tickers = [...new Set(stockData.map(row => row.Symbol))].sort((a,b) => a.localeCompare(b));
             const select = document.getElementById('tickerSelect');
-            tickerList.forEach(ticker => {
+            tickers.forEach(ticker => {
                 const option = document.createElement('option');
                 option.value = ticker;
                 option.textContent = ticker;

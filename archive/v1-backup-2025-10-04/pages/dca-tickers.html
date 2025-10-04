@@ -160,14 +160,14 @@
 <body>
     <nav>
         <a href="../index.html">Home</a>
-        <a href="dcav2.html">Dollar Cost Averaging Analysis</a>
-        <a href="bodv2.html">Buy-on-Dip Analysis</a>
-        <a href="dca-tickersv2.html">Dollar Cost Averaging (All Tickers)</a>
-        <a href="bod-tickersv2.html">Buy-on-Dip (All Tickers)</a>
-        <a href="dca-stratv2.html">Advanced Dollar Cost Averaging</a>
-        <a href="bod-stratv2.html">Advanced Buy-on-Dip</a>
-        <a href="metricsv2.html">Metrics Dashboard</a>
-        <a href="aboutv2.html">About</a>
+        <a href="dca.html">Dollar Cost Averaging Analysis</a>
+        <a href="bod.html">Buy-on-Dip Analysis</a>
+        <a href="dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
+        <a href="bod-tickers.html">Buy-on-Dip (All Tickers)</a>
+        <a href="dca-strat.html">Advanced Dollar Cost Averaging</a>
+        <a href="bod-strat.html">Advanced Buy-on-Dip</a>
+        <a href="metrics.html">Metrics Dashboard</a>
+        <a href="about.html">About</a>
     </nav>
     <h1>Dollar Cost Averaging Strategy - Per Ticker</h1>
     <h2>Investing $25/week (first trading day of each week at average daily price) across all available tickers</h2>
@@ -190,25 +190,8 @@
     </div>
     
     <div id="charts-root"></div>
-    <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-    <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=4"></script>
     <script>
-    console.log('=== DCA-TICKERS-V2 SCRIPT STARTING ===');
-    if (!window.V2Shared) {
-        console.error('CRITICAL: window.V2Shared not defined!');
-        alert('Error: V2 shared module failed to load.');
-        throw new Error('V2Shared not loaded');
-    }
-    console.log('[dca-tickers-v2] V2Shared loaded:', Object.keys(window.V2Shared));
-    var loadTickerDataForPeriod = window.V2Shared.loadTickerDataForPeriod;
-    var getTickerSymbols = window.V2Shared.getTickerSymbols;
-    var formatDateToYMD = window.V2Shared.formatDateToYMD;
-    var parseDateStringAsLocal = window.V2Shared.parseDateStringAsLocal;
-    console.log('[dca-tickers-v2] Functions imported successfully');
-    
     // Helper function to format currency with commas
     function formatCurrency(amount) {
         return '$' + amount.toLocaleString('en-US', {
@@ -236,35 +219,15 @@
         document.getElementById('progress-fill').style.width = percent + '%';
         document.getElementById('progress-text').textContent = message;
     }
-    // Fetch and parse CSV data using smart IDB-cached loading
+    // Fetch and parse CSV data
     async function fetchData() {
-        console.log('[dca-tickers-v2] fetchData called');
-        try {
-            const tickers = await getTickerSymbols();
-            console.log('[dca-tickers-v2] Loading data for', tickers.length, 'tickers in parallel');
-            
-            // Load all tickers in parallel for maximum speed
-            const tickerDataPromises = tickers.map(ticker => 
-                loadTickerDataForPeriod(ticker, '20Y')
-                    .catch(err => {
-                        console.warn('[dca-tickers-v2] Error loading', ticker, ':', err);
-                        return []; // Return empty array on error, continue with other tickers
-                    })
-            );
-            
-            const allTickerData = await Promise.all(tickerDataPromises);
-            const allData = allTickerData.flat();
-            
-            console.log('[dca-tickers-v2] Loaded', allData.length, 'total rows from', tickers.length, 'tickers');
-            return allData;
-        } catch (err) {
-            console.error('[dca-tickers-v2] Error loading data:', err);
+        const url = '../data/history_tickers.csv';
+        const response = await fetch(url + '?v=' + Date.now(), { cache: 'no-store' });
+        if (!response.ok) {
+            console.error('Failed to fetch CSV:', url, response.status, response.statusText);
             return [];
         }
-    }
-    
-    // Legacy text parsing kept for compatibility (not used with v2-shared)
-    function parseCSVText_Unused(text) {
+        let text = await response.text();
         // Normalize line endings and trim
         text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         const rows = text.split('\n').filter(r => r.trim().length > 0);
@@ -410,57 +373,46 @@
         
         try {
             updateProgress(10, 'Loading historical data...');
-            const tickers = await getTickerSymbols();
-            console.log('[dca-tickers-v2] Loading', tickers.length, 'tickers in parallel for period:', period);
+            const rawData = await fetchData();
+            console.log('Historical data loaded:', rawData.length, 'rows');
             
+            updateProgress(25, 'Processing ticker data...');
+            // Group data by ticker
+            const tickerGroups = {};
+            rawData.forEach(row => {
+                const ticker = row.Symbol;
+                if (!tickerGroups[ticker]) {
+                    tickerGroups[ticker] = [];
+                }
+                tickerGroups[ticker].push(row);
+            });
+
             // Convert period to yearsBack parameter
             const yearsBack = period === 'YTD' ? 'YTD' : parseInt(period.replace('Y', ''));
-            
-            // Determine which period to load (map 1Y->YTD, 5Y->5Y, etc.)
-            let loadPeriod;
-            if (period === 'YTD' || period === '1Y') {
-                loadPeriod = 'YTD';
-            } else if (period === '5Y') {
-                loadPeriod = '5Y';
-            } else if (period === '10Y') {
-                loadPeriod = '10Y';
-            } else if (period === '15Y') {
-                loadPeriod = '15Y';
-            } else {
-                loadPeriod = '20Y'; // Default to max
-            }
-            
-            updateProgress(30, 'Loading and calculating all tickers in parallel...');
-            
-            // Load ticker data AND calculate DCA in parallel for all tickers
-            const dcaPromises = tickers.map(async ticker => {
-                try {
-                    const tickerData = await loadTickerDataForPeriod(ticker, loadPeriod);
-                    const dcaResults = calculateWeeklyDCA(tickerData, yearsBack);
-                    return { ticker, dcaResults };
-                } catch (err) {
-                    console.warn('[dca-tickers-v2] Error processing', ticker, ':', err);
-                    return { ticker, dcaResults: [] };
-                }
-            });
-            
-            const allResults = await Promise.all(dcaPromises);
-            
-            // Convert to processedData object
+
+            updateProgress(40, 'Calculating DCA strategies...');
+            // Calculate DCA results for each ticker
             const processedData = {};
-            allResults.forEach(({ ticker, dcaResults }) => {
-                processedData[ticker] = dcaResults;
-            });
+            const allTickers = Object.keys(tickerGroups);
+            let processed = 0;
             
-            console.log('[dca-tickers-v2] All calculations complete');
+            for (const ticker of allTickers) {
+                processedData[ticker] = calculateWeeklyDCA(tickerGroups[ticker], yearsBack);
+                processed++;
+                const progress = 40 + (processed / allTickers.length) * 30;
+                updateProgress(progress, `Processing ${ticker}... (${processed}/${allTickers.length})`);
+                
+                // Add small delay to show progress
+                await new Promise(resolve => setTimeout(resolve, 20));
+            }
             
             updateProgress(75, 'Sorting tickers by performance...');
             // Get tickers with data and sort by performance
-            let tickersWithData = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
-            console.log('Tickers with DCA data:', tickersWithData);
+            let tickers = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
+            console.log('Tickers with DCA data:', tickers);
             
             // Sort tickers by percent return (descending)
-            tickersWithData = tickersWithData.map(ticker => {
+            tickers = tickers.map(ticker => {
                 const tickerResults = processedData[ticker];
                 let pct = -Infinity;
                 if (tickerResults.length > 0) {
@@ -478,7 +430,7 @@
             root.innerHTML = '';
 
             let chartsRendered = 0;
-            for (const ticker of tickersWithData) {
+            for (const ticker of tickers) {
                 const tickerResults = processedData[ticker];
                 
                 // Create container
@@ -572,16 +524,19 @@
                 
                 // Update progress for chart rendering
                 chartsRendered++;
-                const chartProgress = 80 + (chartsRendered / tickersWithData.length) * 15;
-                updateProgress(chartProgress, `Rendering charts... (${chartsRendered}/${tickersWithData.length})`);
+                const chartProgress = 80 + (chartsRendered / tickers.length) * 15;
+                updateProgress(chartProgress, `Rendering charts... (${chartsRendered}/${tickers.length})`);
                 
-                // Removed artificial delay - rendering is fast enough
+                // Add small delay to show progress
+                await new Promise(resolve => setTimeout(resolve, 10));
             }
             
             updateProgress(100, 'Complete!');
             
-            // Hide loading immediately - no artificial delay needed
-            hideLoading();
+            // Hide loading after a brief delay
+            setTimeout(() => {
+                hideLoading();
+            }, 500);
             
         } catch (error) {
             console.error('Error rendering charts:', error);

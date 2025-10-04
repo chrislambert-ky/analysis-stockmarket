@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Slider Demo</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .demo-section {
+            margin: 40px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        h1 {
+            color: var(--blue);
+            text-align: center;
+        }
+        h2 {
+            color: var(--light-blue);
+            margin-top: 0;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid var(--blue);
+            margin: 20px 0;
+        }
+        .output {
+            background: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .old-style, .new-style {
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .old-style {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+        }
+        .new-style {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+        }
+        .label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 History Slider Component Demo</h1>
+    
+    <div class="info">
+        <strong>ℹ️ About this Demo:</strong><br>
+        This page demonstrates the new reusable history slider component for all V2 pages.
+        Try dragging the slider below to see it in action!
+    </div>
+
+    <!-- Demo 1: Basic Slider -->
+    <div class="demo-section">
+        <h2>Demo 1: Basic Slider (0-25 Years)</h2>
+        <div id="demo1Slider"></div>
+        
+        <div class="output" id="demo1Output">
+            <strong>Output:</strong><br>
+            Period: <span id="demo1Period">YTD</span><br>
+            Slider Value: <span id="demo1Value">0</span><br>
+            Status: Ready
+        </div>
+    </div>
+
+    <!-- Demo 2: Slider with Live Updates -->
+    <div class="demo-section">
+        <h2>Demo 2: Slider with Real-time Feedback</h2>
+        <div id="demo2Slider"></div>
+        
+        <div class="output" id="demo2Output">
+            <strong>Real-time Updates:</strong><br>
+            Currently hovering over: <span id="demo2Hover">YTD</span><br>
+            Estimated trading days: <span id="demo2Days">~0</span><br>
+            Final selection: <span id="demo2Final">None yet</span>
+        </div>
+    </div>
+
+    <!-- Demo 3: Limited Range Slider -->
+    <div class="demo-section">
+        <h2>Demo 3: Limited Range (0-10 Years)</h2>
+        <p style="color: #666;">Some tickers may only have 10 years of data. The slider can be adjusted dynamically.</p>
+        <div id="demo3Slider"></div>
+        
+        <div class="output" id="demo3Output">
+            <strong>Output:</strong><br>
+            Period: <span id="demo3Period">YTD</span><br>
+            Max Years Available: <span id="demo3Max">10</span>
+        </div>
+        
+        <button onclick="demo3Slider.setMax(20)" style="padding: 8px 16px; margin: 10px 5px; background: var(--blue); color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Set Max to 20 Years
+        </button>
+        <button onclick="demo3Slider.setMax(10)" style="padding: 8px 16px; margin: 10px 5px; background: var(--blue); color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Set Max to 10 Years
+        </button>
+    </div>
+
+    <!-- Comparison: Old vs New -->
+    <div class="demo-section">
+        <h2>Comparison: Old Buttons vs New Slider</h2>
+        <div class="comparison">
+            <div class="old-style">
+                <div class="label">❌ Old Style (Buttons)</div>
+                <div style="text-align: center;">
+                    <button style="padding: 8px 16px; margin: 5px; background: #f0f0f0; border: 2px solid #999; border-radius: 6px; cursor: pointer;">YTD</button>
+                    <button style="padding: 8px 16px; margin: 5px; background: #2196f3; color: white; border: 2px solid #2196f3; border-radius: 6px; cursor: pointer;">5 Years</button>
+                    <button style="padding: 8px 16px; margin: 5px; background: #f0f0f0; border: 2px solid #999; border-radius: 6px; cursor: pointer;">10 Years</button>
+                    <button style="padding: 8px 16px; margin: 5px; background: #f0f0f0; border: 2px solid #999; border-radius: 6px; cursor: pointer;">15 Years</button>
+                    <button style="padding: 8px 16px; margin: 5px; background: #f0f0f0; border: 2px solid #999; border-radius: 6px; cursor: pointer;">20 Years</button>
+                </div>
+                <div style="margin-top: 15px; font-size: 0.9em;">
+                    • Takes up lots of space<br>
+                    • Only 5 fixed options<br>
+                    • Not mobile-friendly<br>
+                    • More code to maintain
+                </div>
+            </div>
+            
+            <div class="new-style">
+                <div class="label">✅ New Style (Slider)</div>
+                <div id="comparisonSlider"></div>
+                <div style="margin-top: 15px; font-size: 0.9em;">
+                    • Compact design<br>
+                    • 26 granular options (0-25 years)<br>
+                    • Touch-friendly<br>
+                    • Centralized component
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Benefits -->
+    <div class="demo-section">
+        <h2>✨ Key Benefits</h2>
+        <ul style="line-height: 1.8;">
+            <li><strong>Consistent UI:</strong> Same slider design across all V2 pages</li>
+            <li><strong>More Options:</strong> Users can select any year from 0-25, not just 5/10/15/20</li>
+            <li><strong>Space Efficient:</strong> One slider instead of 5-7 buttons</li>
+            <li><strong>Mobile Friendly:</strong> Touch-optimized range input works great on tablets and phones</li>
+            <li><strong>Easy Integration:</strong> Just 3 lines of code to add to any page</li>
+            <li><strong>Centralized:</strong> Update slider behavior in one place (v2-shared.js)</li>
+            <li><strong>Flexible:</strong> Support for onChange (final) and onInput (live) callbacks</li>
+            <li><strong>Programmatic Control:</strong> Set value, max, min, get current state</li>
+        </ul>
+    </div>
+
+    <!-- Implementation Code -->
+    <div class="demo-section">
+        <h2>💻 Implementation Code</h2>
+        <pre style="background: #272822; color: #f8f8f2; padding: 15px; border-radius: 4px; overflow-x: auto;"><code>// Step 1: Add container to HTML
+&lt;div id="periodSlider"&gt;&lt;/div&gt;
+
+// Step 2: Initialize slider in JavaScript
+const slider = window.V2Shared.initHistorySlider({
+    containerId: 'periodSlider',
+    initialValue: 0,      // 0 = YTD
+    maxYears: 25,         // Max years on slider
+    
+    onChange: (period, years) => {
+        console.log('Period changed to:', period);
+        // Load your data here
+        loadDataForPeriod(period);
+    }
+});</code></pre>
+    </div>
+
+    <!-- Load V2 Shared Module -->
+    <script src="../js/v2-shared.js?v=4"></script>
+    <script>
+        console.log('🎯 Slider Demo Page Loaded');
+        
+        // Demo 1: Basic Slider
+        const demo1Slider = window.V2Shared.initHistorySlider({
+            containerId: 'demo1Slider',
+            initialValue: 0,
+            maxYears: 25,
+            onChange: (period, value) => {
+                document.getElementById('demo1Period').textContent = period;
+                document.getElementById('demo1Value').textContent = value;
+                console.log('[Demo 1] Changed to:', period, value);
+            }
+        });
+        
+        // Demo 2: Slider with live updates
+        const demo2Slider = window.V2Shared.initHistorySlider({
+            containerId: 'demo2Slider',
+            initialValue: 0,
+            maxYears: 25,
+            onInput: (period, value) => {
+                // Real-time as user drags
+                document.getElementById('demo2Hover').textContent = period;
+                const estimatedDays = value === 0 ? Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 1)) / (1000*60*60*24) * 0.7) : value * 252;
+                document.getElementById('demo2Days').textContent = `~${estimatedDays}`;
+            },
+            onChange: (period, value) => {
+                // Final selection when released
+                document.getElementById('demo2Final').textContent = `${period} (${value} years)`;
+                console.log('[Demo 2] Final selection:', period, value);
+            }
+        });
+        
+        // Demo 3: Limited range slider
+        const demo3Slider = window.V2Shared.initHistorySlider({
+            containerId: 'demo3Slider',
+            initialValue: 0,
+            maxYears: 10,  // Start with 10 year limit
+            onChange: (period, value) => {
+                document.getElementById('demo3Period').textContent = period;
+                document.getElementById('demo3Max').textContent = demo3Slider.getMax();
+                console.log('[Demo 3] Changed to:', period, value);
+            }
+        });
+        
+        // Comparison slider
+        const comparisonSlider = window.V2Shared.initHistorySlider({
+            containerId: 'comparisonSlider',
+            initialValue: 5,
+            maxYears: 25
+        });
+        
+        console.log('✅ All demo sliders initialized successfully!');
+    </script>
+</body>
+</html>

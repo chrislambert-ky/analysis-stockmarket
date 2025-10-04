@@ -1,0 +1,68 @@
+name: Update Stock Market Data
+
+on:
+  # Run daily at 6 PM UTC (adjust for your timezone)
+  schedule:
+    - cron: '0 18 * * *'
+  
+  # Allow manual trigger from Actions tab
+  workflow_dispatch:
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install yfinance pandas
+    
+    - name: Run ETL V2
+      run: |
+        python etl-market-data-v2.py
+    
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if [ -n "$(git status --porcelain data/)" ]; then
+          echo "changes=true" >> $GITHUB_OUTPUT
+          echo "📊 Data changes detected"
+        else
+          echo "changes=false" >> $GITHUB_OUTPUT
+          echo "✅ No changes - data is current"
+        fi
+    
+    - name: Commit and push changes
+      if: steps.check_changes.outputs.changes == 'true'
+      run: |
+        git config --local user.name "github-actions[bot]"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git add data/
+        git commit -m "🤖 Auto-update: Market data ETL run - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+        git push
+    
+    - name: Summary
+      run: |
+        if [ "${{ steps.check_changes.outputs.changes }}" == "true" ]; then
+          echo "### ✅ ETL Successful - Data Updated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Fresh market data fetched" >> $GITHUB_STEP_SUMMARY
+          echo "- Changes committed and pushed" >> $GITHUB_STEP_SUMMARY
+          echo "- GitHub Pages will deploy in 1-2 minutes" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "### ✅ ETL Successful - No Changes" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Data is already current. No update needed." >> $GITHUB_STEP_SUMMARY
+        fi

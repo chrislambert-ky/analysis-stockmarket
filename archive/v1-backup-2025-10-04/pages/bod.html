@@ -89,14 +89,14 @@
 <body>
     <nav>
         <a href="../index.html">Home</a>
-        <a href="dcav2.html">Dollar Cost Averaging Analysis</a>
-        <a href="bodv2.html">Buy-on-Dip Analysis</a>
-        <a href="dca-tickersv2.html">Dollar Cost Averaging (All Tickers)</a>
-        <a href="bod-tickersv2.html">Buy-on-Dip (All Tickers)</a>
-        <a href="dca-stratv2.html">Advanced Dollar Cost Averaging</a>
-        <a href="bod-stratv2.html">Advanced Buy-on-Dip</a>
-        <a href="metricsv2.html">Metrics Dashboard</a>
-        <a href="aboutv2.html">About</a>
+        <a href="dca.html">Dollar Cost Averaging Analysis</a>
+        <a href="bod.html">Buy-on-Dip Analysis</a>
+        <a href="dca-tickers.html">Dollar Cost Averaging (All Tickers)</a>
+        <a href="bod-tickers.html">Buy-on-Dip (All Tickers)</a>
+        <a href="dca-strat.html">Advanced Dollar Cost Averaging</a>
+        <a href="bod-strat.html">Advanced Buy-on-Dip</a>
+        <a href="metrics.html">Metrics Dashboard</a>
+        <a href="about.html">About</a>
     </nav>
     <h1>Buy-on-Dip</h1>
     <h2>Simulating limit orders of 1 share for each percent drop (1-5%). Use period buttons to change timeframe.</h2>
@@ -139,32 +139,8 @@
     </div>
     
     <div id="main" style="width: 100%; height: 500px;"></div>
-    <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-    <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=4"></script>
     <script>
-    console.log('=== BODV2 SCRIPT BLOCK STARTING ===');
-    
-    // Check if V2Shared loaded
-    if (!window.V2Shared) {
-        console.error('CRITICAL ERROR: window.V2Shared is not defined!');
-        alert('Error: V2 shared module failed to load.');
-        throw new Error('V2Shared module not loaded');
-    }
-    
-    console.log('[bodv2] V2Shared loaded successfully:', Object.keys(window.V2Shared));
-    
-    // Create local references to the functions we need
-    var loadTickerDataForPeriod = window.V2Shared.loadTickerDataForPeriod;
-    var getTickerSymbols = window.V2Shared.getTickerSymbols;
-    var formatDateToYMD = window.V2Shared.formatDateToYMD;
-    var toYMDFromString = window.V2Shared.toYMDFromString;
-    var parseDateStringAsLocal = window.V2Shared.parseDateStringAsLocal;
-    
-    console.log('[bodv2] Function references created successfully');
-    
     // Cached precomputed BOD data (loaded from data/all_buy_on_dip.csv)
     let cachedBodData = null;
     // IMPORTANT: The CSV `data/all_buy_on_dip.csv` contains cumulative fields
@@ -181,16 +157,27 @@
     // Active period (e.g. 'YTD', '5Y', '10Y', etc.) - default to YTD so users see data on load
     let activePeriod = 'YTD';
 
-    // Date helper functions now imported from V2Shared
-    // (formatDateToYMD, parseDateStringAsLocal, toYMDFromString)
-    
-    // Fallback for parseDateStringAsLocal edge cases
-    var _originalParseDateStringAsLocal = parseDateStringAsLocal;
-    parseDateStringAsLocal = function(s) {
-        var result = _originalParseDateStringAsLocal(s);
-        if (result) return result;
+    // Helper: format Date object as YYYY-MM-DD
+    function formatDateToYMD(d) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    // Parse a date-like string into a local Date (avoid timezone shifts when parsing ISO YYYY-MM-DD)
+    function parseDateStringAsLocal(s) {
+        if (!s) return null;
+        if (s instanceof Date) return s;
+        const str = String(s).trim();
+        // YYYY-MM-DD
+        let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+        if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        // MM/DD/YYYY or M/D/YYYY
+        m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
         // Fallback to Date parser but normalize to local midnight for the parsed date
-        const parsed = new Date(s);
+        const parsed = new Date(str);
         if (isNaN(parsed)) return null;
         return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
     }
@@ -329,161 +316,57 @@
         document.getElementById('detailed-metrics').style.display = 'block';
     }
     
-    // V2 BOD CALCULATION: Calculate BOD events from per-ticker CSV data
-    // This function loads per-ticker CSV files using V2Shared's smart loader,
-    // reads the pre-computed BOD execution flags, and constructs BOD event rows.
-    // Returns data in the same format as the old all_buy_on_dip.csv for compatibility.
-    async function calculateBODFromTickerData(tickers, period = 'YTD') {
-        console.log('[calculateBODFromTickerData] Starting for tickers:', tickers, 'period:', period);
-        
-        // Ensure tickers is an array
-        if (!Array.isArray(tickers)) {
-            tickers = [tickers];
-        }
-        
-        // Get period range (startDate and endDate as YYYY-MM-DD)
-        const referenceEnd = formatDateToYMD(new Date());
-        const range = getPeriodRange(period, referenceEnd);
-        const startDate = range.startDate;
-        const endDate = range.endDate;
-        
-        console.log('[calculateBODFromTickerData] Date range:', startDate, 'to', endDate);
-        
-        const allBodEvents = [];
-        
-        // Load data for each ticker
-        for (const ticker of tickers) {
-            console.log('[calculateBODFromTickerData] Processing ticker:', ticker);
-            
-            try {
-                // Load all historical data for this ticker using the smart loader
-                const tickerData = await loadTickerDataForPeriod(ticker, period);
-                
-                if (!tickerData || tickerData.length === 0) {
-                    console.warn('[calculateBODFromTickerData] No data for ticker:', ticker);
-                    continue;
-                }
-                
-                console.log('[calculateBODFromTickerData] Loaded', tickerData.length, 'rows for', ticker);
-                
-                // Filter to date range
-                const filteredData = tickerData.filter(row => {
-                    const rowDate = toYMDFromString(row.Date);
-                    return rowDate >= startDate && rowDate <= endDate;
-                });
-                
-                console.log('[calculateBODFromTickerData] Filtered to', filteredData.length, 'rows in range');
-                
-                // Process each row and extract BOD events
-                for (const row of filteredData) {
-                    const rowDate = toYMDFromString(row.Date);
-                    const close = Number(row.Close);
-                    const previousClose = Number(row.Previous_Close);
-                    
-                    // Define the BOD levels we're checking (BOD99-1 through BOD75-25)
-                    const bodLevels = [
-                        { level: '1%', priceCol: 'BOD99-1', execCol: 'BOD99-1_Executed' },
-                        { level: '2%', priceCol: 'BOD98-2', execCol: 'BOD98-2_Executed' },
-                        { level: '3%', priceCol: 'BOD97-3', execCol: 'BOD97-3_Executed' },
-                        { level: '4%', priceCol: 'BOD96-4', execCol: 'BOD96-4_Executed' },
-                        { level: '5%', priceCol: 'BOD95-5', execCol: 'BOD95-5_Executed' },
-                        { level: '6%', priceCol: 'BOD94-6', execCol: 'BOD94-6_Executed' },
-                        { level: '7%', priceCol: 'BOD93-7', execCol: 'BOD93-7_Executed' },
-                        { level: '8%', priceCol: 'BOD92-8', execCol: 'BOD92-8_Executed' },
-                        { level: '9%', priceCol: 'BOD91-9', execCol: 'BOD91-9_Executed' },
-                        { level: '10%', priceCol: 'BOD90-10', execCol: 'BOD90-10_Executed' },
-                        { level: '11%', priceCol: 'BOD89-11', execCol: 'BOD89-11_Executed' },
-                        { level: '12%', priceCol: 'BOD88-12', execCol: 'BOD88-12_Executed' },
-                        { level: '13%', priceCol: 'BOD87-13', execCol: 'BOD87-13_Executed' },
-                        { level: '14%', priceCol: 'BOD86-14', execCol: 'BOD86-14_Executed' },
-                        { level: '15%', priceCol: 'BOD85-15', execCol: 'BOD85-15_Executed' },
-                        { level: '16%', priceCol: 'BOD84-16', execCol: 'BOD84-16_Executed' },
-                        { level: '18%', priceCol: 'BOD82-18', execCol: 'BOD82-18_Executed' },
-                        { level: '19%', priceCol: 'BOD81-19', execCol: 'BOD81-19_Executed' },
-                        { level: '20%', priceCol: 'BOD80-20', execCol: 'BOD80-20_Executed' },
-                        { level: '21%', priceCol: 'BOD79-21', execCol: 'BOD79-21_Executed' },
-                        { level: '22%', priceCol: 'BOD78-22', execCol: 'BOD78-22_Executed' },
-                        { level: '23%', priceCol: 'BOD77-23', execCol: 'BOD77-23_Executed' },
-                        { level: '24%', priceCol: 'BOD76-24', execCol: 'BOD76-24_Executed' },
-                        { level: '25%', priceCol: 'BOD75-25', execCol: 'BOD75-25_Executed' }
-                    ];
-                    
-                    // Check each BOD level to see if it was executed
-                    for (const bodLevel of bodLevels) {
-                        const executed = row[bodLevel.execCol];
-                        
-                        // Check if execution flag is TRUE (can be boolean or string "True")
-                        const isExecuted = executed === true || 
-                                          executed === 'true' || 
-                                          executed === 'True' || 
-                                          executed === 'TRUE';
-                        
-                        if (isExecuted) {
-                            const buyPrice = Number(row[bodLevel.priceCol]);
-                            const sharesBought = 1; // Always 1 share per level per strategy
-                            const invested = buyPrice * sharesBought;
-                            
-                            // Compute weekday
-                            const parsedDate = parseDateStringAsLocal(rowDate);
-                            const weekday = parsedDate ? parsedDate.toLocaleDateString('en-US', { weekday: 'long' }) : '';
-                            
-                            // Create a BOD event row in the same format as all_buy_on_dip.csv
-                            allBodEvents.push({
-                                Date_add: rowDate,
-                                Weekday: weekday,
-                                Symbol: ticker,
-                                Strategy: 'Buy_on_Dip',
-                                'Buy_Price': buyPrice,
-                                'Buy_Level': bodLevel.level,
-                                'Shares Purchased': sharesBought,
-                                'Dollars Invested': invested,
-                                'Close': close,
-                                'Previous_Close': previousClose
-                            });
-                        }
-                    }
-                }
-                
-                console.log('[calculateBODFromTickerData] Found', allBodEvents.filter(e => e.Symbol === ticker).length, 'BOD events for', ticker);
-                
-            } catch (err) {
-                console.error('[calculateBODFromTickerData] Error processing ticker', ticker, ':', err);
-                // Continue with other tickers
-            }
-        }
-        
-        // Sort by date
-        allBodEvents.sort((a, b) => {
-            const dateA = new Date(a.Date_add);
-            const dateB = new Date(b.Date_add);
-            return dateA - dateB;
-        });
-        
-        console.log('[calculateBODFromTickerData] Total BOD events:', allBodEvents.length);
-        return allBodEvents;
-    }
-    
     // Fetch and parse precomputed all_buy_on_dip CSV (robustly with PapaParse)
-    // UPDATED: Now calls calculateBODFromTickerData to use per-ticker files with IndexedDB caching
     async function fetchHistoricalData() {
-        // Check if we have a cached result (but note: cache is period-specific now)
-        // For now, we'll bypass the simple cache and always calculate on demand
-        // since each period needs different data
-        
-        // Get all tickers from index
-        const allTickers = await getTickerSymbols();
-        if (!allTickers || allTickers.length === 0) {
-            console.warn('[fetchHistoricalData] No tickers found');
-            return [];
+        if (cachedBodData) return cachedBodData;
+        try {
+            const res = await fetch('../data/all_buy_on_dip.csv');
+            if (!res.ok) throw new Error('Failed to fetch CSV: ' + res.status);
+            const text = await res.text();
+            const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
+            if (parsed.errors && parsed.errors.length) console.warn('CSV parse warnings:', parsed.errors);
+
+            // Normalize rows and ensure numeric fields
+            cachedBodData = parsed.data.map(row => {
+                // Support possible header name variants and ensure keys exist
+                const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'] ?? row['Date_add'];
+                // Normalize to YYYY-MM-DD for consistent comparisons using local parsing
+                let Date_add = null;
+                try {
+                    Date_add = rawDate ? toYMDFromString(rawDate) : null;
+                } catch (e) {
+                    Date_add = rawDate;
+                }
+
+                // compute weekday from normalized local Date_add to avoid timezone shifts
+                const _parsedDate = parseDateStringAsLocal(Date_add);
+                const computedWeekday = _parsedDate ? _parsedDate.toLocaleDateString('en-US', { weekday: 'long' }) : (row['Weekday'] ?? row['weekday'] ?? '');
+                return {
+                    Date_add: Date_add,
+                    Weekday: computedWeekday,
+                    Symbol: String(row['Symbol'] ?? row['symbol'] ?? '').trim(),
+                    Strategy: row['Strategy'] ?? row['strategy'] ?? 'Buy_on_Dip',
+                    'Buy_Price': row['Buy_Price'] != null ? Number(row['Buy_Price']) : null,
+                    'Buy_Level': row['Buy_Level'] ?? row['Buy_Level'] ?? '',
+                    'Shares Purchased': row['Shares Purchased'] != null ? Number(row['Shares Purchased']) : (row['Shares_Purchased'] != null ? Number(row['Shares_Purchased']) : 0),
+                    'Dollars Invested': row['Dollars Invested'] != null ? Number(row['Dollars Invested']) : (row['Dollars_Invested'] != null ? Number(row['Dollars_Invested']) : null),
+                    // NOTE: Do NOT import cumulative columns from CSV into the UI dataset.
+                    // Those fields are global running totals and must not be used for
+                    // period-filtered visualizations. We'll recompute cumulatives below
+                    // from per-event rows when rendering charts and downloads.
+                    //'Cumulative Shares': row['Cumulative Shares'] != null ? Number(row['Cumulative Shares']) : null,
+                    //'Cumulative Invested': row['Cumulative Invested'] != null ? Number(row['Cumulative Invested']) : null,
+                    //'Cumulative Value': row['Cumulative Value'] != null ? Number(row['Cumulative Value']) : null,
+                    'Close': row['Close'] != null ? Number(row['Close']) : null,
+                    'Previous_Close': row['Previous_Close'] != null ? Number(row['Previous_Close']) : null
+                };
+            }).filter(r => r && r.Date_add);
+
+            return cachedBodData;
+        } catch (err) {
+            console.error('Error fetching/parsing BOD CSV:', err);
+            throw err;
         }
-        
-        console.log('[fetchHistoricalData] Loading BOD data for', allTickers.length, 'tickers');
-        
-        // Use activePeriod to load the right date range
-        const period = activePeriod || 'YTD';
-        const bodData = await calculateBODFromTickerData(allTickers, period);
-        
-        return bodData;
     }
 
     // Fetch and parse full price history CSV (history_tickers.csv) used to compute available weeks
@@ -648,128 +531,31 @@
         return results;
     }
     
-    // Dynamically populate grid with all tickers from tickers_index.json
+    // Dynamically populate grid with all tickers from precomputed BOD data
     async function populateBodTickerDropdown() {
         try {
             try { showLoading(); } catch(e) {}
-            updateProgress(5, 'Loading ticker list...');
-            
-            // Get tickers from the V2 shared module (reads tickers_index.json)
-            const allTickers = await getTickerSymbols();
-            
-            if (!allTickers || allTickers.length === 0) {
-                console.warn('[populateBodTickerDropdown] No tickers found');
-                hideLoading();
-                return;
-            }
-            
-            console.log('[populateBodTickerDropdown] Found', allTickers.length, 'tickers');
-            
+            updateProgress(5, 'Loading precomputed BOD data...');
+            const historicalData = await fetchHistoricalData();
             // Ensure defaults: do not auto-select ANY ticker on load; keep period default
             // Leave selectedTickerGlobal as-is (empty) so no ticker is selected by default
             activePeriod = activePeriod || 'YTD';
-            
-            // Build ticker grid
-            updateProgress(25, 'Building ticker grid...');
-            await buildTickerGridV2(allTickers);
-            
+            // Build ticker grid similar to DCA page (buildTickerGrid will compute counts using activePeriod)
+            updateProgress(25, 'Preparing ticker list...');
+            await buildTickerGrid(historicalData);
             document.getElementById('ticker-metrics-grid').style.display = '';
             document.getElementById('ticker-selection-area').style.display = '';
-            
             // Do NOT auto-select ALL or run the analysis on load.
             // Leave the download button disabled until the user explicitly selects a ticker.
             try { updateProgress(100, 'Ticker grid ready'); } catch(e) {}
             try { hideLoading(); } catch(e) {}
         } catch (err) {
-            console.error('[populateBodTickerDropdown] Error:', err);
+            console.error(err);
             try { hideLoading(); } catch(e) {}
         }
     }
 
-    // Build ticker grid UI - simplified V2 version that doesn't preload BOD data
-    async function buildTickerGridV2(tickers) {
-        const grid = document.getElementById('ticker-metrics-grid');
-        grid.innerHTML = '';
-        
-        updateProgress(30, 'Building ticker grid...');
-
-        // Build DOM using a fragment to avoid repeated reflows
-        const frag = document.createDocumentFragment();
-
-        // Add an ALL box
-        const allBox = document.createElement('div');
-        allBox.className = 'ticker-box clickable-ticker';
-        allBox.dataset.ticker = 'ALL';
-        allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
-        allBox.addEventListener('click', () => {
-            document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
-            allBox.classList.add('selected');
-            selectedTickerGlobal = 'ALL';
-            document.getElementById('selected-ticker-display').textContent = 'Selected: ALL';
-            // Default behavior: auto-run YTD when ALL is selected
-            setPeriod('YTD');
-            try { showLoading(); } catch(e) {}
-            renderChart('ALL');
-        });
-        frag.appendChild(allBox);
-
-        // Append tickers incrementally and update progress
-        let processed = 0;
-        for (const ticker of tickers) {
-            const box = document.createElement('div');
-            box.className = 'ticker-box clickable-ticker';
-            box.dataset.ticker = ticker;
-            // Show only the ticker symbol (no counts) to keep grid lightweight
-            box.innerHTML = `<div class="ticker-symbol">${ticker}</div>`;
-            box.addEventListener('click', () => {
-                // Toggle selection
-                document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
-                box.classList.add('selected');
-                selectedTickerGlobal = ticker;
-                document.getElementById('selected-ticker-display').textContent = 'Selected: ' + ticker;
-                // Default behavior: auto-run YTD when a ticker is selected so user sees initial results immediately
-                setPeriod('YTD');
-                console.debug('Ticker clicked, running renderChart for', ticker);
-                try { showLoading(); } catch(e) {}
-                renderChart(selectedTickerGlobal).then(()=>{
-                    console.debug('renderChart completed for', ticker);
-                }).catch(e=>console.error('renderChart error', e));
-            });
-            frag.appendChild(box);
-
-            processed++;
-            // Report progress between 30% and 80% while building the grid
-            try {
-                const pct = 30 + Math.round((processed / (tickers.length || 1)) * 50);
-                updateProgress(pct, `Adding ${ticker}... (${processed}/${tickers.length})`);
-            } catch (e) { }
-
-            // Yield to the UI so progress bar updates are visible
-            await new Promise(resolve => setTimeout(resolve, 1));
-        }
-
-        grid.appendChild(frag);
-
-        try { updateProgress(80, 'Ticker grid built'); } catch(e) {}
-
-        // Center grid when there are fewer than 7 boxes
-        try {
-            const visibleBoxes = grid.children.length;
-            if (visibleBoxes > 0 && visibleBoxes < 7) {
-                grid.style.gridTemplateColumns = `repeat(${visibleBoxes}, 1fr)`;
-                grid.style.justifyContent = 'center';
-            } else {
-                grid.style.gridTemplateColumns = '';
-                grid.style.justifyContent = '';
-            }
-        } catch (e) { /* ignore */ }
-    }
-
     // Build ticker grid UI showing ticker and number of orders executed within the active timeframe
-    // OLD buildTickerGrid function - NO LONGER USED (replaced by buildTickerGridV2)
-    // This function loaded all_buy_on_dip.csv and computed counts.
-    // V2 uses per-ticker files with IndexedDB caching instead.
-    /*
     async function buildTickerGrid(historicalData) {
         const grid = document.getElementById('ticker-metrics-grid');
         grid.innerHTML = '';
@@ -783,7 +569,7 @@
             historyAll = await fetchHistoryData();
             const historyDates = Array.from(new Set(historyAll.map(r => r.Date_add))).sort();
             referenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : referenceEnd;
-        } catch (e) { }
+        } catch (e) { /* ignore - proceed with precomputed */ }
 
         // Prefer the small tickers index if available (fast). Fallback to merging precomputed and history.
         let tickers = [];
@@ -793,7 +579,7 @@
                 // fetchTickerIndex returns an array of SYMBOL strings
                 tickers = index.map(s => String(s).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
             }
-        } catch (e) { }
+        } catch (e) { /* ignore */ }
 
         if (!tickers || tickers.length === 0) {
             const tickersSet = new Set();
@@ -889,10 +675,8 @@
                 grid.style.gridTemplateColumns = '';
                 grid.style.justifyContent = '';
             }
-        } catch (e) { }
+        } catch (e) { /* ignore */ }
     }
-    */
-
 
     // Period buttons handling
     const periodButtons = ['ytd-btn','5y-btn','10y-btn','15y-btn','20y-btn'];
@@ -1072,24 +856,96 @@
         showLoading();
         
         try {
-            updateProgress(20, 'Loading BOD data with IndexedDB caching...');
-            
-            // Determine which tickers to load
-            const allTickers = await getTickerSymbols();
+            updateProgress(20, 'Loading precomputed BOD data...');
+            const bodRaw = await fetchHistoricalData();
+
+            updateProgress(40, 'Preparing ticker data...');
+            const allTickers = Array.from(new Set(bodRaw.map(row => row.Symbol))).sort((a,b) => a.localeCompare(b));
             const tickers = (!selectedTicker || selectedTicker === 'ALL') ? allTickers : [selectedTicker];
-            
-            updateProgress(40, 'Calculating BOD events for selected tickers...');
-            
-            // Use the new V2 calculation that reads per-ticker CSV files
-            const filteredBodData = await calculateBODFromTickerData(tickers, activePeriod || 'YTD');
-            
-            updateProgress(60, 'Building cumulative metrics...');
-            
+
+            // Fetch full price history early so we can use a consistent reference end date for periods
+            const historyAll = await fetchHistoryData();
+            const historyDates = Array.from(new Set(historyAll.map(r => r.Date_add))).sort();
+            const globalReferenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : new Date().toISOString().slice(0,10);
+
+            // For selected tickers: prefer computing from history when a single ticker is selected.
+            updateProgress(60, 'Preparing data for selected tickers...');
+            let filteredBodData = [];
+            let allDates = new Set();
+
+            if (tickers.length === 1 && tickers[0] !== 'ALL') {
+                // Build BOD events from the per-ticker history for this ticker so we don't rely on cumulative fields
+                const sym = tickers[0];
+                // Load per-ticker file with fallback to consolidated history
+                let histRows = await fetchTickerHistory(sym);
+                histRows = (histRows || []).sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
+                // Apply timeframe filter
+                if (activePeriod && histRows.length > 0) {
+                    const referenceDates = histRows.map(r => r.Date_add).filter(Boolean).sort();
+                    const refEnd = referenceDates.length ? referenceDates[referenceDates.length - 1] : globalReferenceEnd;
+                    const range = getPeriodRange(activePeriod, refEnd);
+                    if (range.startDate && range.endDate) {
+                        histRows = histRows.filter(r => r.Date_add >= range.startDate && r.Date_add <= range.endDate);
+                    }
+                }
+
+                // Build events by inspecting each day vs previous day's close
+                let cumShares = 0;
+                let cumInvested = 0;
+                const events = [];
+                for (let i = 1; i < histRows.length; i++) {
+                    const today = histRows[i];
+                    const yesterday = histRows[i-1];
+                    const prevClose = (yesterday && (Number(yesterday.Close) || Number(yesterday.Previous_Close))) ? Number(yesterday.Close) : (Number(today.Previous_Close) || null);
+                    const todayLow = today.Low != null ? Number(today.Low) : null;
+                    if (prevClose == null || todayLow == null) continue;
+
+                    // For each dip level 1..5, check if today's low reached the limit order price
+                    for (let dipLevel = 1; dipLevel <= 5; dipLevel++) {
+                        const limitPrice = prevClose * (1 - dipLevel / 100);
+                        if (todayLow <= limitPrice) {
+                            cumShares += 1;
+                            cumInvested += limitPrice;
+                            const close = today.Close != null ? Number(today.Close) : prevClose;
+                            const eventDateLocal = parseDateStringAsLocal(today.Date_add);
+                            events.push({
+                                Date_add: toYMDFromString(today.Date_add),
+                                Weekday: eventDateLocal ? eventDateLocal.toLocaleDateString('en-US', { weekday: 'long' }) : (today.Weekday || ''),
+                                Symbol: sym,
+                                Strategy: 'Buy_on_Dip',
+                                'Buy_Price': Number(limitPrice.toFixed(4)),
+                                'Buy_Level': dipLevel + '%',
+                                'Shares Purchased': 1,
+                                'Dollars Invested': Number(limitPrice.toFixed(4)),
+                                'Cumulative Shares': cumShares,
+                                'Cumulative Invested': Number(cumInvested.toFixed(4)),
+                                'Cumulative Value': Number((cumShares * close).toFixed(4)),
+                                Close: Number(close.toFixed(4)),
+                                Previous_Close: Number(prevClose.toFixed(4))
+                            });
+                        }
+                    }
+                }
+
+                filteredBodData = events.sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
+                filteredBodData.forEach(r => allDates.add(r.Date_add));
+            } else {
+                // Use precomputed consolidated BOD rows for multiple tickers or ALL
+                const allBodData = bodRaw.filter(r => tickers.includes(r.Symbol)).sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+                allBodData.forEach(r => allDates.add(r.Date_add));
+
+                // Apply timeframe filtering based on activePeriod using the global history reference end
+                filteredBodData = allBodData;
+                if (activePeriod && allBodData.length > 0) {
+                    const range = getPeriodRange(activePeriod, globalReferenceEnd);
+                    if (range.startDate && range.endDate) {
+                        filteredBodData = allBodData.filter(r => r.Date_add >= range.startDate && r.Date_add <= range.endDate);
+                    }
+                }
+            }
+            const filteredDates = new Set(filteredBodData.map(r => r.Date_add));
             // Store the filtered data so download and debug can use exactly what was rendered
             lastRenderedBodData = filteredBodData.slice();
-            
-            const filteredDates = new Set(filteredBodData.map(r => r.Date_add));
-            const allDates = filteredDates;
 
             updateProgress(90, 'Preparing chart...');
             const sortedDates = Array.from(filteredDates.size ? filteredDates : allDates).sort();
