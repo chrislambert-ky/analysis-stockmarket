@@ -30,25 +30,38 @@
             margin: 20px 0;
         }
 
-        .timeframe-btn {
-            padding: 8px 16px;
-            background: var(--light-gray);
-            border: 2px solid var(--blue);
-            border-radius: 6px;
+        .period-btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: var(--bright-green);
+            color: white;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            color: var(--blue);
-            transition: all 0.2s;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
         }
 
-        .timeframe-btn:hover {
-            background: var(--blue);
-            color: white;
+        .period-btn:hover:not(:disabled) {
+            background-color: #7dd35e !important;
+            transform: translateY(-1px);
         }
 
-        .timeframe-btn.active {
-            background: var(--blue);
-            color: white;
+        .period-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            background-color: var(--gray) !important;
+        }
+
+        .period-btn.active {
+            background-color: var(--orange) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .period-btn.active:hover {
+            background-color: var(--orange) !important;
+            transform: none !important;
         }
 
         .metrics-grid {
@@ -228,7 +241,7 @@
                 justify-content: center;
             }
 
-            .timeframe-btn {
+            .period-btn {
                 flex: 1 1 auto;
                 min-width: 80px;
             }
@@ -257,14 +270,13 @@
             <!-- Tickers will be populated here -->
         </div>
 
-        <!-- History Slider (replaces fixed timeframe buttons) -->
-        <div class="timeframe-slider" style="text-align:center; margin:12px 0;">
-            <label for="historyRange" id="historyRangeLabel">History: YTD</label>
-            <div style="display:flex; align-items:center; gap:12px; justify-content:center; margin-top:6px;">
-                <input id="historyRange" type="range" min="0" max="25" value="0" step="1" style="width:420px;" />
-                <div id="historyRangeValue" style="min-width:80px; color:var(--gray);">YTD</div>
-            </div>
-            <div style="font-size:0.85em; color:var(--gray); margin-top:6px;">Use the slider to pick how many years of history to include (YTD = current year only)</div>
+        <!-- Timeframe Selection Buttons -->
+        <div class="timeframe-buttons">
+            <button class="period-btn active" onclick="selectPeriod('ytd')">YTD</button>
+            <button class="period-btn" onclick="selectPeriod('5y')">5Y</button>
+            <button class="period-btn" onclick="selectPeriod('10y')">10Y</button>
+            <button class="period-btn" onclick="selectPeriod('15y')">15Y</button>
+            <button class="period-btn" onclick="selectPeriod('20y')">20Y</button>
         </div>
 
         <!-- Date range display -->
@@ -460,6 +472,19 @@
 
         // End IndexedDB helper
 
+        // Normalize row data to ensure compatibility between metricsv2.html and v2-shared.js formats
+        function normalizeRow(row) {
+            // Handle both Date (Date object) and Date_add (string) fields
+            if (!row.Date && row.Date_add) {
+                // Convert Date_add string to Date object
+                row.Date = new Date(row.Date_add);
+            } else if (row.Date && !(row.Date instanceof Date)) {
+                // Ensure Date is a Date object
+                row.Date = new Date(row.Date);
+            }
+            return row;
+        }
+
         // Load tickers index (supports new per-ticker/year index at data/tickers/tickers_index.json)
         async function loadTickersIndex() {
             // Try new index location first
@@ -510,9 +535,6 @@
         // Select ticker
         async function selectTicker(ticker) {
             selectedTicker = ticker;
-
-            // adjust slider based on selected ticker's available years
-            try { adjustSliderForTicker(ticker); } catch (e) { /* ignore */ }
 
             // Update UI
             document.querySelectorAll('.ticker-box').forEach(box => {
@@ -677,9 +699,12 @@
                                     const indexMaxDate = fileEntry.max_date;
                                     const indexLastUpdated = fileEntry.last_updated;
                                     
-                                    // Get date range from cached data
+                                    // Get date range from cached data (handle both Date and Date_add fields)
                                     const cachedDates = cachedRows.map(r => {
-                                        const d = (r.Date instanceof Date) ? r.Date : new Date(r.Date);
+                                        // Try Date field first, then Date_add
+                                        const dateValue = r.Date || r.Date_add;
+                                        if (!dateValue) return null;
+                                        const d = (dateValue instanceof Date) ? dateValue : new Date(dateValue);
                                         return isNaN(d) ? null : d;
                                     }).filter(d => d !== null);
                                     
@@ -694,10 +719,8 @@
                                             cachedMaxStr === indexMaxDate && 
                                             cached.last_updated === indexLastUpdated) {
                                             cacheIsValid = true;
-                                            rowsForYear = cachedRows.map(r => {
-                                                if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date);
-                                                return r;
-                                            });
+                                            // Normalize rows to handle both Date and Date_add fields
+                                            rowsForYear = cachedRows.map(r => normalizeRow(r));
                                             console.log(`✓ Using valid cached data for ${cacheKey} (dates verified, ${rowsForYear.length} rows)`);
                                         } else {
                                             console.log(`✗ Cache invalid for ${cacheKey}: date range or last_updated mismatch`);
@@ -710,10 +733,8 @@
                                 } else {
                                     // No metadata to validate against, trust the cache
                                     cacheIsValid = true;
-                                    rowsForYear = cachedRows.map(r => {
-                                        if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date);
-                                        return r;
-                                    });
+                                    // Normalize rows to handle both Date and Date_add fields
+                                    rowsForYear = cachedRows.map(r => normalizeRow(r));
                                     console.log(`✓ Using cached data for ${cacheKey} (no metadata validation, ${rowsForYear.length} rows)`);
                                 }
                             }
@@ -779,7 +800,7 @@
                                     const existingRows = existingCached ? (existingCached.rows || existingCached.parsed) : null;
                                     if (existingRows && Array.isArray(existingRows)) {
                                         // Keep cached rows that are before or equal to lastVisit, then append the freshly parsed rows after lastVisit
-                                        const cachedRows = existingRows.map(r => { if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date); return r; });
+                                        const cachedRows = existingRows.map(r => normalizeRow(r));
                                         const newRows = rowsForYear.filter(r => r.Date && r.Date.getTime() > lastVisit);
                                         // Merge cachedRows and newRows and deduplicate by calendar date
                                         const merged = cachedRows.concat(newRows);
@@ -861,9 +882,13 @@
             updateProgress(95, 'Finalizing data...');
             // If we built rows from cached/parsed per-year files, use them directly
             if (Array.isArray(allRows) && allRows.length > 0) {
-                // ensure Date objects
-                allRows.forEach(r => { if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date); });
-                tickerData = allRows.sort((a, b) => a.Date - b.Date);
+                // Normalize all rows to ensure Date field exists and is a Date object
+                allRows.forEach(r => normalizeRow(r));
+                tickerData = allRows.sort((a, b) => {
+                    const aDate = a.Date || new Date(a.Date_add);
+                    const bDate = b.Date || new Date(b.Date_add);
+                    return aDate - bDate;
+                });
             } else if (typeof csvText === 'string' && csvText.trim().length > 0) {
                 updateProgress(96, 'Parsing CSV...');
                 tickerData = parseCSV(csvText);
@@ -1011,7 +1036,23 @@
                 // ignore
             }
 
-            return data.filter(row => row.Date >= startDate);
+            // Handle both Date (Date object) and Date_add (string) formats for cross-page compatibility
+            return data.filter(row => {
+                // Get date from either Date or Date_add field
+                let rowDate = row.Date;
+                
+                // If Date_add exists (v2-shared.js format), convert it to Date object
+                if (!rowDate && row.Date_add) {
+                    rowDate = new Date(row.Date_add);
+                }
+                
+                // Ensure we have a valid Date object
+                if (!(rowDate instanceof Date)) {
+                    rowDate = new Date(rowDate);
+                }
+                
+                return rowDate && !isNaN(rowDate) && rowDate >= startDate;
+            });
         }
 
         // Calculate metrics
@@ -1207,160 +1248,34 @@
         }
 
         // Timeframe button handlers
+        function selectPeriod(period) {
+            currentPeriod = period;
+            
+            // Update button states
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Reload data if ticker is selected
+            if (selectedTicker) {
+                showProgress();
+                loadTickerDataForPeriod(selectedTicker, currentPeriod)
+                    .then(() => {
+                        calculateMetrics();
+                        hideProgress();
+                    })
+                    .catch(err => {
+                        console.error('Error loading data:', err);
+                        hideProgress();
+                    });
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Load tickers index
             loadTickersIndex();
-
-            // Initialize history slider
-            const slider = document.getElementById('historyRange');
-            const sliderVal = document.getElementById('historyRangeValue');
-            const sliderLabel = document.getElementById('historyRangeLabel');
-
-            function sliderValueToPeriod(val) {
-                // val 0 = YTD, val 1 = 1Y (current + previous?), val n = n years
-                if (Number(val) === 0) return 'ytd';
-                return `${val}y`;
-            }
-
-            slider.addEventListener('input', function() {
-                const p = sliderValueToPeriod(this.value);
-                sliderVal.textContent = (p === 'ytd') ? 'YTD' : `${this.value}Y`;
-                sliderLabel.textContent = `History: ${(p === 'ytd') ? 'YTD' : this.value + ' years'}`;
-
-                // Immediate UI estimate: compute expected date range and approximate record count
-                try {
-                    if (selectedTicker && tickersIndex && tickersIndex[selectedTicker]) {
-                        const est = estimateRangeAndCountForSlider(selectedTicker, Number(this.value));
-                        if (est) {
-                            updateDateRangeDisplayBounds(est.minDate, est.maxDate);
-                            // show estimated record count with a '~' prefix
-                            const el = document.getElementById('recordCountDisplay');
-                            el.textContent = `Records: ~${est.estimatedCount}`;
-                        }
-                    }
-                } catch (e) {
-                    // ignore estimation errors
-                    console.warn('Estimation error', e);
-                }
-            });
-
-            slider.addEventListener('change', function() {
-                currentPeriod = sliderValueToPeriod(this.value);
-                // If a ticker is selected, reload data for the chosen period
-                if (selectedTicker) {
-                    showProgress();
-                    loadTickerDataForPeriod(selectedTicker, currentPeriod).then(() => {
-                        calculateMetrics();
-                        hideProgress();
-                    }).catch(err => {
-                        console.error('Error loading data for slider period', err);
-                        hideProgress();
-                    });
-                }
-            });
         });
-
-        // When a ticker is selected, adjust slider max to available history (in years)
-        function adjustSliderForTicker(ticker) {
-                    const slider = document.getElementById('historyRange');
-                    const sliderVal = document.getElementById('historyRangeValue');
-                    const sliderLabel = document.getElementById('historyRangeLabel');
-
-                    const entry = tickersIndex && tickersIndex[ticker];
-                    if (!entry || !entry.years || entry.years.length === 0) {
-                        // default
-                        if (slider) slider.max = 25;
-                        return;
-                    }
-
-                    const availableYears = entry.years.map(y => Number(y)).sort((a,b) => a - b);
-                    const minYear = Math.min(...availableYears);
-                    const maxYear = Math.max(...availableYears);
-                    const spanYears = Math.max(0, maxYear - minYear + 1);
-                    const maxSlider = Math.min(25, spanYears);
-
-                    if (slider) {
-                        slider.max = maxSlider;
-                        // clamp current value
-                        if (Number(slider.value) > maxSlider) slider.value = String(maxSlider);
-                    }
-
-                    // update visible label/value
-                    if (sliderVal && slider) {
-                        const p = (Number(slider.value) === 0) ? 'YTD' : `${slider.value}Y`;
-                        sliderVal.textContent = p;
-                    }
-                    if (sliderLabel && slider) {
-                        const p = (Number(slider.value) === 0) ? 'YTD' : `${slider.value} years`;
-                        sliderLabel.textContent = `History: ${p}`;
-                    }
-
-                    // Update the displayed date range and estimated/exact record count for the current slider value
-                    try {
-                        const est = estimateRangeAndCountForSlider(ticker, Number(slider ? slider.value : 0));
-                        if (est) {
-                            updateDateRangeDisplayBounds(est.minDate, est.maxDate);
-                            const el = document.getElementById('recordCountDisplay');
-                            if (el) el.textContent = `Records: ${est.exact ? est.estimatedCount : '~' + est.estimatedCount}`;
-                        }
-                    } catch (e) {
-                        console.warn('adjustSliderForTicker estimation error', e);
-                    }
-        }
-
-        // Estimate date range and approximate record count for a slider value using tickersIndex
-        function estimateRangeAndCountForSlider(ticker, sliderValue) {
-            // sliderValue 0 => YTD, n => n years (current + previous n-1)
-            const entry = tickersIndex[ticker];
-            if (!entry || !entry.years || entry.years.length === 0) return null;
-
-            const years = entry.years.map(y => Number(y)).sort();
-            const now = new Date();
-            let endYear = now.getFullYear();
-            let span = Number(sliderValue);
-
-            if (span === 0) {
-                // YTD -> only include current year if available
-                if (!years.includes(endYear)) return null;
-                const minDate = new Date(endYear, 0, 1);
-                const maxDate = now;
-                // estimate record count as number of trading days so far in year (~days * 0.7)
-                const daysSoFar = Math.ceil((maxDate - minDate) / (24*60*60*1000));
-                const estimated = Math.round(daysSoFar * 0.7);
-                return { minDate, maxDate, estimatedCount: estimated };
-            }
-
-            // span > 0: want `span` years including current year and previous (span-1)
-            const startYear = Math.max(Math.min(...years), endYear - span + 1);
-            const selectedYears = years.filter(y => y >= startYear && y <= endYear);
-            if (selectedYears.length === 0) return null;
-
-            // If file-level metadata is present, compute exact min/max and exact row_count sum
-            const entryFiles = entry.files || {};
-            const metas = selectedYears.map(y => entryFiles[String(y)]).filter(Boolean);
-            const haveMetaObjects = metas.length === selectedYears.length && metas.every(m => typeof m === 'object' && ('row_count' in m || 'min_date' in m));
-            if (haveMetaObjects) {
-                const minDate = new Date(Math.min(...metas.map(m => m.min_date ? new Date(m.min_date).getTime() : Infinity)));
-                const maxDate = new Date(Math.max(...metas.map(m => m.max_date ? new Date(m.max_date).getTime() : -Infinity)));
-                const totalRows = metas.reduce((s, m) => s + (Number(m.row_count) || 0), 0);
-                return { minDate, maxDate, estimatedCount: totalRows, exact: true };
-            }
-
-            const minDate = new Date(Math.min(...selectedYears.map(y => new Date(y,0,1).getTime())));
-            const maxDate = new Date(endYear, 11, 31);
-
-            // Estimate records: assume ~252 trading days per full year, partial current year count estimated
-            let fullYears = selectedYears.filter(y => y < endYear).length;
-            let estimated = fullYears * 252;
-            if (selectedYears.includes(endYear)) {
-                // estimate current year trading days so far
-                const startOfYear = new Date(endYear, 0, 1);
-                const daysSoFar = Math.ceil((now - startOfYear) / (24*60*60*1000));
-                estimated += Math.round(daysSoFar * 0.7);
-            }
-
-            return { minDate, maxDate, estimatedCount: estimated, exact: false };
-        }
 
         // Calculate linear regression
         function calculateLinearRegression(data) {
