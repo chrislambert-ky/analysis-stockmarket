@@ -1335,6 +1335,85 @@
             return calculateTradingBandsStatistical(prices, regression, bandwidth);
         }
 
+        function niceNumber(range, round) {
+            if (!Number.isFinite(range) || range === 0) return 0;
+            const exponent = Math.floor(Math.log10(Math.abs(range)));
+            const fraction = Math.abs(range) / Math.pow(10, exponent);
+            let niceFraction;
+
+            if (round) {
+                if (fraction < 1.5) niceFraction = 1;
+                else if (fraction < 3) niceFraction = 2;
+                else if (fraction < 7) niceFraction = 5;
+                else niceFraction = 10;
+            } else {
+                if (fraction <= 1) niceFraction = 1;
+                else if (fraction <= 2) niceFraction = 2;
+                else if (fraction <= 5) niceFraction = 5;
+                else niceFraction = 10;
+            }
+
+            return (range < 0 ? -1 : 1) * niceFraction * Math.pow(10, exponent);
+        }
+
+        function computeNiceAxis(minValue, maxValue, options = {}) {
+            const { maxTicks = 8, paddingRatio = 0.04, forceMinZero = false } = options;
+
+            if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) {
+                return { min: 0, max: 1, interval: 1 };
+            }
+
+            if (maxValue < minValue) {
+                [minValue, maxValue] = [maxValue, minValue];
+            }
+
+            let range = maxValue - minValue;
+            if (range === 0) {
+                const basePad = Math.max(Math.abs(maxValue) * paddingRatio, 1);
+                return {
+                    min: minValue - basePad,
+                    max: maxValue + basePad,
+                    interval: basePad
+                };
+            }
+
+            const padding = Math.max(range * paddingRatio, range * 0.01);
+            const paddedMin = minValue - padding;
+            const paddedMax = maxValue + padding;
+
+            range = paddedMax - paddedMin;
+            const niceRange = niceNumber(range, false) || range;
+            const tickSpacing = niceNumber(niceRange / Math.max(maxTicks - 1, 1), true) || (range / Math.max(maxTicks - 1, 1));
+            let niceMin = Math.floor(paddedMin / tickSpacing) * tickSpacing;
+            let niceMax = Math.ceil(paddedMax / tickSpacing) * tickSpacing;
+
+            const shouldForceZero = forceMinZero && (
+                minValue <= 0 ||
+                paddedMin < 0 ||
+                (maxValue > 0 && (minValue / maxValue) < 0.12)
+            );
+
+            if (shouldForceZero) {
+                niceMin = 0;
+                if (tickSpacing > 0) {
+                    const ticksAbove = Math.max(1, Math.ceil((paddedMax - niceMin) / tickSpacing));
+                    niceMax = niceMin + ticksAbove * tickSpacing;
+                }
+            } else if (minValue >= 0 && niceMin < 0 && Math.abs(niceMin) < tickSpacing) {
+                niceMin = 0;
+            }
+
+            if (niceMax <= niceMin) {
+                niceMax = niceMin + tickSpacing;
+            }
+
+            return {
+                min: niceMin,
+                max: niceMax,
+                interval: tickSpacing
+            };
+        }
+
         // Render price chart with regression and trading bands
         function renderPriceChart() {
             if (!tickerData || tickerData.length === 0) {
@@ -1351,84 +1430,171 @@
             // Show chart container
             document.getElementById('chartContainer').style.display = 'block';
 
-            // Prepare data
+            // Extract data arrays
             const dates = filteredData.map(row => {
                 const d = row.Date;
                 return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             });
-            const closePrices = filteredData.map(row => row.Close);
-
-            // Calculate linear regression on the full dataset (not just filtered)
-            const allPrices = tickerData.map(row => row.Close);
-            const regression = calculateLinearRegression(allPrices);
-
-            // Calculate regression line for the filtered period
-            // Find the starting index in the full dataset
-            const firstFilteredDate = filteredData[0].Date.getTime();
-            const startIndex = tickerData.findIndex(row => row.Date.getTime() === firstFilteredDate);
             
-            const regressionLine = filteredData.map((_, index) => {
-                const actualIndex = startIndex + index;
-                return regression.slope * actualIndex + regression.intercept;
-            });
-
-            // Calculate bands directly for FILTERED data (not sliced from full dataset)
-            // This ensures perfect alignment between data points and band values
-            const filteredPrices = filteredData.map(row => row.Close);
-            
-            // Calculate deviations from regression line for filtered data
-            const deviations = regressionLine.map((regValue, index) => {
-                return filteredPrices[index] - regValue;
+            const closePrices = filteredData.map(row => {
+                const raw = row.Close;
+                if (raw == null) return null;
+                if (typeof raw === 'number' && isFinite(raw)) return raw;
+                const parsed = Number(raw);
+                return isFinite(parsed) ? parsed : null;
             });
             
-            // Calculate standard deviation
-            const mean = deviations.reduce((sum, dev) => sum + dev, 0) / deviations.length;
-            const variance = deviations.reduce((sum, dev) => sum + Math.pow(dev - mean, 2), 0) / deviations.length;
-            const stdDev = Math.sqrt(variance);
-            
-            // Create bands from regression line
-            const upperBandFiltered = regressionLine.map(regValue => regValue + (stdDev * bandMultiplier));
-            const lowerBandFiltered = regressionLine.map(regValue => regValue - (stdDev * bandMultiplier));
+            // Filter out null prices for regression calculation
+            const validPrices = [];
+            const validIndices = [];
+            closePrices.forEach((price, i) => {
+                if (Number.isFinite(price)) {
+                    validPrices.push(price);
+                    validIndices.push(i);
+                }
+            });
 
-            // DEBUG: Log band data
-            console.log('=== BAND CALCULATION DEBUG ===');
-            console.log('Filtered data length:', filteredData.length);
-            console.log('Regression line length:', regressionLine.length);
-            console.log('Upper band length:', upperBandFiltered.length);
-            console.log('Lower band length:', lowerBandFiltered.length);
-            console.log('Upper band sample (first 5):', upperBandFiltered.slice(0, 5));
-            console.log('Lower band sample (first 5):', lowerBandFiltered.slice(0, 5));
-            console.log('Regression sample (first 5):', regressionLine.slice(0, 5));
-            console.log('Close prices sample (first 5):', closePrices.slice(0, 5));
-            console.log('Standard deviation:', stdDev);
-            console.log('Band multiplier:', bandMultiplier);
-            console.log('==============================');
+            // Calculate linear regression on valid prices (guard for insufficient data)
+            const n = validPrices.length;
+            let slope = 0;
+            let intercept = 0;
+            if (n > 0) {
+                let sumX = 0;
+                let sumY = 0;
+                let sumXY = 0;
+                let sumX2 = 0;
 
-            // Calculate Y-axis range including all band values
-            const allYValues = [
-                ...closePrices,
-                ...regressionLine,
-                ...upperBandFiltered,
-                ...lowerBandFiltered
-            ].filter(v => v != null && !isNaN(v));
+                validPrices.forEach((price, idx) => {
+                    const x = validIndices[idx];
+                    const y = price;
+                    sumX += x;
+                    sumY += y;
+                    sumXY += x * y;
+                    sumX2 += x * x;
+                });
 
-            const maxValue = Math.max(...allYValues);
-            const minValue = Math.min(...allYValues);
-            const valueRange = maxValue - minValue;
-
-            const yMin = 0;
-            const yMax = Math.ceil(maxValue + valueRange * 0.1);
-
-            // Initialize or update chart - always dispose before recreating
-            const chartDom = document.getElementById('priceChart');
-            if (echarts.getInstanceByDom(chartDom)) {
-                echarts.getInstanceByDom(chartDom).dispose();
+                const denominator = (n * sumX2) - (sumX * sumX);
+                if (Math.abs(denominator) > 1e-9 && n > 1) {
+                    slope = ((n * sumXY) - (sumX * sumY)) / denominator;
+                    intercept = (sumY - slope * sumX) / n;
+                } else {
+                    // Fallback to flat line at mean price when regression cannot be computed
+                    const meanPrice = sumY / n;
+                    slope = 0;
+                    intercept = meanPrice;
+                    console.warn('[Chart] Insufficient variance for regression, using mean price line.');
+                }
+            } else {
+                console.warn('[Chart] No valid price data available for regression.');
             }
+
+            // Generate regression line
+            const regressionLine = closePrices.map((price, index) => {
+                if (!Number.isFinite(price)) return null;
+                return slope * index + intercept;
+            });
+
+            // Calculate standard deviation from regression
+            const deviations = [];
+            closePrices.forEach((price, index) => {
+                if (Number.isFinite(price) && Number.isFinite(regressionLine[index])) {
+                    deviations.push(price - regressionLine[index]);
+                }
+            });
+
+            let stdDev = 0;
+            if (deviations.length > 1) {
+                const mean = deviations.reduce((sum, dev) => sum + dev, 0) / deviations.length;
+                const variance = deviations.reduce((sum, dev) => sum + Math.pow(dev - mean, 2), 0) / (deviations.length - 1);
+                stdDev = Math.sqrt(Math.max(variance, 0));
+            } else if (deviations.length === 1) {
+                stdDev = 0;
+            }
+
+            // Create bands
+            const upperBand = regressionLine.map(regValue => {
+                if (!Number.isFinite(regValue)) return null;
+                return regValue + (stdDev * bandMultiplier);
+            });
+            
+            const lowerBand = regressionLine.map(regValue => {
+                if (!Number.isFinite(regValue)) return null;
+                return regValue - (stdDev * bandMultiplier);
+            });
+
+            // Calculate Y-axis range FIRST (before using in console.log)
+            let allValues = [...closePrices, ...regressionLine, ...upperBand, ...lowerBand].filter(Number.isFinite);
+            if (allValues.length === 0) {
+                allValues = validPrices.slice();
+            }
+            let maxValue = Math.max(...allValues);
+            let minValue = Math.min(...allValues);
+
+            if (!isFinite(maxValue) || !isFinite(minValue)) {
+                const finiteValid = validPrices.filter(Number.isFinite);
+                if (finiteValid.length > 0) {
+                    maxValue = Math.max(...finiteValid);
+                    minValue = Math.min(...finiteValid);
+                }
+            }
+
+            if (!isFinite(maxValue) || !isFinite(minValue)) {
+                maxValue = 1;
+                minValue = 0;
+            }
+
+            let { min: axisMin, max: axisMax, interval: axisInterval } = computeNiceAxis(minValue, maxValue, {
+                maxTicks: 10,
+                paddingRatio: 0.035,
+                forceMinZero: true
+            });
+
+            if (!Number.isFinite(axisInterval) || axisInterval <= 0) {
+                const fallbackRange = Math.max(axisMax - axisMin, 1);
+                axisInterval = fallbackRange / 6;
+            }
+
+            const axisRange = axisMax - axisMin;
+            let splitNumber = 5;
+            if (Number.isFinite(axisRange) && axisInterval > 0) {
+                const estimatedSplits = Math.round(axisRange / axisInterval);
+                if (estimatedSplits > 0) {
+                    splitNumber = Math.min(10, Math.max(3, estimatedSplits));
+                }
+            }
+
+            console.log('=== CHART DEBUG INFO ===');
+            console.log('Chart data lengths:', {
+                dates: dates.length,
+                closePrices: closePrices.length,
+                regressionLine: regressionLine.length,
+                upperBand: upperBand.length,
+                lowerBand: lowerBand.length,
+                stdDev: stdDev,
+                bandMultiplier: bandMultiplier
+            });
+            console.log('Regression:', { slope, intercept });
+            console.log('Sample closePrices (first 5):', closePrices.slice(0, 5));
+            console.log('Sample regressionLine (first 5):', regressionLine.slice(0, 5));
+            console.log('Sample upperBand (first 5):', upperBand.slice(0, 5));
+            console.log('Sample lowerBand (first 5):', lowerBand.slice(0, 5));
+            console.log('Y-axis range (data):', { minValue, maxValue });
+            console.log('Y-axis range (axis):', { axisMin, axisMax, axisInterval, splitNumber });
+            console.log('======================');
+
+            // Dispose existing chart
+            const chartDom = document.getElementById('priceChart');
+            const existingChart = echarts.getInstanceByDom(chartDom);
+            if (existingChart) {
+                existingChart.dispose();
+            }
+            
+            // Create new chart
             priceChart = echarts.init(chartDom);
 
             const option = {
                 title: {
-                    text: `${selectedTicker} - Price Analysis`,
+                    text: `${selectedTicker} - Price Analysis with Regression Bands`,
                     left: 'center',
                     textStyle: {
                         color: '#0077cc',
@@ -1444,44 +1610,36 @@
                     formatter: function(params) {
                         let result = `<strong>${params[0].axisValue}</strong><br/>`;
                         params.forEach(param => {
-                            // Skip series with no valid data
-                            if (param.value == null || param.value === undefined) return;
-                            
+                            if (param.value == null) return;
                             const color = param.color;
                             const seriesName = param.seriesName;
                             
-                            // Handle value - it could be a number or array [x, y]
-                            let displayValue;
+                            // Extract numeric value
+                            let numValue;
                             if (typeof param.value === 'number') {
-                                displayValue = '$' + param.value.toFixed(2);
-                            } else if (Array.isArray(param.value)) {
-                                // For array values like [x, y], use the y-axis value (index 1)
-                                const numValue = param.value[1];
-                                displayValue = (typeof numValue === 'number') ? '$' + numValue.toFixed(2) : '-';
+                                numValue = param.value;
+                            } else if (Array.isArray(param.value) && param.value.length > 1) {
+                                numValue = param.value[1];
                             } else {
-                                displayValue = '-';
+                                return; // Skip if can't extract value
                             }
                             
-                            result += `<span style="display:inline-block;width:10px;height:10px;background:${color};margin-right:5px;"></span>${seriesName}: ${displayValue}<br/>`;
+                            // Only display if it's a valid number
+                            if (typeof numValue === 'number' && !isNaN(numValue)) {
+                                result += `<span style="display:inline-block;width:10px;height:10px;background:${color};margin-right:5px;"></span>${seriesName}: $${numValue.toFixed(2)}<br/>`;
+                            }
                         });
                         return result;
                     }
                 },
                 legend: {
-                    data: ['Close Price', 'Regression Line', 'Upper Band (Sell)', 'Lower Band (Buy)'],
-                    top: 35,
-                    textStyle: {
-                        fontSize: 12
-                    },
-                    selected: {
-                        'Upper Fill Bound': false,
-                        'Lower Fill Bound': false
-                    }
+                    data: ['Close Price', 'Regression Line', 'Upper Band', 'Lower Band'],
+                    top: 35
                 },
                 grid: {
                     left: '3%',
                     right: '4%',
-                    bottom: '3%',
+                    bottom: '15%',
                     top: 80,
                     containLabel: true
                 },
@@ -1499,59 +1657,38 @@
                     name: 'Price ($)',
                     nameLocation: 'middle',
                     nameGap: 50,
-                    min: yMin,
-                    max: yMax,
+                    min: axisMin,
+                    max: axisMax,
+                    interval: axisInterval,
+                    splitNumber,
                     axisLabel: {
                         formatter: '${value}'
                     }
                 },
                 series: [
-                    // Lower Band (green dashed line, no fill)
                     {
-                        name: 'Lower Band (Buy)',
+                        name: 'Lower Band',
                         type: 'line',
-                        data: lowerBandFiltered,
+                        data: lowerBand,
                         lineStyle: {
                             color: '#00cc44',
                             width: 2,
                             type: 'dashed'
                         },
-                        itemStyle: {
-                            color: '#00cc44'
-                        },
                         symbol: 'none',
                         z: 1
                     },
-                    // Upper Band (red line, no fill)
                     {
-                        name: 'Upper Band (Sell)',
+                        name: 'Upper Band',
                         type: 'line',
-                        data: upperBandFiltered,
+                        data: upperBand,
                         lineStyle: {
                             color: '#ff4444',
                             width: 2,
                             type: 'dashed'
                         },
-                        itemStyle: {
-                            color: '#ff4444'
-                        },
                         symbol: 'none',
                         z: 1
-                    },
-                    {
-                        name: 'Close Price',
-                        type: 'line',
-                        data: closePrices,
-                        lineStyle: {
-                            color: '#0077cc',
-                            width: 2
-                        },
-                        itemStyle: {
-                            color: '#0077cc'
-                        },
-                        symbol: 'none',
-                        sampling: 'lttb',
-                        z: 3
                     },
                     {
                         name: 'Regression Line',
@@ -1562,11 +1699,19 @@
                             width: 2,
                             type: 'dashed'
                         },
-                        itemStyle: {
-                            color: '#666666'
-                        },
                         symbol: 'none',
                         z: 2
+                    },
+                    {
+                        name: 'Close Price',
+                        type: 'line',
+                        data: closePrices,
+                        lineStyle: {
+                            color: '#0077cc',
+                            width: 2
+                        },
+                        symbol: 'none',
+                        z: 3
                     }
                 ],
                 dataZoom: [
@@ -1584,14 +1729,7 @@
                 ]
             };
 
-            priceChart.setOption(option, true);
-
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                if (priceChart) {
-                    priceChart.resize();
-                }
-            });
+            priceChart.setOption(option);
         }
 
         // Progress bar functions
