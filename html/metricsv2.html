@@ -153,6 +153,68 @@
             padding: 40px;
         }
 
+        .chart-container {
+            margin-top: 30px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--blue);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #priceChart {
+            width: 100%;
+            height: 500px;
+            min-height: 400px;
+        }
+
+        .band-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 6px;
+        }
+
+        .band-control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .band-control-group label {
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .band-control-group select,
+        .band-control-group input[type="number"] {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        .band-control-group input[type="number"] {
+            width: 70px;
+        }
+
+        .band-control-group.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
         @media (max-width: 768px) {
             .metrics-grid {
                 grid-template-columns: 1fr;
@@ -180,8 +242,8 @@
         <a href="bodv2.html">Buy-on-Dip Analysis</a>
         <a href="dca-tickersv2.html">Dollar Cost Averaging (All Tickers)</a>
         <a href="bod-tickersv2.html">Buy-on-Dip (All Tickers)</a>
-        <a href="dca-stratv2.html">Advanced Dollar Cost Averaging</a>
-        <a href="bod-stratv2.html">Advanced Buy-on-Dip</a>
+        <a href="dca-stratv2.html">Dollar Cost Averaging Advanced</a>
+        <a href="bod-stratv2.html">Buy-on-Dip Advanced</a>
         <a href="metricsv2.html">Metrics Dashboard</a>
         <a href="aboutv2.html">About</a>
     </nav>
@@ -231,7 +293,29 @@
                 Select a ticker to view metrics
             </div>
         </div>
+
+        <!-- Price Analysis Chart -->
+        <div class="chart-container" id="chartContainer" style="display: none;">
+            <div class="chart-title">Price Analysis with Regression & Trading Bands</div>
+            
+            <!-- Band Calculation Controls -->
+            <div class="band-controls">
+                <div class="band-control-group">
+                    <label for="bandMultiplier">Standard Deviation:</label>
+                    <select id="bandMultiplier" onchange="updateBandSettings()">
+                        <option value="1.0">1.0x (68%)</option>
+                        <option value="1.5" selected>1.5x (93%)</option>
+                        <option value="2.0">2.0x (95%)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="priceChart"></div>
+        </div>
     </div>
+
+    <!-- ECharts Library -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 
     <script>
         // Global variables
@@ -239,6 +323,8 @@
         let selectedTicker = null;
         let tickerData = null;
         let currentPeriod = 'ytd';
+        let priceChart = null;
+        let bandMultiplier = 1.5;
 
         // --- Minimal IndexedDB helper for caching parsed rows and metadata ---
         const IDB_NAME = 'stockmarket-cache';
@@ -1050,6 +1136,9 @@
                     </div>
                 </div>
             `;
+
+            // Render the price chart
+            renderPriceChart();
         }
 
         // Timeframe button handlers
@@ -1208,6 +1297,297 @@
             return { minDate, maxDate, estimatedCount: estimated, exact: false };
         }
 
+        // Calculate linear regression
+        function calculateLinearRegression(data) {
+            const n = data.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            
+            data.forEach((point, index) => {
+                const x = index;
+                const y = point;
+                sumX += x;
+                sumY += y;
+                sumXY += x * y;
+                sumX2 += x * x;
+            });
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            
+            return { slope, intercept };
+        }
+
+        // Calculate trading bands based on price deviations from regression (STATISTICAL METHOD)
+        function calculateTradingBandsStatistical(prices, regression, bandwidth = 1.5) {
+            const { slope, intercept } = regression;
+            
+            // Calculate deviations from regression line
+            const deviations = prices.map((price, index) => {
+                const regressionValue = slope * index + intercept;
+                return price - regressionValue;
+            });
+            
+            // Calculate standard deviation of deviations
+            const mean = deviations.reduce((sum, dev) => sum + dev, 0) / deviations.length;
+            const variance = deviations.reduce((sum, dev) => sum + Math.pow(dev - mean, 2), 0) / deviations.length;
+            const stdDev = Math.sqrt(variance);
+            
+            // Create upper and lower bands
+            const upperBand = prices.map((_, index) => {
+                const regressionValue = slope * index + intercept;
+                return regressionValue + (stdDev * bandwidth);
+            });
+            
+            const lowerBand = prices.map((_, index) => {
+                const regressionValue = slope * index + intercept;
+                return regressionValue - (stdDev * bandwidth);
+            });
+            
+            return { upperBand, lowerBand, stdDev, method: 'statistical' };
+        }
+
+        // Wrapper function to call the appropriate band calculation method
+        function calculateTradingBands(pricesOrData, regression, bandwidth) {
+            // Always use statistical method
+            const prices = Array.isArray(pricesOrData) && pricesOrData[0]?.Close 
+                ? pricesOrData.map(row => row.Close) 
+                : pricesOrData;
+            return calculateTradingBandsStatistical(prices, regression, bandwidth);
+        }
+
+        // Render price chart with regression and trading bands
+        function renderPriceChart() {
+            if (!tickerData || tickerData.length === 0) {
+                document.getElementById('chartContainer').style.display = 'none';
+                return;
+            }
+
+            const filteredData = filterDataByPeriod(tickerData, currentPeriod);
+            if (filteredData.length === 0) {
+                document.getElementById('chartContainer').style.display = 'none';
+                return;
+            }
+
+            // Show chart container
+            document.getElementById('chartContainer').style.display = 'block';
+
+            // Prepare data
+            const dates = filteredData.map(row => {
+                const d = row.Date;
+                return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            });
+            const closePrices = filteredData.map(row => row.Close);
+
+            // Calculate linear regression on the full dataset (not just filtered)
+            const allPrices = tickerData.map(row => row.Close);
+            const regression = calculateLinearRegression(allPrices);
+
+            // Calculate regression line for the filtered period
+            // Find the starting index in the full dataset
+            const firstFilteredDate = filteredData[0].Date.getTime();
+            const startIndex = tickerData.findIndex(row => row.Date.getTime() === firstFilteredDate);
+            
+            const regressionLine = filteredData.map((_, index) => {
+                const actualIndex = startIndex + index;
+                return regression.slope * actualIndex + regression.intercept;
+            });
+
+            // Calculate trading bands using statistical method
+            const bandsResult = calculateTradingBands(allPrices, regression, bandMultiplier);
+            const { upperBand, lowerBand } = bandsResult;
+            
+            // Extract bands for the filtered period
+            const upperBandFiltered = upperBand.slice(startIndex, startIndex + filteredData.length);
+            const lowerBandFiltered = lowerBand.slice(startIndex, startIndex + filteredData.length);
+
+            // Calculate max and min for area fills (extend beyond the bands)
+            const maxPrice = Math.max(...closePrices);
+            const minPrice = Math.min(...closePrices);
+            const priceRange = maxPrice - minPrice;
+            const upperFillBound = upperBandFiltered.map(() => maxPrice + priceRange * 0.5); // Well above visible area
+            const lowerFillBound = lowerBandFiltered.map(() => Math.max(0, minPrice - priceRange * 0.5)); // Well below visible area
+
+            // Calculate Y-axis range (for syncing both axes) - ensure min is never negative
+            const yMin = Math.max(0, Math.floor(minPrice - priceRange * 0.1));
+            const yMax = Math.ceil(maxPrice + priceRange * 0.1);
+
+            // Initialize or update chart
+            const chartDom = document.getElementById('priceChart');
+            if (!priceChart) {
+                priceChart = echarts.init(chartDom);
+            }
+
+            const option = {
+                title: {
+                    text: `${selectedTicker} - Price Analysis`,
+                    left: 'center',
+                    textStyle: {
+                        color: '#0077cc',
+                        fontSize: 18,
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    },
+                    formatter: function(params) {
+                        let result = `<strong>${params[0].axisValue}</strong><br/>`;
+                        params.forEach(param => {
+                            const color = param.color;
+                            const seriesName = param.seriesName;
+                            const value = param.value != null ? '$' + param.value.toFixed(2) : '-';
+                            result += `<span style="display:inline-block;width:10px;height:10px;background:${color};margin-right:5px;"></span>${seriesName}: ${value}<br/>`;
+                        });
+                        return result;
+                    }
+                },
+                legend: {
+                    data: ['Close Price', 'Regression Line', 'Upper Band (Sell)', 'Lower Band (Buy)'],
+                    top: 35,
+                    textStyle: {
+                        fontSize: 12
+                    },
+                    selected: {
+                        'Upper Fill Bound': false,
+                        'Lower Fill Bound': false
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    top: 80,
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dates,
+                    boundaryGap: false,
+                    axisLabel: {
+                        rotate: 45,
+                        fontSize: 10
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: 'Price ($)',
+                    nameLocation: 'middle',
+                    nameGap: 50,
+                    min: yMin,
+                    max: yMax,
+                    axisLabel: {
+                        formatter: '${value}'
+                    }
+                },
+                series: [
+                    // Invisible lower bound line for green fill area
+                    {
+                        name: 'Lower Fill Bound',
+                        type: 'line',
+                        data: lowerFillBound,
+                        lineStyle: {
+                            width: 0,
+                            opacity: 0
+                        },
+                        symbol: 'none',
+                        stack: 'lower',
+                        showSymbol: false,
+                        areaStyle: {
+                            color: 'rgba(0, 204, 68, 0.15)'
+                        },
+                        z: 0
+                    },
+                    // Lower Band (just the line, fill comes from invisible series)
+                    {
+                        name: 'Lower Band (Buy)',
+                        type: 'line',
+                        data: lowerBandFiltered,
+                        lineStyle: {
+                            color: '#00cc44',
+                            width: 2,
+                            type: 'dotted'
+                        },
+                        itemStyle: {
+                            color: '#00cc44'
+                        },
+                        symbol: 'none',
+                        stack: 'lower',
+                        z: 1
+                    },
+                    // Upper Band (just the line, no fill)
+                    {
+                        name: 'Upper Band (Sell)',
+                        type: 'line',
+                        data: upperBandFiltered,
+                        lineStyle: {
+                            color: '#ff4444',
+                            width: 2,
+                            type: 'dotted'
+                        },
+                        itemStyle: {
+                            color: '#ff4444'
+                        },
+                        symbol: 'none',
+                        z: 1
+                    },
+                    {
+                        name: 'Close Price',
+                        type: 'line',
+                        data: closePrices,
+                        lineStyle: {
+                            color: '#0077cc',
+                            width: 2
+                        },
+                        itemStyle: {
+                            color: '#0077cc'
+                        },
+                        symbol: 'none',
+                        sampling: 'lttb',
+                        z: 3
+                    },
+                    {
+                        name: 'Regression Line',
+                        type: 'line',
+                        data: regressionLine,
+                        lineStyle: {
+                            color: '#666666',
+                            width: 2,
+                            type: 'dashed'
+                        },
+                        itemStyle: {
+                            color: '#666666'
+                        },
+                        symbol: 'none',
+                        z: 2
+                    }
+                ],
+                dataZoom: [
+                    {
+                        type: 'inside',
+                        start: 0,
+                        end: 100
+                    },
+                    {
+                        start: 0,
+                        end: 100,
+                        height: 20,
+                        bottom: 10
+                    }
+                ]
+            };
+
+            priceChart.setOption(option, true);
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (priceChart) {
+                    priceChart.resize();
+                }
+            });
+        }
+
         // Progress bar functions
         function showProgress() {
             document.getElementById('progressContainer').style.display = 'flex';
@@ -1222,6 +1602,18 @@
 
         function hideProgress() {
             document.getElementById('progressContainer').style.display = 'none';
+        }
+
+        // Update band settings and re-render chart
+        function updateBandSettings() {
+            // Get multiplier value from UI control
+            const multiplierSelect = document.getElementById('bandMultiplier');
+            bandMultiplier = parseFloat(multiplierSelect.value) || 1.5;
+            
+            // Re-render the chart with new settings
+            if (tickerData && selectedTicker) {
+                renderPriceChart();
+            }
         }
     </script>
 </body>

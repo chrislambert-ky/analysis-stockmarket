@@ -20,7 +20,7 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 # List of tickers to fetch
 etf_list = ["AAPL","ALLY","AMZN","ARKK","FBCG","FMAG","GGLL",
             "GOOGL","HSBC","MGK","MSFT","MSFU","NVDA","OEF",
-            "QQQ","QQQJ","QQUP","QQXL","QTOP","SPLG","TOPT",
+            "QQQ","QQQJ","QQUP","QQXL","QTOP","SPLG","TOPT","TSLA",
             "TQQQ","UPRO","VGT","VTI","XLG"]
 
 
