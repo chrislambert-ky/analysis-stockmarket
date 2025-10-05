@@ -212,17 +212,6 @@
         tickerGrid.innerHTML = '';
         console.log('[populateTickerBoxes] Cleared grid innerHTML');
 
-        // Add ALL box first
-        const allBox = document.createElement('div');
-        allBox.className = 'ticker-box clickable-ticker';
-        allBox.dataset.ticker = 'ALL';
-        allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
-        allBox.addEventListener('click', function() {
-            selectTicker('ALL');
-        });
-        tickerGrid.appendChild(allBox);
-        console.log('[populateTickerBoxes] Added ALL box');
-
         // Create individual ticker boxes (symbols only) - use V2Shared to get tickers
         let tickers = [];
         try {
@@ -324,7 +313,7 @@
         document.querySelector(`.ticker-box[data-ticker="${ticker}"]`).classList.add('selected');
         
         // Update selected ticker display
-        const displayName = ticker === 'ALL' ? 'ALL Tickers' : ticker;
+    const displayName = ticker || 'None';
         document.getElementById('selected-ticker-display').textContent = `Selected: ${displayName}`;
         
         // Clear any existing chart
@@ -344,201 +333,21 @@
 
     // Trigger analysis for the new selection but do NOT change the current period.
         // If ALL is selected, run the multi-ticker period analysis; otherwise render the single-ticker chart.
-        if (ticker === 'ALL') {
-            renderPeriodAnalysis(currentSelectedPeriod);
-        } else {
-            renderChart(currentSelectedTicker, currentSelectedPeriod);
+        if (!ticker) {
+            return;
         }
+
+        renderChart(currentSelectedTicker, currentSelectedPeriod);
     }
     
     // Function to handle period + ticker analysis
     function analyzeSelection() {
-        if (currentSelectedTicker === 'ALL') {
-            renderPeriodAnalysis(currentSelectedPeriod);
-        } else {
-            renderChart(currentSelectedTicker, currentSelectedPeriod);
+        if (!currentSelectedTicker) {
+            console.warn('[analyzeSelection] No ticker selected; analysis skipped.');
+            return;
         }
-    }
-    
-    // Quick period analysis function
-    async function renderPeriodAnalysis(period) {
-        // Clear active states
-        document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(period.toLowerCase() + '-btn').classList.add('active');
-        
-        showLoading();
-        
-        try {
-            updateProgress(10, 'Loading ticker metadata...');
-            
-            // Load data smartly - either single ticker or all tickers
-            let rawData;
-            if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
-                // Single ticker mode - use smart loading with IDB
-                rawData = await fetchTickerDataSmart(currentSelectedTicker, period);
-            } else {
-                // ALL mode - load all tickers with IDB caching
-                rawData = await fetchAllTickersDataSmart(period);
-            }
-            
-            updateProgress(60, 'Processing ticker data...');
-            // Group data by ticker
-            const tickerGroups = {};
-            rawData.forEach(row => {
-                const ticker = row.Symbol;
-                if (!tickerGroups[ticker]) tickerGroups[ticker] = [];
-                tickerGroups[ticker].push(row);
-            });
-            Object.keys(tickerGroups).forEach(sym => {
-                tickerGroups[sym].sort((a, b) => {
-                    const da = a.Date_add || '';
-                    const db = b.Date_add || '';
-                    return da.localeCompare(db);
-                });
-            });
 
-            updateProgress(70, 'Calculating DCA strategies...');
-            // Calculate DCA results for all tickers with specified period
-            const processedData = {};
-            const allTickers = Object.keys(tickerGroups);
-            
-            let processed = 0;
-            const yearsBack = period === 'YTD' ? 'YTD' : parseInt(period.replace('Y', ''));
-            
-            for (const ticker of allTickers) {
-                const rows = tickerGroups[ticker] || [];
-                processedData[ticker] = await getDcaResultsForTicker(ticker, period, rows, yearsBack);
-                processed++;
-                const progress = 70 + (processed / Math.max(allTickers.length, 1)) * 15;
-                updateProgress(progress, `Processing ${ticker}... (${processed}/${allTickers.length})`);
-            }
-
-            updateProgress(90, 'Rendering chart...');
-            const validTickers = Object.keys(processedData).filter(ticker => processedData[ticker].length > 0);
-            const allDates = getAllDates(processedData);
-            const series = prepareSeries(processedData, validTickers, allDates, false);
-            
-            // Build lookup for percent gain
-            const gainLookup = {};
-            Object.keys(processedData).forEach(ticker => {
-                processedData[ticker].forEach(result => {
-                    gainLookup[ticker + '_' + result.date] = {
-                        value: result.cumulativeValue,
-                        invested: result.cumulativeInvested
-                    };
-                });
-            });
-
-            const chartDom = document.getElementById('main');
-            if (echarts.getInstanceByDom(chartDom)) {
-                echarts.getInstanceByDom(chartDom).dispose();
-            }
-            const chart = echarts.init(chartDom);
-            const option = {
-                tooltip: {
-                    trigger: 'axis',
-                    axisPointer: { type: 'cross' },
-                    formatter: function(params) {
-                        let html = params[0].axisValue + '<br/>';
-                        params.forEach(p => {
-                            let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
-                            if (typeof val === 'number' && (p.seriesName.includes('Value') || p.seriesName.includes('Invested'))) {
-                                val = formatCurrency(val);
-                            }
-                            html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
-                        });
-                        validTickers.forEach(ticker => {
-                            const key = ticker + '_' + params[0].axisValue;
-                            if (gainLookup[key]) {
-                                html += '<b>' + ticker + ' % Gain: ' + percentGain(gainLookup[key].value, gainLookup[key].invested) + '</b><br/>';
-                            }
-                        });
-                        return html;
-                    }
-                },
-                legend: { 
-                    data: series.map(s => s.name),
-                    selected: series.reduce((acc, s) => {
-                        acc[s.name] = true;
-                        return acc;
-                    }, {}),
-                    type: 'scroll'
-                },
-                xAxis: { type: 'category', data: allDates, name: 'Date' },
-                yAxis: { type: 'value', name: 'USD Value' },
-                series: series
-            };
-            chart.setOption(option);
-            
-            updateProgress(100, 'Complete!');
-            
-            // Calculate overall percent return for each ticker (last value)
-            let summaryArr = validTickers.map(ticker => {
-                const tickerResults = processedData[ticker] || [];
-                if (tickerResults.length > 0) {
-                    const last = tickerResults[tickerResults.length - 1];
-                    const pct = percentGain(last.cumulativeValue, last.cumulativeInvested);
-                    return { ticker, pct: parseFloat(pct), pctStr: pct };
-                }
-                return null;
-            }).filter(Boolean);
-            
-            summaryArr.sort((a, b) => b.pct - a.pct);
-            
-            // Populate ticker boxes instead of summary text (await completion)
-            await populateTickerBoxes(processedData, period);
-
-            // If ALL is selected, compute aggregated metrics and display them; otherwise hide individual metrics
-            if (currentSelectedTicker === 'ALL' || !currentSelectedTicker) {
-                try {
-                    let totalWeeks = 0, totalInvested = 0, totalEndValue = 0, totalShares = 0;
-                    // Count unique dates across all tickers (distinct weeks) for the ALL aggregation
-                    const weekSet = new Set();
-                    Object.keys(processedData || {}).forEach(sym => {
-                        const arr = processedData[sym] || [];
-                        if (arr.length === 0) return;
-                        const last = arr[arr.length - 1];
-                        // collect distinct dates (result.date) across all ticker arrays
-                        arr.forEach(r => { if (r && r.date) weekSet.add(r.date); });
-                        totalInvested += Number(last.cumulativeInvested || 0);
-                        totalEndValue += Number(last.cumulativeValue || 0);
-                        totalShares += Number(last.cumulativeShares || 0);
-                    });
-                    totalWeeks = weekSet.size;
-                    const gainAmount = totalEndValue - totalInvested;
-                    const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
-                    displayDetailedMetrics([{
-                        ticker: 'ALL',
-                        weeksMondays: totalWeeks,
-                        totalInvested: totalInvested,
-                        totalEndValue: totalEndValue,
-                        totalShares: totalShares,
-                        gainAmount: gainAmount,
-                        gainPercent: gainPercent
-                    }]);
-                } catch (e) {
-                    console.error('Error aggregating ALL metrics after period render:', e);
-                    document.getElementById('detailed-metrics').style.display = 'none';
-                }
-            } else {
-                document.getElementById('detailed-metrics').style.display = 'none';
-            }
-
-            // Enable download analysis
-            document.getElementById('download-analysis-btn').disabled = false;
-            
-            // Store processed data for download functionality
-            window.currentProcessedData = processedData;
-            window.currentPeriod = period;
-            
-        } catch (error) {
-            console.error('Error during calculation:', error);
-            // Show error in loading container but keep ticker grid visible
-            document.getElementById('loading-container').style.display = 'block';
-            document.getElementById('progress-text').innerHTML = '<span style="color: red;">Error calculating DCA analysis. Please try again.</span>';
-        } finally {
-            hideLoading();
-        }
+        renderChart(currentSelectedTicker, currentSelectedPeriod);
     }
     
     // Helper function to format currency with commas
@@ -765,30 +574,6 @@
         return loaderPromise;
     }
     
-    // Load all tickers for ALL mode - loads each ticker independently with caching
-    async function fetchAllTickersDataSmart(period) {
-        console.log(`[DCA] Fetching ALL tickers for period ${period} in parallel`);
-        const tickers = await getTickerSymbols();
-        
-        updateProgress(20, `Loading all ${tickers.length} tickers in parallel...`);
-        
-        // Load all tickers in parallel for maximum speed
-        const tickerDataPromises = tickers.map(ticker => 
-            fetchTickerDataSmart(ticker, period)
-                .catch(err => {
-                    console.warn(`[DCA] Error loading ${ticker}:`, err);
-                    return []; // Return empty array on error, continue with other tickers
-                })
-        );
-        
-        const allTickerData = await Promise.all(tickerDataPromises);
-        const allData = allTickerData.flat();
-        
-        updateProgress(60, `Loaded ${allData.length} rows from ${tickers.length} tickers`);
-        console.log(`[DCA] Loaded ${allData.length} total rows for all tickers`);
-        return allData;
-    }
-
     // Calculate weekly DCA strategy for a specific ticker with custom date range
     function calculateWeeklyDCA(tickerData, yearsBack = 10, startDate = null, endDate = null) {
         // Use provided dates or calculate based on yearsBack
@@ -1059,62 +844,15 @@
             // For custom analysis, don't show ticker grid - detailed metrics will be shown instead
             
             // Calculate and display detailed metrics
-            if (selectedTicker && selectedTicker !== 'ALL' && selectedTicker !== '') {
-                // Single ticker selected - show detailed metrics
+            const downloadBtn = document.getElementById('download-analysis-btn');
+            if (selectedTicker) {
                 const detailedMetrics = calculateDetailedMetrics(processedData, [selectedTicker]);
                 displayDetailedMetrics(detailedMetrics);
-                
-                // Enable download button for individual ticker
-                const downloadBtn = document.getElementById('download-analysis-btn');
-                downloadBtn.disabled = false;
-                downloadBtn.style.opacity = '1';
-            } else if (selectedTicker === 'ALL') {
-                // All tickers selected - aggregate metrics across all tickers and display them
-                try {
-                    let totalWeeks = 0;
-                    let totalInvested = 0;
-                    let totalEndValue = 0;
-                    let totalShares = 0;
-                    const weekSet2 = new Set();
-                    Object.keys(processedData || {}).forEach(sym => {
-                        const arr = processedData[sym] || [];
-                        if (arr.length === 0) return;
-                        const last = arr[arr.length - 1];
-                        arr.forEach(r => { if (r && r.date) weekSet2.add(r.date); });
-                        totalInvested += Number(last.cumulativeInvested || 0);
-                        totalEndValue += Number(last.cumulativeValue || 0);
-                        totalShares += Number(last.cumulativeShares || 0);
-                    });
-                    totalWeeks = weekSet2.size;
 
-                    const gainAmount = totalEndValue - totalInvested;
-                    const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
-
-                    const metric = {
-                        ticker: 'ALL',
-                        weeksMondays: totalWeeks,
-                        totalInvested: totalInvested,
-                        totalEndValue: totalEndValue,
-                        totalShares: totalShares,
-                        gainAmount: gainAmount,
-                        gainPercent: gainPercent
-                    };
-                    displayDetailedMetrics([metric]);
-                } catch (e) {
-                    console.error('Error aggregating ALL metrics:', e);
-                    document.getElementById('detailed-metrics').style.display = 'none';
-                }
-
-                // Enable download button for ALL tickers analysis
-                const downloadBtn = document.getElementById('download-analysis-btn');
                 downloadBtn.disabled = false;
                 downloadBtn.style.opacity = '1';
             } else {
-                // No ticker selected - hide metrics and disable download
                 document.getElementById('detailed-metrics').style.display = 'none';
-                
-                // Disable download button
-                const downloadBtn = document.getElementById('download-analysis-btn');
                 downloadBtn.disabled = true;
                 downloadBtn.style.opacity = '0.5';
             }
@@ -1138,57 +876,56 @@
     document.getElementById('ytd-btn').addEventListener('click', async function() {
         currentSelectedPeriod = 'YTD';
         updatePeriodButtonStates('ytd-btn');
-        try { showLoading(); } catch (e) { }
-        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
-            // Fast path: render only the selected ticker with new period
-            await renderChart(currentSelectedTicker, currentSelectedPeriod);
-        } else {
-            await renderPeriodAnalysis(currentSelectedPeriod);
+        if (!currentSelectedTicker) {
+            console.warn('[period:YTD] No ticker selected; skipping analysis.');
+            return;
         }
+        try { showLoading(); } catch (e) { }
+        await renderChart(currentSelectedTicker, currentSelectedPeriod);
     });
 
     document.getElementById('5y-btn').addEventListener('click', async function() {
         currentSelectedPeriod = '5Y';
         updatePeriodButtonStates('5y-btn');
-        try { showLoading(); } catch (e) { }
-        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
-            await renderChart(currentSelectedTicker, currentSelectedPeriod);
-        } else {
-            await renderPeriodAnalysis(currentSelectedPeriod);
+        if (!currentSelectedTicker) {
+            console.warn('[period:5Y] No ticker selected; skipping analysis.');
+            return;
         }
+        try { showLoading(); } catch (e) { }
+        await renderChart(currentSelectedTicker, currentSelectedPeriod);
     });
 
     document.getElementById('10y-btn').addEventListener('click', async function() {
         currentSelectedPeriod = '10Y';
         updatePeriodButtonStates('10y-btn');
-        try { showLoading(); } catch (e) { }
-        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
-            await renderChart(currentSelectedTicker, currentSelectedPeriod);
-        } else {
-            await renderPeriodAnalysis(currentSelectedPeriod);
+        if (!currentSelectedTicker) {
+            console.warn('[period:10Y] No ticker selected; skipping analysis.');
+            return;
         }
+        try { showLoading(); } catch (e) { }
+        await renderChart(currentSelectedTicker, currentSelectedPeriod);
     });
 
     document.getElementById('15y-btn').addEventListener('click', async function() {
         currentSelectedPeriod = '15Y';
         updatePeriodButtonStates('15y-btn');
-        try { showLoading(); } catch (e) { }
-        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
-            await renderChart(currentSelectedTicker, currentSelectedPeriod);
-        } else {
-            await renderPeriodAnalysis(currentSelectedPeriod);
+        if (!currentSelectedTicker) {
+            console.warn('[period:15Y] No ticker selected; skipping analysis.');
+            return;
         }
+        try { showLoading(); } catch (e) { }
+        await renderChart(currentSelectedTicker, currentSelectedPeriod);
     });
 
     document.getElementById('20y-btn').addEventListener('click', async function() {
         currentSelectedPeriod = '20Y';
         updatePeriodButtonStates('20y-btn');
-        try { showLoading(); } catch (e) { }
-        if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
-            await renderChart(currentSelectedTicker, currentSelectedPeriod);
-        } else {
-            await renderPeriodAnalysis(currentSelectedPeriod);
+        if (!currentSelectedTicker) {
+            console.warn('[period:20Y] No ticker selected; skipping analysis.');
+            return;
         }
+        try { showLoading(); } catch (e) { }
+        await renderChart(currentSelectedTicker, currentSelectedPeriod);
     });
     
     // Function to update period button visual states
@@ -1199,14 +936,8 @@
     
     // Download analysis CSV button
     document.getElementById('download-analysis-btn').addEventListener('click', function() {
-        if (window.currentProcessedData) {
-            if (currentSelectedTicker && currentSelectedTicker !== 'ALL') {
-                // Download individual ticker trades
-                downloadCSV(currentSelectedTicker, window.currentProcessedData);
-            } else if (currentSelectedTicker === 'ALL' && window.currentPeriod) {
-                // Download analysis for all tickers
-                downloadAnalysisCSV(window.currentProcessedData, window.currentPeriod);
-            }
+        if (window.currentProcessedData && currentSelectedTicker) {
+            downloadCSV(currentSelectedTicker, window.currentProcessedData);
         }
     });
     

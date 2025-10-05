@@ -697,23 +697,6 @@
         // Build DOM using a fragment to avoid repeated reflows
         const frag = document.createDocumentFragment();
 
-        // Add an ALL box
-        const allBox = document.createElement('div');
-        allBox.className = 'ticker-box clickable-ticker';
-        allBox.dataset.ticker = 'ALL';
-        allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
-        allBox.addEventListener('click', () => {
-            document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
-            allBox.classList.add('selected');
-            selectedTickerGlobal = 'ALL';
-            document.getElementById('selected-ticker-display').textContent = 'Selected: ALL';
-            // Default behavior: auto-run YTD when ALL is selected
-            setPeriod('YTD');
-            try { showLoading(); } catch(e) {}
-            renderChart('ALL');
-        });
-        frag.appendChild(allBox);
-
         // Append tickers incrementally and update progress
         let processed = 0;
         for (const ticker of tickers) {
@@ -766,135 +749,7 @@
         } catch (e) { /* ignore */ }
     }
 
-    // Build ticker grid UI showing ticker and number of orders executed within the active timeframe
-    // OLD buildTickerGrid function - NO LONGER USED (replaced by buildTickerGridV2)
-    // This function loaded all_buy_on_dip.csv and computed counts.
-    // V2 uses per-ticker files with IndexedDB caching instead.
-    /*
-    async function buildTickerGrid(historicalData) {
-        const grid = document.getElementById('ticker-metrics-grid');
-        grid.innerHTML = '';
-        // Determine reference end date from history so period ranges align with chart
-        let referenceEnd = new Date().toISOString().slice(0,10);
-        // Merge tickers from the precomputed BOD CSV and the full history so newly added
-        // tickers (present in history_tickers.csv but not yet in all_buy_on_dip.csv) appear.
-        let historyAll = [];
-        try {
-            updateProgress(30, 'Loading full price history...');
-            historyAll = await fetchHistoryData();
-            const historyDates = Array.from(new Set(historyAll.map(r => r.Date_add))).sort();
-            referenceEnd = historyDates.length ? historyDates[historyDates.length - 1] : referenceEnd;
-        } catch (e) { }
-
-        // Prefer the small tickers index if available (fast). Fallback to merging precomputed and history.
-        let tickers = [];
-        try {
-            const index = await fetchTickerIndex();
-            if (index && index.length) {
-                // fetchTickerIndex returns an array of SYMBOL strings
-                tickers = index.map(s => String(s).trim()).filter(Boolean).sort((a,b)=>a.localeCompare(b));
-            }
-        } catch (e) { }
-
-        if (!tickers || tickers.length === 0) {
-            const tickersSet = new Set();
-            historicalData.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
-            historyAll.forEach(r => { if (r && r.Symbol) tickersSet.add(String(r.Symbol).trim()); });
-            tickers = Array.from(tickersSet).filter(Boolean).sort((a,b) => a.localeCompare(b));
-        }
-
-        const range = getPeriodRange(activePeriod || 'YTD', referenceEnd);
-
-    // Precompute counts per ticker within the selected timeframe in a single pass
-        const countsByTicker = {};
-        let totalCount = 0;
-        for (let i = 0; i < historicalData.length; i++) {
-            const r = historicalData[i];
-            if (!r || !r.Symbol) continue;
-            const sym = String(r.Symbol).trim();
-            if (range.startDate && range.endDate) {
-                if (!(r.Date_add >= range.startDate && r.Date_add <= range.endDate)) continue;
-            }
-            countsByTicker[sym] = (countsByTicker[sym] || 0) + 1;
-            totalCount++;
-        }
-
-    updateProgress(50, 'Building ticker grid...');
-
-        // Build DOM using a fragment to avoid repeated reflows
-        const frag = document.createDocumentFragment();
-
-        // Add an ALL box that shows total count within the timeframe
-        const allBox = document.createElement('div');
-        allBox.className = 'ticker-box clickable-ticker';
-        allBox.dataset.ticker = 'ALL';
-        allBox.innerHTML = `<div class="ticker-symbol">ALL</div>`;
-        allBox.addEventListener('click', () => {
-            document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
-            allBox.classList.add('selected');
-            selectedTickerGlobal = 'ALL';
-            document.getElementById('selected-ticker-display').textContent = 'Selected: ALL';
-            // Default behavior: auto-run YTD when ALL is selected
-            setPeriod('YTD');
-            try { showLoading(); } catch(e) {}
-            renderChart('ALL');
-        });
-        frag.appendChild(allBox);
-
-        // Append tickers incrementally and update progress to match DCA UX
-        let processed = 0;
-        for (const ticker of tickers) {
-            const box = document.createElement('div');
-            box.className = 'ticker-box clickable-ticker';
-            box.dataset.ticker = ticker;
-            // Show only the ticker symbol (no counts) to keep grid lightweight
-            box.innerHTML = `<div class="ticker-symbol">${ticker}</div>`;
-            box.addEventListener('click', () => {
-                // Toggle selection
-                document.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
-                box.classList.add('selected');
-                selectedTickerGlobal = ticker;
-                document.getElementById('selected-ticker-display').textContent = 'Selected: ' + ticker;
-                // Default behavior: auto-run YTD when a ticker is selected so user sees initial results immediately
-                setPeriod('YTD');
-                console.debug('Ticker clicked, running renderChart for', ticker);
-                try { showLoading(); } catch(e) {}
-                renderChart(selectedTickerGlobal).then(()=>{
-                    console.debug('renderChart completed for', ticker);
-                }).catch(e=>console.error('renderChart error', e));
-            });
-            frag.appendChild(box);
-
-            processed++;
-            // Report progress between 50% and 90% while building the grid
-            try {
-                const pct = 50 + Math.round((processed / (tickers.length || 1)) * 40);
-                updateProgress(pct, `Processing ${ticker}... (${processed}/${tickers.length})`);
-            } catch (e) { }
-
-            // Yield to the UI so progress bar updates are visible
-            await new Promise(resolve => setTimeout(resolve, 5));
-        }
-
-    grid.appendChild(frag);
-
-    try { updateProgress(80, 'Ticker grid built'); } catch(e) {}
-
-        // Center grid when there are fewer than 7 boxes
-        try {
-            const visibleBoxes = grid.children.length;
-            if (visibleBoxes > 0 && visibleBoxes < 7) {
-                grid.style.gridTemplateColumns = `repeat(${visibleBoxes}, 1fr)`;
-                grid.style.justifyContent = 'center';
-            } else {
-                grid.style.gridTemplateColumns = '';
-                grid.style.justifyContent = '';
-            }
-        } catch (e) { }
-    }
-    */
-
-
+    
     // Period buttons handling
     const periodButtons = ['ytd-btn','5y-btn','10y-btn','15y-btn','20y-btn'];
     function clearPeriodActive() { periodButtons.forEach(id=>document.getElementById(id).classList.remove('active')); }
@@ -917,15 +772,16 @@
 
     // Download CSV - will download currently displayed all_buy_on_dip filtered by selection
     async function downloadCSVForSelection() {
-    const selected = selectedTickerGlobal || 'ALL';
+    const selected = selectedTickerGlobal;
+    if (!selected) return;
     // Prefer the last-rendered filtered data (which may have been computed from history for single-ticker views).
     let rowsBase = null;
     if (lastRenderedBodData && lastRenderedBodData.length > 0) {
-        // Use lastRenderedBodData when it matches the selected ticker (or ALL)
-        rowsBase = lastRenderedBodData.filter(r => selected === 'ALL' || r.Symbol === selected);
+        // Use lastRenderedBodData when it matches the selected ticker
+        rowsBase = lastRenderedBodData.filter(r => r.Symbol === selected);
     }
     if (!rowsBase || rowsBase.length === 0) {
-        rowsBase = (cachedBodData || []).filter(r => selected === 'ALL' || r.Symbol === selected);
+        rowsBase = (cachedBodData || []).filter(r => r.Symbol === selected);
     }
     let rows = rowsBase;
     if (activePeriod && rowsBase.length) {
@@ -978,7 +834,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `all_buy_on_dip_${selected}.csv`;
+    a.download = `all_buy_on_dip_${selected}.csv`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -1061,7 +917,7 @@
         return series;
     }
     async function renderChart(selectedTicker) {
-            if (!selectedTicker || selectedTicker === '') {
+        if (!selectedTicker || selectedTicker === '') {
             // No ticker selected - clear chart and show instruction
             const chartDom = document.getElementById('main');
             if (echarts.getInstanceByDom(chartDom)) {
@@ -1076,14 +932,10 @@
         try {
             updateProgress(20, 'Loading BOD data with IndexedDB caching...');
             
-            // Determine which tickers to load
-            const allTickers = await getTickerSymbols();
-            const tickers = (!selectedTicker || selectedTicker === 'ALL') ? allTickers : [selectedTicker];
-            
-            updateProgress(40, 'Calculating BOD events for selected tickers...');
-            
+            updateProgress(40, 'Calculating BOD events for selected ticker...');
+
             // Use the new V2 calculation that reads per-ticker CSV files
-            const filteredBodData = await calculateBODFromTickerData(tickers, activePeriod || 'YTD');
+            const filteredBodData = await calculateBODFromTickerData([selectedTicker], activePeriod || 'YTD');
             
             updateProgress(60, 'Building cumulative metrics...');
             
@@ -1095,7 +947,7 @@
 
             updateProgress(90, 'Preparing chart...');
             const sortedDates = Array.from(filteredDates.size ? filteredDates : allDates).sort();
-            const series = prepareSeries(filteredBodData, tickers, sortedDates);
+            const series = prepareSeries(filteredBodData, [selectedTicker], sortedDates);
             
             // Build lookup for percent gain using recomputed cumulatives within the filtered (period) data
             // Optimization: pre-group filteredBodData by ticker to avoid repeated .filter() scans
@@ -1149,7 +1001,7 @@
                             html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
                         });
                                     // show total shares, invested, and value per ticker for this date
-                                    tickers.forEach(ticker => {
+                                    [selectedTicker].forEach(ticker => {
                                         const key = ticker + '_' + date;
                                         if (gainLookup[key]) {
                                             const info = gainLookup[key];
@@ -1178,7 +1030,7 @@
         
             // Calculate overall percent return for each ticker (last value)
                 // Use grouped rows (built earlier) to compute summary efficiently
-                let summaryArr = tickers.map(ticker => {
+                let summaryArr = [selectedTicker].map(ticker => {
                     const tickerRows = (groups[ticker] || []).slice().sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
                     if (tickerRows.length > 0) {
                         const cumShares = tickerRows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0), 0);
@@ -1191,15 +1043,12 @@
                     return null;
                 }).filter(Boolean);
         
-        if (tickers.length > 1) {
-            summaryArr.sort((a, b) => b.pct - a.pct);
-        }
-    let summary = summaryArr.map(s => `${s.ticker}: ${s.pctStr}`).join('  |  ');
+        let summary = summaryArr.map(s => `${s.ticker}: ${s.pctStr}`).join('  |  ');
     // Summary string generated; not displayed in UI (no bod-summary element)
     console.log('BOD summary:', summary);
 
     // Update selected ticker display and enable download
-    document.getElementById('selected-ticker-display').textContent = 'Selected: ' + (selectedTicker === 'ALL' ? 'ALL' : selectedTicker);
+    document.getElementById('selected-ticker-display').textContent = 'Selected: ' + selectedTicker;
     document.getElementById('download-analysis-btn').disabled = false;
 
     // Compute and display detailed metrics based on filteredBodData and the selected period
@@ -1207,26 +1056,20 @@
         document.getElementById('detailed-metrics').style.display = 'none';
     } else {
         // (groups already built earlier when creating gainLookup)
-        if (selectedTicker === 'ALL') {
-            // Aggregate across all tickers for the selected period
-            let totalShares = 0;
-            let totalInvested = 0;
-            let totalValue = 0;
-            Object.keys(groups).forEach(sym => {
-                const rows = (groups[sym] || []).slice().sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
-                const shares = rows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0), 0);
-                const invested = rows.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0) || 0), 0);
-                const lastClose = rows.length ? Number(rows[rows.length - 1].Close) : 0;
-                const value = shares * lastClose;
-                totalShares += shares;
-                totalInvested += invested;
-                totalValue += value;
-            });
-
+        // Single ticker metrics
+        const rows = (groups[selectedTicker] || []).sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
+        if (rows.length === 0) {
+            document.getElementById('detailed-metrics').style.display = 'none';
+        } else {
+            const totalShares = rows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0), 0);
+            const totalInvested = rows.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0) || 0), 0);
+            const lastClose = rows.length ? Number(rows[rows.length - 1].Close) : 0;
+            const totalValue = totalShares * lastClose;
             const gainAmount = totalValue - totalInvested;
             const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
+
             const metric = {
-                ticker: 'ALL',
+                ticker: selectedTicker,
                 totalDipsPurchases: totalShares,
                 totalShares: totalShares,
                 totalInvested: totalInvested,
@@ -1235,30 +1078,6 @@
                 gainPercent: gainPercent
             };
             displayDetailedMetrics([metric]);
-        } else {
-            // Single ticker metrics
-            const rows = (groups[selectedTicker] || []).sort((a,b)=> new Date(a.Date_add) - new Date(b.Date_add));
-            if (rows.length === 0) {
-                document.getElementById('detailed-metrics').style.display = 'none';
-            } else {
-                const totalShares = rows.reduce((s, r) => s + (Number(r['Shares Purchased'] ?? r['Shares_Purchased'] ?? r.SharesPurchased ?? 0) || 0), 0);
-                const totalInvested = rows.reduce((s, r) => s + (Number(r['Dollars Invested'] ?? r['Dollars_Invested'] ?? r.DollarsInvested ?? r['Buy_Price'] ?? 0) || 0), 0);
-                const lastClose = rows.length ? Number(rows[rows.length - 1].Close) : 0;
-                const totalValue = totalShares * lastClose;
-                const gainAmount = totalValue - totalInvested;
-                const gainPercent = totalInvested > 0 ? ((gainAmount / totalInvested) * 100).toFixed(2) : '0.00';
-
-                const metric = {
-                    ticker: selectedTicker,
-                    totalDipsPurchases: totalShares,
-                    totalShares: totalShares,
-                    totalInvested: totalInvested,
-                    totalValue: totalValue,
-                    gainAmount: gainAmount,
-                    gainPercent: gainPercent
-                };
-                displayDetailedMetrics([metric]);
-            }
         }
     }
         
