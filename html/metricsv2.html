@@ -327,9 +327,10 @@
         let bandMultiplier = 1.5;
 
         // --- Minimal IndexedDB helper for caching parsed rows and metadata ---
-        const IDB_NAME = 'stockmarket-cache';
+        // Use same database as v2-shared.js for cross-page cache sharing
+        const IDB_NAME = 'stockmarket-v2-cache';
         const IDB_VERSION = 1;
-        const STORE_FILES = 'files';
+        const STORE_FILES = 'ticker-data';
 
         function openDb() {
             return new Promise((resolve, reject) => {
@@ -338,8 +339,10 @@
                     const db = ev.target.result;
                     if (!db.objectStoreNames.contains(STORE_FILES)) {
                         const s = db.createObjectStore(STORE_FILES, { keyPath: 'id' });
-                        s.createIndex('last_updated', 'last_updated', { unique: false });
-                        s.createIndex('accessed', 'accessed', { unique: false });
+                        // Use same indexes as v2-shared.js for compatibility
+                        s.createIndex('ticker', 'ticker', { unique: false });
+                        s.createIndex('year', 'year', { unique: false });
+                        console.log('[IDB] Created object store:', STORE_FILES);
                     }
                 };
                 req.onsuccess = (ev) => resolve(ev.target.result);
@@ -390,7 +393,9 @@
             }
         }
 
-        // Find cached entry for a given file path (any last_updated). Returns the most recent cached entry for that path if found.
+        // [DEPRECATED] Find cached entry for a given file path - no longer used with ticker::year cache keys
+        // Kept for reference only - function is not called anywhere in the code
+        /*
         async function idbGetByPath(fpPath) {
             try {
                 const db = await openDb();
@@ -423,6 +428,7 @@
                 return null;
             }
         }
+        */
 
         // visit record key helper
         function visitKey(ticker) { return `visit::${ticker}`; }
@@ -652,38 +658,90 @@
                         continue;
                     }
 
-                    // Try to use cached parsed rows when file has a last_updated metadata value
+                    // ALWAYS try to use cached parsed rows from IndexedDB first, but validate freshness
                     let rowsForYear = null;
+                    // Use TICKER::YEAR format to match v2-shared.js for cross-page cache sharing
+                    const cacheKey = `${ticker}::${yr}`;
+                    let cacheIsValid = false;
+                    
                     try {
-                        if (fileLastUpdated) {
-                            const cacheId = `${fpPath}::${fileLastUpdated}`;
-                            const cached = await idbGet(cacheId);
-                            if (cached && Array.isArray(cached.parsed) && cached.parsed.length > 0) {
-                                rowsForYear = cached.parsed.map(r => {
-                                    // ensure Date objects
-                                    if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date);
-                                    return r;
-                                });
-                                // update incremental UI from cache
-                                try {
-                                    const mins = rowsForYear.map(r => r.Date).filter(d => d instanceof Date && !isNaN(d));
-                                    if (mins.length > 0) {
-                                        const fileMin = new Date(Math.min(...mins.map(d => d.getTime())));
-                                        const fileMax = new Date(Math.max(...mins.map(d => d.getTime())));
-                                        if (!incrementalMin || fileMin < incrementalMin) incrementalMin = fileMin;
-                                        if (!incrementalMax || fileMax > incrementalMax) incrementalMax = fileMax;
-                                        updateDateRangeDisplayBounds(incrementalMin, incrementalMax);
+                        // Try to get cached data using ticker::year key
+                        const cached = await idbGet(cacheKey);
+                        if (cached) {
+                            // Handle both 'rows' (v2-shared.js format) and 'parsed' (legacy format) for backward compatibility
+                            const cachedRows = cached.rows || cached.parsed || [];
+                            if (cachedRows.length > 0) {
+                                // Validate cache against tickers_index.json metadata
+                                if (fileEntry && typeof fileEntry === 'object') {
+                                    const indexMinDate = fileEntry.min_date;
+                                    const indexMaxDate = fileEntry.max_date;
+                                    const indexLastUpdated = fileEntry.last_updated;
+                                    
+                                    // Get date range from cached data
+                                    const cachedDates = cachedRows.map(r => {
+                                        const d = (r.Date instanceof Date) ? r.Date : new Date(r.Date);
+                                        return isNaN(d) ? null : d;
+                                    }).filter(d => d !== null);
+                                    
+                                    if (cachedDates.length > 0) {
+                                        const cachedMinDate = new Date(Math.min(...cachedDates.map(d => d.getTime())));
+                                        const cachedMaxDate = new Date(Math.max(...cachedDates.map(d => d.getTime())));
+                                        const cachedMinStr = cachedMinDate.toISOString().split('T')[0];
+                                        const cachedMaxStr = cachedMaxDate.toISOString().split('T')[0];
+                                        
+                                        // Compare date ranges and last_updated
+                                        if (cachedMinStr === indexMinDate && 
+                                            cachedMaxStr === indexMaxDate && 
+                                            cached.last_updated === indexLastUpdated) {
+                                            cacheIsValid = true;
+                                            rowsForYear = cachedRows.map(r => {
+                                                if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date);
+                                                return r;
+                                            });
+                                            console.log(`✓ Using valid cached data for ${cacheKey} (dates verified, ${rowsForYear.length} rows)`);
+                                        } else {
+                                            console.log(`✗ Cache invalid for ${cacheKey}: date range or last_updated mismatch`);
+                                            console.log(`  Index: ${indexMinDate} to ${indexMaxDate}, updated: ${indexLastUpdated}`);
+                                            console.log(`  Cache: ${cachedMinStr} to ${cachedMaxStr}, updated: ${cached.last_updated}`);
+                                            // Delete stale cache
+                                            await idbDelete(cacheKey);
+                                        }
                                     }
-                                    incrementallyShowRecordCount(rowsForYear.length);
-                                } catch (e) { /* ignore UI update errors */ }
+                                } else {
+                                    // No metadata to validate against, trust the cache
+                                    cacheIsValid = true;
+                                    rowsForYear = cachedRows.map(r => {
+                                        if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date);
+                                        return r;
+                                    });
+                                    console.log(`✓ Using cached data for ${cacheKey} (no metadata validation, ${rowsForYear.length} rows)`);
+                                }
                             }
+                        }
+                        
+                        // Note: No longer need idbGetByPath fallback since we use standard ticker::year keys
+                        
+                        // Update incremental UI from cache if we found valid data
+                        if (cacheIsValid && rowsForYear) {
+                            try {
+                                const mins = rowsForYear.map(r => r.Date).filter(d => d instanceof Date && !isNaN(d));
+                                if (mins.length > 0) {
+                                    const fileMin = new Date(Math.min(...mins.map(d => d.getTime())));
+                                    const fileMax = new Date(Math.max(...mins.map(d => d.getTime())));
+                                    if (!incrementalMin || fileMin < incrementalMin) incrementalMin = fileMin;
+                                    if (!incrementalMax || fileMax > incrementalMax) incrementalMax = fileMax;
+                                    updateDateRangeDisplayBounds(incrementalMin, incrementalMax);
+                                }
+                                incrementallyShowRecordCount(rowsForYear.length);
+                            } catch (e) { /* ignore UI update errors */ }
                         }
                     } catch (e) {
                         console.warn('IDB read error', e);
                     }
 
-                    // If we don't have cached rows, fetch and parse the CSV for this year
-                    if (!rowsForYear) {
+                    // If we don't have valid cached rows, fetch and parse the CSV for this year
+                    if (!cacheIsValid || !rowsForYear) {
+                        console.log(`⟳ Cache miss or invalid for ${cacheKey} - fetching from CSV`);
                         try {
                             const resp = await fetch('../' + fpPath);
                             if (!resp.ok) {
@@ -716,11 +774,12 @@
                             try {
                                 const isCurrentYear = (yr === now.getFullYear());
                                 if (isCurrentYear && lastVisit && Array.isArray(rowsForYear)) {
-                                    // If we had an older cached version (different last_updated) we want to append only new rows since lastVisit
-                                    const existingCached = await idbGetByPath(fpPath);
-                                    if (existingCached && Array.isArray(existingCached.parsed)) {
+                                    // Check if we had an older cached version for this year
+                                    const existingCached = await idbGet(cacheKey);
+                                    const existingRows = existingCached ? (existingCached.rows || existingCached.parsed) : null;
+                                    if (existingRows && Array.isArray(existingRows)) {
                                         // Keep cached rows that are before or equal to lastVisit, then append the freshly parsed rows after lastVisit
-                                        const cachedRows = existingCached.parsed.map(r => { if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date); return r; });
+                                        const cachedRows = existingRows.map(r => { if (r.Date && !(r.Date instanceof Date)) r.Date = new Date(r.Date); return r; });
                                         const newRows = rowsForYear.filter(r => r.Date && r.Date.getTime() > lastVisit);
                                         // Merge cachedRows and newRows and deduplicate by calendar date
                                         const merged = cachedRows.concat(newRows);
@@ -734,12 +793,18 @@
                                 // ignore merge errors
                             }
 
-                            // store parsed rows into IDB if we had a last_updated value to key by
+                            // Store parsed rows into IDB with metadata matching v2-shared.js format
                             try {
-                                if (fileLastUpdated) {
-                                    const cacheId = `${fpPath}::${fileLastUpdated}`;
-                                    await idbPut({ id: cacheId, path: fpPath, parsed: rowsForYear, last_updated: fileLastUpdated });
-                                }
+                                // Store with metadata for future validation
+                                await idbPut({ 
+                                    id: cacheKey,          // ticker::year format
+                                    ticker: ticker,        // for indexing
+                                    year: yr,              // for indexing
+                                    rows: rowsForYear,     // use 'rows' to match v2-shared.js
+                                    last_updated: fileLastUpdated || Date.now(),
+                                    cached_at: new Date().toISOString()
+                                });
+                                console.log(`✓ Cached data for ${cacheKey} (${rowsForYear.length} rows)`);
                             } catch (e) {
                                 console.warn('IDB write error', e);
                             }

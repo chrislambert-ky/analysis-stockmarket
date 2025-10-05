@@ -371,37 +371,78 @@ async function loadTickerData(ticker, years) {
         // Check cache
         const cached = await idbGet(cacheKey);
         
-        // Determine if we need to fetch
+        // Determine if we need to fetch with smart validation
         let shouldFetch = false;
         let deltaFetch = false;
         let afterDate = null;
+        let cacheIsValid = false;
         
         if (!cached) {
             // Cache miss - fetch entire year
             console.log(`[Loader] Cache MISS for ${cacheKey}`);
             shouldFetch = true;
-        } else if (cached.last_updated !== serverFileInfo.last_updated) {
-            // Cache stale - server has newer data
-            console.log(`[Loader] Cache STALE for ${cacheKey} (cached: ${cached.last_updated}, server: ${serverFileInfo.last_updated})`);
+        } else {
+            // Cache exists - validate against server metadata
+            // Compare last_updated timestamp
+            const lastUpdatedMatch = cached.last_updated === serverFileInfo.last_updated;
             
-            if (year === currentYear) {
-                // For current year, fetch delta (rows after last cached date)
-                deltaFetch = true;
+            // Validate date ranges if metadata is available
+            let dateRangeMatch = true;
+            if (serverFileInfo.min_date && serverFileInfo.max_date && cached.rows && cached.rows.length > 0) {
+                // Get date range from cached data
+                const cachedDates = cached.rows.map(r => r.Date_add).filter(Boolean).sort();
+                if (cachedDates.length > 0) {
+                    const cachedMinDate = cachedDates[0];
+                    const cachedMaxDate = cachedDates[cachedDates.length - 1];
+                    
+                    // Compare date ranges
+                    dateRangeMatch = (cachedMinDate === serverFileInfo.min_date && 
+                                     cachedMaxDate === serverFileInfo.max_date);
+                    
+                    if (!dateRangeMatch) {
+                        console.log(`[Loader] Date range mismatch for ${cacheKey}`);
+                        console.log(`  Index: ${serverFileInfo.min_date} to ${serverFileInfo.max_date}`);
+                        console.log(`  Cache: ${cachedMinDate} to ${cachedMaxDate}`);
+                    }
+                }
+            }
+            
+            // Cache is valid only if both timestamp and date ranges match
+            if (lastUpdatedMatch && dateRangeMatch) {
+                cacheIsValid = true;
+                console.log(`✓ Cache VALID for ${cacheKey} (${cached.rows.length} rows, dates verified)`);
+                allRows.push(...cached.rows);
+                continue;
+            } else if (!lastUpdatedMatch) {
+                // Cache stale - server has newer data
+                console.log(`✗ Cache STALE for ${cacheKey} (cached: ${cached.last_updated}, server: ${serverFileInfo.last_updated})`);
+                
+                if (year === currentYear) {
+                    // For current year, fetch delta (rows after last cached date)
+                    deltaFetch = true;
+                    shouldFetch = true;
+                    
+                    // Find the max date in cached rows
+                    const cachedDates = cached.rows.map(r => r.Date_add).filter(Boolean).sort();
+                    afterDate = cachedDates[cachedDates.length - 1];
+                    console.log(`[Loader] Delta fetch for ${cacheKey} after ${afterDate}`);
+                } else {
+                    // For historical years, refetch entire file (shouldn't change often)
+                    shouldFetch = true;
+                }
+            } else {
+                // Date range mismatch - invalidate cache and refetch
+                console.log(`✗ Cache INVALID for ${cacheKey}: date range mismatch`);
                 shouldFetch = true;
                 
-                // Find the max date in cached rows
-                const cachedDates = cached.rows.map(r => r.Date_add).filter(Boolean).sort();
-                afterDate = cachedDates[cachedDates.length - 1];
-                console.log(`[Loader] Delta fetch for ${cacheKey} after ${afterDate}`);
-            } else {
-                // For historical years, refetch entire file (shouldn't change often)
-                shouldFetch = true;
+                // Delete stale cache
+                try {
+                    await idbDelete(cacheKey);
+                    console.log(`[Loader] Deleted stale cache for ${cacheKey}`);
+                } catch (err) {
+                    console.warn(`[Loader] Failed to delete stale cache for ${cacheKey}:`, err);
+                }
             }
-        } else {
-            // Cache hit and fresh
-            console.log(`[Loader] Cache HIT for ${cacheKey} (${cached.rows.length} rows)`);
-            allRows.push(...cached.rows);
-            continue;
         }
         
         // Fetch from server if needed
