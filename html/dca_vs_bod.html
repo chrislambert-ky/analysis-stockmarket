@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCA vs BOD Comparison</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/metrics.css">
+    <style>
+        .ticker-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        @media (max-width: 1024px) {
+            .ticker-metrics-grid { grid-template-columns: repeat(5, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .ticker-metrics-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .ticker-box {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid var(--light-blue);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 55px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .ticker-box:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-color: var(--blue); }
+        .ticker-box.selected { background: linear-gradient(135deg, var(--bright-green) 0%, #7bc143 100%); border-color: var(--bright-green); color: white; }
+        .ticker-symbol { font-size: 1rem; font-weight: bold; color: var(--blue); }
+        .period-btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: var(--bright-green);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .period-btn.active { background-color: var(--orange) !important; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .metrics-grid-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto 30px;
+            padding: 0 20px;
+        }
+        .metrics-card {
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #d0e3ff;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+            padding: 0 20px 40px;
+        }
+        .chart-panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            padding: 15px;
+        }
+        .chart-title {
+            text-align: center;
+            color: var(--blue);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .chart-area {
+            width: 100%;
+            height: 420px;
+        }
+        #loading-container {
+            display: none;
+            text-align: center;
+            margin: 25px 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="../js/v2-shared.js?v=4"></script>
+</head>
+<body>
+    <nav>
+        <a href="../index.html">Home</a>
+        <a href="dcav2.html">Dollar Cost Averaging Analysis</a>
+        <a href="bodv2.html">Buy-on-Dip Analysis</a>
+        <a href="dca-tickersv2.html">Dollar Cost Averaging (All Tickers)</a>
+        <a href="bod-tickersv2.html">Buy-on-Dip (All Tickers)</a>
+        <a href="dca-stratv2.html">Dollar Cost Averaging Advanced</a>
+        <a href="bod-stratv2.html">Advanced Buy-on-Dip</a>
+        <a href="metricsv2.html">Metrics Dashboard</a>
+        <a href="aboutv2.html">About</a>
+    </nav>
+
+    <header style="text-align:center; margin: 20px 0 10px;">
+        <h1 style="margin-bottom:10px;">Dollar Cost Averaging vs Buy-on-Dip</h1>
+        <p style="color: var(--gray); max-width: 760px; margin: 0 auto;">
+            Select a ticker to compare results from the weekly Dollar Cost Averaging strategy against the Buy-on-Dip execution strategy across matching timeframes.
+        </p>
+    </header>
+
+    <div id="ticker-metrics-grid" class="ticker-metrics-grid"></div>
+
+    <section style="text-align:center; margin:20px 0;">
+        <h3 id="selected-ticker-display" style="color: var(--blue); margin-bottom: 12px;">Selected: None</h3>
+        <div>
+            <button id="ytd-btn" class="period-btn">YTD</button>
+            <button id="5y-btn" class="period-btn">5 Years</button>
+            <button id="10y-btn" class="period-btn">10 Years</button>
+            <button id="15y-btn" class="period-btn">15 Years</button>
+            <button id="20y-btn" class="period-btn">20 Years</button>
+        </div>
+    </section>
+
+    <div id="loading-container">
+        <div style="color: var(--blue); font-weight: bold; margin-bottom: 8px;">Crunching numbers for both strategies...</div>
+        <div id="progress-text" style="color: var(--gray); font-size: 0.9rem;">Preparing comparison...</div>
+    </div>
+
+    <section class="metrics-grid-wrapper">
+        <div class="metrics-card">
+            <h3 style="text-align:center; color: var(--blue); margin-bottom: 15px;">Dollar Cost Averaging Metrics</h3>
+            <div id="dca-metrics" class="metric-grid"></div>
+        </div>
+        <div class="metrics-card">
+            <h3 style="text-align:center; color: var(--blue); margin-bottom: 15px;">Buy-on-Dip Metrics</h3>
+            <div id="bod-metrics" class="metric-grid"></div>
+        </div>
+    </section>
+
+    <section class="chart-grid">
+        <div class="chart-panel">
+            <div class="chart-title">Dollar Cost Averaging Cumulative Performance</div>
+            <div id="dca-chart" class="chart-area"></div>
+        </div>
+        <div class="chart-panel">
+            <div class="chart-title">Buy-on-Dip Cumulative Performance</div>
+            <div id="bod-chart" class="chart-area"></div>
+        </div>
+    </section>
+
+    <script>
+    (function() {
+        if (!window.V2Shared) {
+            console.error('V2Shared module not loaded');
+            alert('Shared data module failed to load.');
+            return;
+        }
+
+        const loadTickerDataForPeriod = window.V2Shared.loadTickerDataForPeriod;
+        const getTickerSymbols = window.V2Shared.getTickerSymbols;
+        const formatDateToYMD = window.V2Shared.formatDateToYMD;
+        const toYMDFromString = window.V2Shared.toYMDFromString;
+        const parseDateStringAsLocal = window.V2Shared.parseDateStringAsLocal;
+
+        let selectedTicker = '';
+        let activePeriod = 'YTD';
+        let lastDcaResults = [];
+        let lastBodEvents = [];
+
+        const tickerGrid = document.getElementById('ticker-metrics-grid');
+        const dcaMetricsContainer = document.getElementById('dca-metrics');
+        const bodMetricsContainer = document.getElementById('bod-metrics');
+        const loadingContainer = document.getElementById('loading-container');
+        const progressText = document.getElementById('progress-text');
+
+        const periodButtons = ['ytd-btn','5y-btn','10y-btn','15y-btn','20y-btn'];
+        periodButtons.forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('click', () => {
+                setPeriod(el.dataset.period || el.textContent.toUpperCase().replace(/\s+/g,''));
+                if (selectedTicker) {
+                    runAnalysis();
+                }
+            });
+        });
+        document.getElementById('ytd-btn').dataset.period = 'YTD';
+        document.getElementById('5y-btn').dataset.period = '5Y';
+        document.getElementById('10y-btn').dataset.period = '10Y';
+        document.getElementById('15y-btn').dataset.period = '15Y';
+        document.getElementById('20y-btn').dataset.period = '20Y';
+
+        function setPeriod(period) {
+            periodButtons.forEach(id => document.getElementById(id).classList.remove('active'));
+            const button = periodButtons.map(id => document.getElementById(id)).find(btn => btn.dataset.period === period);
+            if (button) {
+                button.classList.add('active');
+            }
+            activePeriod = period;
+        }
+
+        function showLoading(message) {
+            if (message) progressText.textContent = message;
+            loadingContainer.style.display = 'block';
+        }
+
+        function hideLoading() {
+            loadingContainer.style.display = 'none';
+        }
+
+        function formatCurrency(amount) {
+            if (amount == null || isNaN(amount)) return '$0.00';
+            return '$' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function percentGain(value, invested) {
+            if (value == null || invested == null || invested === 0) return null;
+            return (value - invested) / invested * 100;
+        }
+
+        function getPeriodRange(periodName, endDateStr) {
+            if (!periodName) return { startDate: null, endDate: null };
+            const endDate = endDateStr ? new Date(endDateStr) : new Date();
+            let startDate = new Date(endDate);
+            if (periodName === 'YTD') {
+                startDate = new Date(endDate.getFullYear(), 0, 1);
+            } else {
+                const years = parseInt(periodName, 10);
+                if (!isNaN(years)) {
+                    startDate.setFullYear(endDate.getFullYear() - years);
+                }
+            }
+            return { startDate: formatDateToYMD(startDate), endDate: formatDateToYMD(endDate) };
+        }
+
+        async function populateTickerGrid() {
+            showLoading('Loading tickers...');
+            const tickers = await getTickerSymbols();
+            tickerGrid.innerHTML = '';
+
+            if (!tickers || tickers.length === 0) {
+                hideLoading();
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            tickers.forEach(ticker => {
+                const box = document.createElement('div');
+                box.className = 'ticker-box';
+                box.dataset.ticker = ticker;
+                box.innerHTML = `<div class="ticker-symbol">${ticker}</div>`;
+                box.addEventListener('click', () => {
+                    tickerGrid.querySelectorAll('.ticker-box').forEach(b => b.classList.remove('selected'));
+                    box.classList.add('selected');
+                    selectedTicker = ticker;
+                    document.getElementById('selected-ticker-display').textContent = 'Selected: ' + ticker;
+                    setPeriod('YTD');
+                    runAnalysis();
+                });
+                fragment.appendChild(box);
+            });
+
+            tickerGrid.appendChild(fragment);
+            hideLoading();
+        }
+
+        const tickerDataCache = new Map();
+        const dcaResultCache = new Map();
+
+        function buildDataSignature(rows) {
+            if (!rows || rows.length === 0) return 'len:0';
+            const dates = rows.map(r => r.Date_add).filter(Boolean).sort();
+            const firstDate = dates[0] || '';
+            const lastDate = dates[dates.length - 1] || '';
+            const lastClose = rows[rows.length - 1]?.Close ?? '';
+            return `${rows.length}|${firstDate}|${lastDate}|${lastClose}`;
+        }
+
+        async function fetchTickerDataSmart(ticker, period) {
+            const cacheKey = `${ticker}|${period}`;
+            if (tickerDataCache.has(cacheKey)) {
+                return tickerDataCache.get(cacheKey);
+            }
+            const loaderPromise = (async () => {
+                try {
+                    return await loadTickerDataForPeriod(ticker, period);
+                } catch (err) {
+                    console.error('[DCA] Failed to load data for', ticker, period, err);
+                    return [];
+                }
+            })();
+            tickerDataCache.set(cacheKey, loaderPromise);
+            return loaderPromise;
+        }
+
+        async function getDcaResultsForTicker(ticker, period, rows, yearsBack) {
+            const key = `${ticker}|${period}`;
+            const signature = buildDataSignature(rows);
+            const cached = dcaResultCache.get(key);
+            if (cached && cached.signature === signature) {
+                return cached.results;
+            }
+            const results = calculateWeeklyDCA(rows, yearsBack);
+            dcaResultCache.set(key, { signature, results });
+            return results;
+        }
+
+        function calculateWeeklyDCA(tickerData, yearsBack = 10, startDate = null, endDate = null) {
+            const finalEndDate = endDate || new Date();
+            let finalStartDate;
+            if (startDate) {
+                finalStartDate = startDate;
+            } else if (yearsBack === 'YTD') {
+                finalStartDate = new Date(finalEndDate.getFullYear(), 0, 1);
+            } else {
+                finalStartDate = new Date(finalEndDate);
+                finalStartDate.setFullYear(finalEndDate.getFullYear() - yearsBack);
+            }
+            const startDateStr = formatDateToYMD(finalStartDate);
+            const endDateStr = formatDateToYMD(finalEndDate);
+            const filteredData = (tickerData || [])
+                .filter(row => row.Date_add >= startDateStr && row.Date_add <= endDateStr)
+                .sort((a, b) => a.Date_add.localeCompare(b.Date_add));
+            if (filteredData.length === 0) return [];
+
+            let cumulativeShares = 0;
+            let cumulativeInvested = 0;
+            const weeklyInvestment = 25;
+            const results = [];
+
+            let currentDate = new Date(finalStartDate);
+            while (currentDate.getDay() !== 1) {
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            while (currentDate <= finalEndDate) {
+                const targetDateStr = currentDate.toISOString().split('T')[0];
+                const closest = findClosestTradingDay(filteredData, targetDateStr);
+                if (closest) {
+                    const avgDailyPrice = parseFloat(closest.avg_daily_price);
+                    const closingPrice = parseFloat(closest.Close);
+                    const sharesThisWeek = weeklyInvestment / avgDailyPrice;
+                    cumulativeShares += sharesThisWeek;
+                    cumulativeInvested += weeklyInvestment;
+                    results.push({
+                        date: closest.Date_add,
+                        weekday: closest.Weekday,
+                        close: closingPrice,
+                        avgDailyPrice: avgDailyPrice,
+                        sharesThisWeek,
+                        investedThisWeek: weeklyInvestment,
+                        cumulativeShares,
+                        cumulativeInvested,
+                        cumulativeValue: cumulativeShares * closingPrice
+                    });
+                }
+                currentDate.setDate(currentDate.getDate() + 7);
+            }
+            return results;
+        }
+
+        function findClosestTradingDay(tickerData, targetDate) {
+            const target = new Date(targetDate);
+            let closest = null;
+            let minDiff = Infinity;
+            (tickerData || []).forEach(row => {
+                const rowDate = parseDateStringAsLocal(row.Date_add);
+                if (!rowDate) return;
+                const diff = Math.abs(rowDate - target);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = row;
+                }
+            });
+            return closest;
+        }
+
+        function renderDcaMetrics(ticker, results) {
+            dcaMetricsContainer.innerHTML = '';
+            if (!results || results.length === 0) {
+                dcaMetricsContainer.innerHTML = '<p>No data available.</p>';
+                return;
+            }
+            const last = results[results.length - 1];
+            const totalInvested = last.cumulativeInvested;
+            const totalValue = last.cumulativeValue;
+            const totalShares = last.cumulativeShares;
+            const gainAmount = totalValue - totalInvested;
+            const gainPct = percentGain(totalValue, totalInvested);
+
+            const metrics = [
+                { label: 'Weeks / Purchases', value: results.length },
+                { label: 'Total Invested', value: formatCurrency(totalInvested) },
+                { label: 'Total Value', value: formatCurrency(totalValue) },
+                { label: 'Total Shares', value: totalShares.toFixed(4) },
+                { label: 'Gain / Loss', value: formatCurrency(gainAmount) },
+                { label: 'Return %', value: gainPct != null ? gainPct.toFixed(2) + '%' : 'N/A' }
+            ];
+
+            metrics.forEach(metric => {
+                const card = document.createElement('div');
+                card.className = 'metric-card';
+                card.innerHTML = `<div class="metric-label">${metric.label}</div><div class="metric-value">${metric.value}</div>`;
+                dcaMetricsContainer.appendChild(card);
+            });
+        }
+
+        function renderDcaChart(ticker, results) {
+            const chartDom = document.getElementById('dca-chart');
+            let chart = echarts.getInstanceByDom(chartDom);
+            if (chart) chart.dispose();
+            chart = echarts.init(chartDom);
+
+            const dates = results.map(r => r.date);
+            const valueSeries = results.map(r => r.cumulativeValue);
+            const investedSeries = results.map(r => r.cumulativeInvested);
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    formatter(params) {
+                        if (!params || !params.length) return '';
+                        const date = params[0].axisValue;
+                        const value = params.find(p => p.seriesName === 'Value')?.value;
+                        const invested = params.find(p => p.seriesName === 'Invested')?.value;
+                        const pct = percentGain(value, invested);
+                        return `${date}<br/>Value: ${formatCurrency(value)}<br/>Invested: ${formatCurrency(invested)}<br/>Return: ${pct != null ? pct.toFixed(2) + '%' : 'N/A'}`;
+                    }
+                },
+                legend: { data: ['Value', 'Invested'] },
+                xAxis: { type: 'category', data: dates },
+                yAxis: { type: 'value', name: 'USD' },
+                series: [
+                    { name: 'Value', type: 'line', data: valueSeries, smooth: true, showSymbol: false },
+                    { name: 'Invested', type: 'line', data: investedSeries, smooth: true, showSymbol: false, lineStyle: { type: 'dashed' } }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        async function calculateBODFromTickerData(tickers, period = 'YTD') {
+            if (!Array.isArray(tickers)) tickers = [tickers];
+            const referenceEnd = formatDateToYMD(new Date());
+            const range = getPeriodRange(period, referenceEnd);
+            const startDate = range.startDate;
+            const endDate = range.endDate;
+            const events = [];
+
+            for (const ticker of tickers) {
+                try {
+                    const rows = await loadTickerDataForPeriod(ticker, period);
+                    const filtered = (rows || []).filter(row => {
+                        const rowDate = toYMDFromString(row.Date_add || row.Date || row.date);
+                        return rowDate && rowDate >= startDate && rowDate <= endDate;
+                    });
+                    const bodLevels = [
+                        { level: '1%', priceCol: 'BOD99-1', execCol: 'BOD99-1_Executed' },
+                        { level: '2%', priceCol: 'BOD98-2', execCol: 'BOD98-2_Executed' },
+                        { level: '3%', priceCol: 'BOD97-3', execCol: 'BOD97-3_Executed' },
+                        { level: '4%', priceCol: 'BOD96-4', execCol: 'BOD96-4_Executed' },
+                        { level: '5%', priceCol: 'BOD95-5', execCol: 'BOD95-5_Executed' },
+                        { level: '6%', priceCol: 'BOD94-6', execCol: 'BOD94-6_Executed' },
+                        { level: '7%', priceCol: 'BOD93-7', execCol: 'BOD93-7_Executed' },
+                        { level: '8%', priceCol: 'BOD92-8', execCol: 'BOD92-8_Executed' },
+                        { level: '9%', priceCol: 'BOD91-9', execCol: 'BOD91-9_Executed' },
+                        { level: '10%', priceCol: 'BOD90-10', execCol: 'BOD90-10_Executed' },
+                        { level: '11%', priceCol: 'BOD89-11', execCol: 'BOD89-11_Executed' },
+                        { level: '12%', priceCol: 'BOD88-12', execCol: 'BOD88-12_Executed' },
+                        { level: '13%', priceCol: 'BOD87-13', execCol: 'BOD87-13_Executed' },
+                        { level: '14%', priceCol: 'BOD86-14', execCol: 'BOD86-14_Executed' },
+                        { level: '15%', priceCol: 'BOD85-15', execCol: 'BOD85-15_Executed' },
+                        { level: '16%', priceCol: 'BOD84-16', execCol: 'BOD84-16_Executed' },
+                        { level: '18%', priceCol: 'BOD82-18', execCol: 'BOD82-18_Executed' },
+                        { level: '19%', priceCol: 'BOD81-19', execCol: 'BOD81-19_Executed' },
+                        { level: '20%', priceCol: 'BOD80-20', execCol: 'BOD80-20_Executed' },
+                        { level: '21%', priceCol: 'BOD79-21', execCol: 'BOD79-21_Executed' },
+                        { level: '22%', priceCol: 'BOD78-22', execCol: 'BOD78-22_Executed' },
+                        { level: '23%', priceCol: 'BOD77-23', execCol: 'BOD77-23_Executed' },
+                        { level: '24%', priceCol: 'BOD76-24', execCol: 'BOD76-24_Executed' },
+                        { level: '25%', priceCol: 'BOD75-25', execCol: 'BOD75-25_Executed' }
+                    ];
+
+                    filtered.forEach(row => {
+                        const date = toYMDFromString(row.Date_add || row.Date || row.date);
+                        const close = Number(row.Close);
+                        const prevClose = Number(row.Previous_Close);
+                        const parsedDate = parseDateStringAsLocal(date);
+                        const weekday = parsedDate ? parsedDate.toLocaleDateString('en-US', { weekday: 'long' }) : '';
+
+                        bodLevels.forEach(level => {
+                            const executed = row[level.execCol];
+                            const executedFlag = executed === true || executed === 'true' || executed === 'True' || executed === 'TRUE';
+                            if (executedFlag) {
+                                const buyPrice = Number(row[level.priceCol]);
+                                events.push({
+                                    Date_add: date,
+                                    Weekday: weekday,
+                                    Symbol: ticker,
+                                    Strategy: 'Buy_on_Dip',
+                                    Buy_Price: buyPrice,
+                                    Buy_Level: level.level,
+                                    SharesPurchased: 1,
+                                    DollarsInvested: buyPrice,
+                                    Close: close,
+                                    Previous_Close: prevClose
+                                });
+                            }
+                        });
+                    });
+                } catch (err) {
+                    console.error('[BOD] Failed to process ticker', ticker, err);
+                }
+            }
+
+            events.sort((a, b) => new Date(a.Date_add) - new Date(b.Date_add));
+            return events;
+        }
+
+        function renderBodMetrics(ticker, events) {
+            bodMetricsContainer.innerHTML = '';
+            if (!events || events.length === 0) {
+                bodMetricsContainer.innerHTML = '<p>No data available.</p>';
+                return;
+            }
+            const totalShares = events.reduce((sum, row) => sum + (Number(row.SharesPurchased) || 0), 0);
+            const totalInvested = events.reduce((sum, row) => sum + (Number(row.DollarsInvested) || 0), 0);
+            const lastClose = events.length ? Number(events[events.length - 1].Close) : null;
+            const totalValue = lastClose != null ? totalShares * lastClose : null;
+            const gainAmount = totalValue != null && totalInvested != null ? totalValue - totalInvested : null;
+            const gainPct = percentGain(totalValue, totalInvested);
+
+            const metrics = [
+                { label: 'Total Dip Purchases', value: totalShares },
+                { label: 'Total Invested', value: formatCurrency(totalInvested) },
+                { label: 'Portfolio Value', value: totalValue != null ? formatCurrency(totalValue) : 'N/A' },
+                { label: 'Gain / Loss', value: gainAmount != null ? formatCurrency(gainAmount) : 'N/A' },
+                { label: 'Return %', value: gainPct != null ? gainPct.toFixed(2) + '%' : 'N/A' }
+            ];
+
+            metrics.forEach(metric => {
+                const card = document.createElement('div');
+                card.className = 'metric-card';
+                card.innerHTML = `<div class="metric-label">${metric.label}</div><div class="metric-value">${metric.value}</div>`;
+                bodMetricsContainer.appendChild(card);
+            });
+        }
+
+        function renderBodChart(ticker, events) {
+            const chartDom = document.getElementById('bod-chart');
+            let chart = echarts.getInstanceByDom(chartDom);
+            if (chart) chart.dispose();
+            chart = echarts.init(chartDom);
+
+            const grouped = new Map();
+            (events || []).forEach(event => {
+                const date = event.Date_add;
+                if (!grouped.has(date)) {
+                    grouped.set(date, { shares: 0, invested: 0, close: Number(event.Close) || null });
+                }
+                const agg = grouped.get(date);
+                agg.shares += Number(event.SharesPurchased) || 0;
+                agg.invested += Number(event.DollarsInvested) || 0;
+                if (event.Close != null) agg.close = Number(event.Close);
+            });
+
+            const dates = Array.from(grouped.keys()).sort();
+            let cumulativeShares = 0;
+            let cumulativeInvested = 0;
+            const valueSeries = [];
+            const investedSeries = [];
+
+            dates.forEach(date => {
+                const { shares, invested, close } = grouped.get(date);
+                cumulativeShares += shares;
+                cumulativeInvested += invested;
+                const value = close != null ? cumulativeShares * close : null;
+                valueSeries.push(value);
+                investedSeries.push(cumulativeInvested);
+            });
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    formatter(params) {
+                        if (!params || !params.length) return '';
+                        const date = params[0].axisValue;
+                        const value = params.find(p => p.seriesName === 'Value')?.value;
+                        const invested = params.find(p => p.seriesName === 'Invested')?.value;
+                        const pct = percentGain(value, invested);
+                        return `${date}<br/>Value: ${formatCurrency(value)}<br/>Invested: ${formatCurrency(invested)}<br/>Return: ${pct != null ? pct.toFixed(2) + '%' : 'N/A'}`;
+                    }
+                },
+                legend: { data: ['Value', 'Invested'] },
+                xAxis: { type: 'category', data: dates },
+                yAxis: { type: 'value', name: 'USD' },
+                series: [
+                    { name: 'Value', type: 'line', data: valueSeries, smooth: true, showSymbol: false },
+                    { name: 'Invested', type: 'line', data: investedSeries, smooth: true, showSymbol: false, lineStyle: { type: 'dashed' } }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        async function runAnalysis() {
+            if (!selectedTicker) return;
+            showLoading(`Analyzing ${selectedTicker} (${activePeriod})...`);
+            try {
+                const [dcaRows, bodEvents] = await Promise.all([
+                    (async () => {
+                        const rows = await fetchTickerDataSmart(selectedTicker, activePeriod);
+                        const yearsBack = activePeriod === 'YTD' ? 'YTD' : parseInt(activePeriod, 10);
+                        lastDcaResults = await getDcaResultsForTicker(selectedTicker, activePeriod, rows, yearsBack);
+                        return lastDcaResults;
+                    })(),
+                    (async () => {
+                        lastBodEvents = await calculateBODFromTickerData([selectedTicker], activePeriod);
+                        return lastBodEvents;
+                    })()
+                ]);
+
+                renderDcaMetrics(selectedTicker, dcaRows);
+                renderDcaChart(selectedTicker, dcaRows);
+                renderBodMetrics(selectedTicker, bodEvents);
+                renderBodChart(selectedTicker, bodEvents);
+            } catch (err) {
+                console.error('Error running analysis', err);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        populateTickerGrid().then(() => setPeriod('YTD'));
+    })();
+    </script>
+</body>
+</html>
