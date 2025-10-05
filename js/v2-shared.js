@@ -495,6 +495,20 @@ async function loadTickerData(ticker, years) {
     return dedupedRows;
 }
 
+function normalizePeriod(period) {
+    if (!period && period !== 0) return 'ytd';
+    const raw = String(period).trim().toLowerCase();
+    if (raw === 'all') return 'all';
+    if (raw === 'ytd') return 'ytd';
+    if (raw === '1y' || raw === '1') return '1y';
+    const match = raw.match(/^(\d+)\s*y$/);
+    if (match) return `${match[1]}y`;
+    const digits = raw.match(/^(\d+)$/);
+    if (digits) return `${digits[1]}y`;
+    console.warn(`[Loader] Unknown period format "${period}". Falling back to YTD.`);
+    return 'ytd';
+}
+
 /**
  * Determine which years to load based on period selection
  * @param {string} period - 'ytd', '5y', '10y', '15y', '20y', or 'all'
@@ -502,27 +516,40 @@ async function loadTickerData(ticker, years) {
  * @returns {Array<number>} - Years to load
  */
 function determineYearsToLoad(period, availableYears) {
+    const normalized = normalizePeriod(period);
     const currentYear = new Date().getFullYear();
-    
-    if (period === 'all') {
-        return availableYears;
+
+    if (!Array.isArray(availableYears) || availableYears.length === 0) {
+        return [];
     }
-    
-    let startYear;
-    if (period === 'ytd') {
-        startYear = currentYear;
-    } else {
-        // Extract number from period (e.g., '5y' -> 5)
-        const yearsBack = parseInt(period);
-        if (isNaN(yearsBack)) {
-            console.warn(`[Loader] Invalid period: ${period}, defaulting to YTD`);
-            startYear = currentYear;
-        } else {
-            startYear = currentYear - yearsBack;
-        }
+
+    const sortedYears = [...availableYears].sort((a, b) => a - b);
+
+    if (normalized === 'all') {
+        return sortedYears;
     }
-    
-    return availableYears.filter(y => y >= startYear).sort();
+
+    if (normalized === 'ytd' || normalized === '1y') {
+        const targetYear = normalized === 'ytd' ? currentYear : currentYear - 1;
+        const years = sortedYears.filter(y => y >= targetYear);
+        if (years.length > 0) return years;
+        return [sortedYears[sortedYears.length - 1]];
+    }
+
+    const match = normalized.match(/^(\d+)y$/);
+    if (match) {
+        const yearsBack = Number(match[1]);
+        const startYear = currentYear - yearsBack;
+        const years = sortedYears.filter(y => y >= startYear);
+        if (years.length > 0) return years;
+
+        // Fallback: return the most recent years available
+        const fallbackCount = Math.min(yearsBack + 1, sortedYears.length);
+        return sortedYears.slice(-fallbackCount);
+    }
+
+    console.warn(`[Loader] Unable to resolve period "${period}". Using latest available year.`);
+    return [sortedYears[sortedYears.length - 1]];
 }
 
 /**
@@ -532,7 +559,8 @@ function determineYearsToLoad(period, availableYears) {
  * @returns {Promise<Array>} - Filtered rows for the period
  */
 async function loadTickerDataForPeriod(ticker, period) {
-    console.log(`[Main] Loading ${ticker} for period ${period}`);
+    const normalizedPeriod = normalizePeriod(period);
+    console.log(`[Main] Loading ${ticker} for period ${period} (normalized: ${normalizedPeriod})`);
     
     // Get available years from metadata
     const metadata = await getTickerMetadata(ticker);
@@ -542,29 +570,44 @@ async function loadTickerDataForPeriod(ticker, period) {
     }
     
     // Determine which years to load
-    const yearsToLoad = determineYearsToLoad(period, metadata.years);
-    console.log(`[Main] Years to load for ${ticker} ${period}:`, yearsToLoad);
+    const yearsToLoad = determineYearsToLoad(normalizedPeriod, metadata.years);
+    console.log(`[Main] Years to load for ${ticker} ${normalizedPeriod}:`, yearsToLoad);
     
+    if (!yearsToLoad || yearsToLoad.length === 0) {
+        console.warn(`[Main] No matching years for ${ticker} and period ${normalizedPeriod}`);
+        return [];
+    }
+
     // Load data with smart caching
     const rows = await loadTickerData(ticker, yearsToLoad);
     
     // Apply additional date filtering if needed
     const currentDate = new Date();
-    let startDate;
-    
-    if (period === 'ytd') {
+    let startDate = null;
+
+    if (normalizedPeriod === 'ytd') {
         startDate = new Date(currentDate.getFullYear(), 0, 1);
-    } else if (period !== 'all') {
-        const yearsBack = parseInt(period) || 1;
+    } else if (normalizedPeriod === '1y') {
         startDate = new Date(currentDate);
-        startDate.setFullYear(currentDate.getFullYear() - yearsBack);
+        startDate.setFullYear(currentDate.getFullYear() - 1);
+    } else if (normalizedPeriod !== 'all') {
+        const match = normalizedPeriod.match(/^(\d+)y$/);
+        if (match) {
+            startDate = new Date(currentDate);
+            startDate.setFullYear(currentDate.getFullYear() - Number(match[1]));
+        }
     }
     
     if (startDate) {
         const startDateStr = formatDateToYMD(startDate);
         const endDateStr = formatDateToYMD(currentDate);
         
-        return rows.filter(r => r.Date_add >= startDateStr && r.Date_add <= endDateStr);
+        return rows.filter(r => {
+            const rawDate = r.Date_add || r.Date || r.date;
+            if (!rawDate) return false;
+            const normalizedDate = toYMDFromString(rawDate);
+            return normalizedDate && normalizedDate >= startDateStr && normalizedDate <= endDateStr;
+        });
     }
     
     return rows;
@@ -826,6 +869,7 @@ window.V2Shared = {
     loadTickerData,
     loadTickerDataForPeriod,
     determineYearsToLoad,
+    normalizePeriod,
     fetchYearCSV,
     
     // UI Components

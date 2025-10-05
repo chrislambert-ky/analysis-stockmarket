@@ -368,15 +368,15 @@
                 
                 // Filter to date range
                 const filteredData = tickerData.filter(row => {
-                    const rowDate = toYMDFromString(row.Date);
-                    return rowDate >= startDate && rowDate <= endDate;
+                    const rowDate = toYMDFromString(row.Date_add || row.Date || row.date);
+                    return rowDate && rowDate >= startDate && rowDate <= endDate;
                 });
                 
                 console.log('[calculateBODFromTickerData] Filtered to', filteredData.length, 'rows in range');
                 
                 // Process each row and extract BOD events
                 for (const row of filteredData) {
-                    const rowDate = toYMDFromString(row.Date);
+                    const rowDate = toYMDFromString(row.Date_add || row.Date || row.date);
                     const close = Number(row.Close);
                     const previousClose = Number(row.Previous_Close);
                     
@@ -488,32 +488,53 @@
 
     // Fetch and parse full price history CSV (history_tickers.csv) used to compute available weeks
     let cachedHistoryData = null;
-    async function fetchHistoryData() {
-        if (cachedHistoryData) return cachedHistoryData;
-        try {
-            const res = await fetch('../data/history_tickers.csv');
-            if (!res.ok) throw new Error('Failed to fetch history CSV: ' + res.status);
-            const text = await res.text();
-            const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
-            cachedHistoryData = parsed.data.map(row => {
-                const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'] ?? row['Date_add'];
-                let Date_add = null;
-                try { Date_add = rawDate ? toYMDFromString(rawDate) : null; } catch (e) { Date_add = rawDate; }
-                return {
-                    Date_add: Date_add,
-                    Symbol: String(row['Symbol'] ?? row['symbol'] ?? '').trim(),
-                    Close: row['Close'] != null ? Number(row['Close']) : null,
-                    Low: row['Low'] != null ? Number(row['Low']) : null,
-                    Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
-                    Open: row['Open'] != null ? Number(row['Open']) : null,
-                    High: row['High'] != null ? Number(row['High']) : null
-                };
-            }).filter(r => r && r.Date_add);
+    async function fetchHistoryData(requestedTickers = null) {
+        // When no specific tickers requested, reuse cached aggregate if available
+        if ((!requestedTickers || requestedTickers.length === 0) && cachedHistoryData) {
             return cachedHistoryData;
-        } catch (err) {
-            console.error('Error fetching/parsing history CSV:', err);
-            throw err;
         }
+
+        // Determine which tickers need to be loaded
+        let tickersToLoad = [];
+        if (requestedTickers && requestedTickers.length) {
+            const unique = new Set(requestedTickers.map(t => t && String(t).trim()).filter(Boolean));
+            tickersToLoad = Array.from(unique);
+        } else {
+            tickersToLoad = await getTickerSymbols();
+        }
+
+        if (!tickersToLoad || tickersToLoad.length === 0) {
+            return [];
+        }
+
+        const merged = [];
+        await Promise.all(tickersToLoad.map(async ticker => {
+            try {
+                const rows = await fetchTickerHistory(ticker);
+                (rows || []).forEach(row => {
+                    const normalizedDate = row.Date_add ? toYMDFromString(row.Date_add) : (row.Date ? toYMDFromString(row.Date) : null);
+                    merged.push({
+                        Date_add: normalizedDate,
+                        Symbol: String(row.Symbol || ticker || '').trim(),
+                        Close: row.Close != null ? Number(row.Close) : null,
+                        Low: row.Low != null ? Number(row.Low) : null,
+                        Previous_Close: row.Previous_Close != null ? Number(row.Previous_Close) : null,
+                        Open: row.Open != null ? Number(row.Open) : null,
+                        High: row.High != null ? Number(row.High) : null
+                    });
+                });
+            } catch (err) {
+                console.warn('[fetchHistoryData] Failed to load ticker history for', ticker, err);
+            }
+        }));
+
+        const filtered = merged.filter(r => r && r.Date_add);
+
+        if (!requestedTickers || requestedTickers.length === 0) {
+            cachedHistoryData = filtered;
+        }
+
+        return filtered;
     }
 
     // Fetch small tickers index (data/tickers_index.json) to quickly enumerate tickers
@@ -521,23 +542,11 @@
     async function fetchTickerIndex() {
         if (cachedTickerIndex) return cachedTickerIndex;
         try {
-            const res = await fetch('../data/tickers_index.json');
-            if (!res.ok) throw new Error('No index');
-            const j = await res.json();
-            // Normalize to array of symbols. tickers_index.json is an object mapping SYMBOL -> path
-            if (j && typeof j === 'object' && !Array.isArray(j)) {
-                cachedTickerIndex = Object.keys(j).filter(Boolean).sort((a,b)=>a.localeCompare(b));
-            } else if (Array.isArray(j)) {
-                // Fallback in case of unexpected array format
-                cachedTickerIndex = j.map(e => (typeof e === 'string' ? e : e && e.symbol ? String(e.symbol) : ''))
-                                      .filter(Boolean)
-                                      .sort((a,b)=>a.localeCompare(b));
-            } else {
-                cachedTickerIndex = [];
-            }
+            const symbols = await getTickerSymbols();
+            cachedTickerIndex = symbols && symbols.length ? symbols : [];
             return cachedTickerIndex;
         } catch (e) {
-            // Index missing or unreadable — return null so caller falls back
+            console.warn('[fetchTickerIndex] Unable to load ticker list from shared module:', e);
             return null;
         }
     }
@@ -545,8 +554,36 @@
     // Fetch per-ticker history file (preferred) with fallback to consolidated history
     const perTickerCache = {};
     async function fetchTickerHistory(sym) {
-        if (!sym) return null;
+        if (!sym) return [];
         if (perTickerCache[sym]) return perTickerCache[sym];
+        // First attempt: use the shared IndexedDB-aware loader
+        if (window.V2Shared && typeof window.V2Shared.loadTickerDataForPeriod === 'function') {
+            try {
+                const smartRows = await window.V2Shared.loadTickerDataForPeriod(sym, 'all');
+                if (Array.isArray(smartRows) && smartRows.length) {
+                    const normalized = smartRows.map(row => {
+                        const rawDate = row.Date_add || row.Date || row.date;
+                        const Date_add = rawDate ? toYMDFromString(rawDate) : null;
+                        return {
+                            Date_add,
+                            Symbol: String(row.Symbol || sym || '').trim(),
+                            Close: row.Close != null ? Number(row.Close) : null,
+                            Low: row.Low != null ? Number(row.Low) : null,
+                            Previous_Close: row.Previous_Close != null ? Number(row.Previous_Close) : null,
+                            Open: row.Open != null ? Number(row.Open) : null,
+                            High: row.High != null ? Number(row.High) : null
+                        };
+                    }).filter(r => r && r.Date_add);
+                    if (normalized.length) {
+                        perTickerCache[sym] = normalized;
+                        return normalized;
+                    }
+                }
+            } catch (err) {
+                console.warn('[fetchTickerHistory] Smart loader failed for', sym, err);
+            }
+        }
+
         const candidates = [
             `../data/${sym}-data-raw.csv`,
             `../data/${sym}-data-bod.csv`
@@ -571,21 +608,17 @@
                         High: row['High'] != null ? Number(row['High']) : null
                     };
                 }).filter(r => r && r.Date_add);
-                perTickerCache[sym] = mapped;
-                return mapped;
+                if (mapped.length) {
+                    perTickerCache[sym] = mapped;
+                    return mapped;
+                }
             } catch (e) {
                 // try next candidate
             }
         }
-        // Fallback to consolidated history if per-ticker files not found
-        try {
-            const all = await fetchHistoryData();
-            const filtered = all.filter(r => String(r.Symbol).trim() === String(sym).trim());
-            perTickerCache[sym] = filtered;
-            return filtered;
-        } catch (e) {
-            return [];
-        }
+        // Final fallback: return empty array so caller can handle missing data gracefully
+        perTickerCache[sym] = [];
+        return [];
     }
     
     // Calculate Buy-on-Dip strategy for a specific ticker
@@ -939,7 +972,8 @@
         // Ensure Low and Previous_Close exist in export so users can verify the limit execution
         // Attempt to enrich rows from history data when those fields are missing
         try {
-            const history = await fetchHistoryData();
+            const symbolsNeeded = Array.from(new Set(rows.map(r => r && r.Symbol ? String(r.Symbol).trim() : '').filter(Boolean)));
+            const history = await fetchHistoryData(symbolsNeeded);
             const historyIndex = {};
             history.forEach(h => {
                 const key = (h.Symbol || '') + '|' + (h.Date_add || '');
