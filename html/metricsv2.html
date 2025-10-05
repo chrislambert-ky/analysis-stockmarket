@@ -1372,30 +1372,59 @@
                 return regression.slope * actualIndex + regression.intercept;
             });
 
-            // Calculate trading bands using statistical method
-            const bandsResult = calculateTradingBands(allPrices, regression, bandMultiplier);
-            const { upperBand, lowerBand } = bandsResult;
+            // Calculate bands directly for FILTERED data (not sliced from full dataset)
+            // This ensures perfect alignment between data points and band values
+            const filteredPrices = filteredData.map(row => row.Close);
             
-            // Extract bands for the filtered period
-            const upperBandFiltered = upperBand.slice(startIndex, startIndex + filteredData.length);
-            const lowerBandFiltered = lowerBand.slice(startIndex, startIndex + filteredData.length);
+            // Calculate deviations from regression line for filtered data
+            const deviations = regressionLine.map((regValue, index) => {
+                return filteredPrices[index] - regValue;
+            });
+            
+            // Calculate standard deviation
+            const mean = deviations.reduce((sum, dev) => sum + dev, 0) / deviations.length;
+            const variance = deviations.reduce((sum, dev) => sum + Math.pow(dev - mean, 2), 0) / deviations.length;
+            const stdDev = Math.sqrt(variance);
+            
+            // Create bands from regression line
+            const upperBandFiltered = regressionLine.map(regValue => regValue + (stdDev * bandMultiplier));
+            const lowerBandFiltered = regressionLine.map(regValue => regValue - (stdDev * bandMultiplier));
 
-            // Calculate max and min for area fills (extend beyond the bands)
-            const maxPrice = Math.max(...closePrices);
-            const minPrice = Math.min(...closePrices);
-            const priceRange = maxPrice - minPrice;
-            const upperFillBound = upperBandFiltered.map(() => maxPrice + priceRange * 0.5); // Well above visible area
-            const lowerFillBound = lowerBandFiltered.map(() => Math.max(0, minPrice - priceRange * 0.5)); // Well below visible area
+            // DEBUG: Log band data
+            console.log('=== BAND CALCULATION DEBUG ===');
+            console.log('Filtered data length:', filteredData.length);
+            console.log('Regression line length:', regressionLine.length);
+            console.log('Upper band length:', upperBandFiltered.length);
+            console.log('Lower band length:', lowerBandFiltered.length);
+            console.log('Upper band sample (first 5):', upperBandFiltered.slice(0, 5));
+            console.log('Lower band sample (first 5):', lowerBandFiltered.slice(0, 5));
+            console.log('Regression sample (first 5):', regressionLine.slice(0, 5));
+            console.log('Close prices sample (first 5):', closePrices.slice(0, 5));
+            console.log('Standard deviation:', stdDev);
+            console.log('Band multiplier:', bandMultiplier);
+            console.log('==============================');
 
-            // Calculate Y-axis range (for syncing both axes) - ensure min is never negative
-            const yMin = Math.max(0, Math.floor(minPrice - priceRange * 0.1));
-            const yMax = Math.ceil(maxPrice + priceRange * 0.1);
+            // Calculate Y-axis range including all band values
+            const allYValues = [
+                ...closePrices,
+                ...regressionLine,
+                ...upperBandFiltered,
+                ...lowerBandFiltered
+            ].filter(v => v != null && !isNaN(v));
 
-            // Initialize or update chart
+            const maxValue = Math.max(...allYValues);
+            const minValue = Math.min(...allYValues);
+            const valueRange = maxValue - minValue;
+
+            const yMin = 0;
+            const yMax = Math.ceil(maxValue + valueRange * 0.1);
+
+            // Initialize or update chart - always dispose before recreating
             const chartDom = document.getElementById('priceChart');
-            if (!priceChart) {
-                priceChart = echarts.init(chartDom);
+            if (echarts.getInstanceByDom(chartDom)) {
+                echarts.getInstanceByDom(chartDom).dispose();
             }
+            priceChart = echarts.init(chartDom);
 
             const option = {
                 title: {
@@ -1415,10 +1444,25 @@
                     formatter: function(params) {
                         let result = `<strong>${params[0].axisValue}</strong><br/>`;
                         params.forEach(param => {
+                            // Skip series with no valid data
+                            if (param.value == null || param.value === undefined) return;
+                            
                             const color = param.color;
                             const seriesName = param.seriesName;
-                            const value = param.value != null ? '$' + param.value.toFixed(2) : '-';
-                            result += `<span style="display:inline-block;width:10px;height:10px;background:${color};margin-right:5px;"></span>${seriesName}: ${value}<br/>`;
+                            
+                            // Handle value - it could be a number or array [x, y]
+                            let displayValue;
+                            if (typeof param.value === 'number') {
+                                displayValue = '$' + param.value.toFixed(2);
+                            } else if (Array.isArray(param.value)) {
+                                // For array values like [x, y], use the y-axis value (index 1)
+                                const numValue = param.value[1];
+                                displayValue = (typeof numValue === 'number') ? '$' + numValue.toFixed(2) : '-';
+                            } else {
+                                displayValue = '-';
+                            }
+                            
+                            result += `<span style="display:inline-block;width:10px;height:10px;background:${color};margin-right:5px;"></span>${seriesName}: ${displayValue}<br/>`;
                         });
                         return result;
                     }
@@ -1462,24 +1506,7 @@
                     }
                 },
                 series: [
-                    // Invisible lower bound line for green fill area
-                    {
-                        name: 'Lower Fill Bound',
-                        type: 'line',
-                        data: lowerFillBound,
-                        lineStyle: {
-                            width: 0,
-                            opacity: 0
-                        },
-                        symbol: 'none',
-                        stack: 'lower',
-                        showSymbol: false,
-                        areaStyle: {
-                            color: 'rgba(0, 204, 68, 0.15)'
-                        },
-                        z: 0
-                    },
-                    // Lower Band (just the line, fill comes from invisible series)
+                    // Lower Band (green dashed line, no fill)
                     {
                         name: 'Lower Band (Buy)',
                         type: 'line',
@@ -1487,16 +1514,15 @@
                         lineStyle: {
                             color: '#00cc44',
                             width: 2,
-                            type: 'dotted'
+                            type: 'dashed'
                         },
                         itemStyle: {
                             color: '#00cc44'
                         },
                         symbol: 'none',
-                        stack: 'lower',
                         z: 1
                     },
-                    // Upper Band (just the line, no fill)
+                    // Upper Band (red line, no fill)
                     {
                         name: 'Upper Band (Sell)',
                         type: 'line',
@@ -1504,7 +1530,7 @@
                         lineStyle: {
                             color: '#ff4444',
                             width: 2,
-                            type: 'dotted'
+                            type: 'dashed'
                         },
                         itemStyle: {
                             color: '#ff4444'
