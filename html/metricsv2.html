@@ -619,6 +619,9 @@
 
             // Build combined rows array from selected years only (use IndexedDB cache when possible)
             let allRows = [];
+            let csvText = null;
+            let csvCacheKey = null;
+            let csvYear = null;
 
             const entry = tickersIndex[ticker];
             if (entry && typeof entry === 'object' && entry.files) {
@@ -846,12 +849,20 @@
                 const resp = await fetch('../' + entry);
                 if (!resp.ok) throw new Error('Failed to fetch legacy ticker file');
                 csvText = await resp.text();
+                const matchYear = entry.match(/-(\d{4})\.csv$/);
+                if (matchYear) {
+                    csvYear = Number(matchYear[1]);
+                    csvCacheKey = `${ticker}::${csvYear}`;
+                } else {
+                    csvCacheKey = `${ticker}::legacy`;
+                }
             } else {
                 // fallback to flat per-symbol CSV
                 const fallbackPath = `../data/tickers/${ticker}.csv`;
                 const resp = await fetch(fallbackPath);
                 if (!resp.ok) throw new Error('No data files found for ' + ticker);
                 const txt = await resp.text();
+                csvCacheKey = `${ticker}::legacy`;
                 // compute bounds for fallback single file
                 try {
                     const lines = txt.trim().split('\n').filter(l => l.trim());
@@ -891,7 +902,23 @@
                 });
             } else if (typeof csvText === 'string' && csvText.trim().length > 0) {
                 updateProgress(96, 'Parsing CSV...');
-                tickerData = parseCSV(csvText);
+                const parsedRows = parseCSV(csvText) || [];
+                tickerData = parsedRows;
+                if (csvCacheKey) {
+                    try {
+                        await idbPut({
+                            id: csvCacheKey,
+                            ticker: ticker,
+                            year: csvYear != null ? csvYear : undefined,
+                            rows: parsedRows,
+                            last_updated: Date.now(),
+                            cached_at: new Date().toISOString()
+                        });
+                        console.log(`✓ Cached legacy data for ${csvCacheKey} (${parsedRows.length} rows)`);
+                    } catch (err) {
+                        console.warn('IDB write error (legacy cache)', err);
+                    }
+                }
             } else {
                 tickerData = [];
             }

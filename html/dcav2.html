@@ -293,14 +293,6 @@
             // ignore
         }
         
-        // Add click handlers to all ticker boxes
-        document.querySelectorAll('.clickable-ticker').forEach(box => {
-            box.addEventListener('click', function() {
-                const ticker = this.dataset.ticker;
-                selectTicker(ticker);
-            });
-        });
-
         // Re-apply previously selected ticker so visual selection persists across period changes
         try {
             if (currentSelectedTicker) {
@@ -397,6 +389,13 @@
                 if (!tickerGroups[ticker]) tickerGroups[ticker] = [];
                 tickerGroups[ticker].push(row);
             });
+            Object.keys(tickerGroups).forEach(sym => {
+                tickerGroups[sym].sort((a, b) => {
+                    const da = a.Date_add || '';
+                    const db = b.Date_add || '';
+                    return da.localeCompare(db);
+                });
+            });
 
             updateProgress(70, 'Calculating DCA strategies...');
             // Calculate DCA results for all tickers with specified period
@@ -407,13 +406,11 @@
             const yearsBack = period === 'YTD' ? 'YTD' : parseInt(period.replace('Y', ''));
             
             for (const ticker of allTickers) {
-                processedData[ticker] = calculateWeeklyDCA(tickerGroups[ticker], yearsBack);
+                const rows = tickerGroups[ticker] || [];
+                processedData[ticker] = await getDcaResultsForTicker(ticker, period, rows, yearsBack);
                 processed++;
-                const progress = 70 + (processed / allTickers.length) * 15;
+                const progress = 70 + (processed / Math.max(allTickers.length, 1)) * 15;
                 updateProgress(progress, `Processing ${ticker}... (${processed}/${allTickers.length})`);
-                
-                // Add small delay to show progress
-                await new Promise(resolve => setTimeout(resolve, 10));
             }
 
             updateProgress(90, 'Rendering chart...');
@@ -721,17 +718,51 @@
     }
     
     // Fetch ticker data using V2 smart loading (with IDB caching)
-    // This replaces the old fetchData() that loaded the entire history_tickers.csv
-    async function fetchTickerDataSmart(ticker, period) {
-        console.log(`[DCA] Fetching ${ticker} for period ${period}`);
-        try {
-            const data = await loadTickerDataForPeriod(ticker, period);
-            console.log(`[DCA] Loaded ${data.length} rows for ${ticker}`);
-            return data;
-        } catch (err) {
-            console.error(`[DCA] Error loading ${ticker}:`, err);
-            return [];
+    // Cache results per ticker/period so repeated renders avoid triggering a refetch
+    const tickerDataCache = new Map(); // key: `${ticker}|${period}` -> Promise resolving to rows
+    const dcaResultCache = new Map(); // key: `${ticker}|${period}` -> { signature, results }
+
+    function buildDataSignature(rows) {
+        if (!rows || rows.length === 0) return 'len:0';
+        const dates = rows.map(r => r.Date_add).filter(Boolean).sort();
+        const firstDate = dates[0] || '';
+        const lastDate = dates[dates.length - 1] || '';
+        const lastClose = rows[rows.length - 1]?.Close ?? '';
+        return `${rows.length}|${firstDate}|${lastDate}|${lastClose}`;
+    }
+
+    async function getDcaResultsForTicker(ticker, period, rows, yearsBack) {
+        const key = `${ticker}|${period}`;
+        const signature = buildDataSignature(rows);
+        const cached = dcaResultCache.get(key);
+        if (cached && cached.signature === signature) {
+            return cached.results;
         }
+
+        const results = calculateWeeklyDCA(rows, yearsBack);
+        dcaResultCache.set(key, { signature, results });
+        return results;
+    }
+    async function fetchTickerDataSmart(ticker, period) {
+        const cacheKey = `${ticker}|${period}`;
+        if (tickerDataCache.has(cacheKey)) {
+            return tickerDataCache.get(cacheKey);
+        }
+
+        const loaderPromise = (async () => {
+            console.log(`[DCA] Fetching ${ticker} for period ${period}`);
+            try {
+                const data = await loadTickerDataForPeriod(ticker, period);
+                console.log(`[DCA] Loaded ${data.length} rows for ${ticker}`);
+                return data;
+            } catch (err) {
+                console.error(`[DCA] Error loading ${ticker}:`, err);
+                return [];
+            }
+        })();
+
+        tickerDataCache.set(cacheKey, loaderPromise);
+        return loaderPromise;
     }
     
     // Load all tickers for ALL mode - loads each ticker independently with caching
@@ -945,7 +976,7 @@
             const processedData = {};
             const yearsBack = period === 'YTD' ? 'YTD' : parseInt(period.replace('Y', ''));
             
-            processedData[selectedTicker] = calculateWeeklyDCA(tickerData, yearsBack);
+            processedData[selectedTicker] = await getDcaResultsForTicker(selectedTicker, period, tickerData, yearsBack);
             
             updateProgress(80, 'Preparing visualization...');
 

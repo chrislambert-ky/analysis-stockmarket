@@ -584,38 +584,6 @@
             }
         }
 
-        const candidates = [
-            `../data/${sym}-data-raw.csv`,
-            `../data/${sym}-data-bod.csv`
-        ];
-        for (const url of candidates) {
-            try {
-                const res = await fetch(url);
-                if (!res.ok) continue;
-                const text = await res.text();
-                const parsed = Papa.parse(text, { header: true, dynamicTyping: true, skipEmptyLines: true });
-                const mapped = parsed.data.map(row => {
-                    const rawDate = row['Date_add'] ?? row['Date'] ?? row['date'];
-                    let Date_add = null;
-                    try { Date_add = rawDate ? toYMDFromString(rawDate) : null; } catch (e) { Date_add = rawDate; }
-                    return {
-                        Date_add: Date_add,
-                        Symbol: String(row['Symbol'] ?? row['symbol'] ?? sym).trim(),
-                        Close: row['Close'] != null ? Number(row['Close']) : null,
-                        Low: row['Low'] != null ? Number(row['Low']) : null,
-                        Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
-                        Open: row['Open'] != null ? Number(row['Open']) : null,
-                        High: row['High'] != null ? Number(row['High']) : null
-                    };
-                }).filter(r => r && r.Date_add);
-                if (mapped.length) {
-                    perTickerCache[sym] = mapped;
-                    return mapped;
-                }
-            } catch (e) {
-                // try next candidate
-            }
-        }
         // Final fallback: return empty array so caller can handle missing data gracefully
         perTickerCache[sym] = [];
         return [];
