@@ -1,5 +1,8 @@
 name: Update Stock Market Data
 
+permissions:
+  contents: write
+
 on:
   # Run daily at 6 PM UTC (adjust for your timezone)
   schedule:
