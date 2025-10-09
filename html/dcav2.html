@@ -110,6 +110,7 @@
         <a href="bod-tickersv2.html">Buy-on-Dip (All Tickers)</a>
         <a href="dca-stratv2.html">Dollar Cost Averaging Advanced</a>
         <a href="bod-stratv2.html">Buy-on-Dip Advanced</a>
+        <a href="dca-vs-bod.html">Side-by-Side Avg vs. Dip</a>
         <a href="metricsv2.html">Metrics Dashboard</a>
         <a href="aboutv2.html">About</a>
     </nav>
@@ -429,15 +430,17 @@
         allTickers.forEach(ticker => {
             const tickerResults = processedData[ticker];
             if (tickerResults.length > 0) {
-                const firstResult = tickerResults[0];
                 const lastResult = tickerResults[tickerResults.length - 1];
-                
+                const purchaseDates = tickerResults.filter(r => r.isPurchaseDay).map(r => r.date);
+                const purchaseCount = purchaseDates.length;
+                const firstPurchase = purchaseCount ? purchaseDates[0] : 'N/A';
+                const lastPurchase = purchaseCount ? purchaseDates[purchaseCount - 1] : 'N/A';
                 const totalInvested = lastResult.cumulativeInvested;
                 const finalValue = lastResult.cumulativeValue;
                 const totalReturn = finalValue - totalInvested;
-                const percentGainVal = ((finalValue - totalInvested) / totalInvested * 100).toFixed(2);
+                const percentGainVal = totalInvested > 0 ? ((finalValue - totalInvested) / totalInvested * 100).toFixed(2) : '0.00';
                 
-                csvContent += `${ticker},${totalInvested.toFixed(2)},${finalValue.toFixed(2)},${totalReturn.toFixed(2)},${percentGainVal}%,${tickerResults.length},${firstResult.date},${lastResult.date}\n`;
+                csvContent += `${ticker},${totalInvested.toFixed(2)},${finalValue.toFixed(2)},${totalReturn.toFixed(2)},${percentGainVal}%,${purchaseCount},${firstPurchase},${lastPurchase}\n`;
             }
         });
         
@@ -464,13 +467,14 @@
             // Get final values from last result
             const lastResult = tickerResults[tickerResults.length - 1];
             // Count unique investment week dates (use Set to be consistent with ALL aggregation)
-            const weeksSet = new Set(tickerResults.map(r => r.date));
-            const mondaysCount = weeksSet.size;
+                const purchaseDates = tickerResults.filter(r => r.isPurchaseDay).map(r => r.date);
+                const weeksSet = new Set(purchaseDates);
+                const mondaysCount = weeksSet.size;
             const totalInvested = lastResult.cumulativeInvested;
             const totalEndValue = lastResult.cumulativeValue;
             const totalShares = lastResult.cumulativeShares;
             const gainAmount = totalEndValue - totalInvested;
-            const gainPercent = ((totalEndValue - totalInvested) / totalInvested * 100).toFixed(2);
+            const gainPercent = totalInvested > 0 ? ((totalEndValue - totalInvested) / totalInvested * 100).toFixed(2) : '0.00';
             
             metrics.push({
                 ticker: ticker,
@@ -607,10 +611,10 @@
             return [];
         }
         
-        let cumulativeShares = 0;
-        let cumulativeInvested = 0;
-        const weeklyInvestment = 25;
-        const results = [];
+    let cumulativeShares = 0;
+    let cumulativeInvested = 0;
+    const weeklyInvestment = 25;
+    const weeklyResults = [];
         
         // Generate weekly target dates (Mondays)
         let currentDate = new Date(finalStartDate);
@@ -626,14 +630,14 @@
             const closestTradingDay = findClosestTradingDay(filteredData, targetDateStr);
             
             if (closestTradingDay) {
-                const avgDailyPrice = parseFloat(closestTradingDay.avg_daily_price);
+                const avgDailyPrice = parseFloat(closestTradingDay.avg_daily_price ?? closestTradingDay.Close);
                 const closingPrice = parseFloat(closestTradingDay.Close);
                 const sharesThisWeek = weeklyInvestment / avgDailyPrice;
                 
                 cumulativeShares += sharesThisWeek;
                 cumulativeInvested += weeklyInvestment;
                 
-                results.push({
+                weeklyResults.push({
                     date: closestTradingDay.Date_add,
                     weekday: closestTradingDay.Weekday,
                     close: closingPrice,
@@ -642,7 +646,8 @@
                     investedThisWeek: weeklyInvestment,
                     cumulativeShares: cumulativeShares,
                     cumulativeInvested: cumulativeInvested,
-                    cumulativeValue: cumulativeShares * closingPrice
+                    cumulativeValue: cumulativeShares * closingPrice,
+                    isPurchaseDay: true
                 });
             }
             
@@ -650,7 +655,47 @@
             currentDate.setDate(currentDate.getDate() + 7);
         }
 
-        return results;
+        const eventsByDate = new Map();
+        weeklyResults.forEach(event => {
+            eventsByDate.set(event.date, event);
+        });
+
+        let lastCumShares = 0;
+        let lastCumInvested = 0;
+        const dailyResults = [];
+
+        filteredData.forEach(row => {
+            const date = row.Date_add;
+            const event = eventsByDate.get(date);
+            let sharesThisWeek = 0;
+            let investedThisWeek = 0;
+
+            if (event) {
+                lastCumShares = event.cumulativeShares;
+                lastCumInvested = event.cumulativeInvested;
+                sharesThisWeek = event.sharesThisWeek;
+                investedThisWeek = event.investedThisWeek;
+            }
+
+            const closePrice = parseFloat(row.Close);
+            const avgPrice = parseFloat(row.avg_daily_price ?? row.Close);
+            const cumulativeValue = isFinite(closePrice) ? lastCumShares * closePrice : null;
+
+            dailyResults.push({
+                date,
+                weekday: row.Weekday,
+                close: closePrice,
+                avgDailyPrice: avgPrice,
+                sharesThisWeek,
+                investedThisWeek,
+                cumulativeShares: lastCumShares,
+                cumulativeInvested: lastCumInvested,
+                cumulativeValue,
+                isPurchaseDay: Boolean(event)
+            });
+        });
+
+        return dailyResults;
     }
     
     // Helper function to find closest trading day to a target date

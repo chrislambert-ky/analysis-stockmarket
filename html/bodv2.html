@@ -95,6 +95,7 @@
         <a href="bod-tickersv2.html">Buy-on-Dip (All Tickers)</a>
         <a href="dca-stratv2.html">Dollar Cost Averaging Advanced</a>
         <a href="bod-stratv2.html">Advanced Buy-on-Dip</a>
+        <a href="dca-vs-bod.html">Side-by-Side Avg vs. Dip</a>
         <a href="metricsv2.html">Metrics Dashboard</a>
         <a href="aboutv2.html">About</a>
     </nav>
@@ -842,6 +843,64 @@
     }
 
     document.getElementById('download-analysis-btn').addEventListener('click', downloadCSVForSelection);
+
+    async function buildDailyBodRows(ticker, period, eventRows) {
+        const priceRows = await loadTickerDataForPeriod(ticker, period);
+        if (!Array.isArray(priceRows) || priceRows.length === 0) return [];
+
+        const eventsByDate = new Map();
+        (eventRows || []).forEach(row => {
+            const date = toYMDFromString(row.Date_add || row.Date || row.date);
+            if (!date) return;
+            if (!eventsByDate.has(date)) eventsByDate.set(date, []);
+            eventsByDate.get(date).push(row);
+        });
+
+        const sortedPriceRows = priceRows
+            .map(row => ({
+                date: toYMDFromString(row.Date_add || row.Date || row.date),
+                raw: row
+            }))
+            .filter(entry => entry.date)
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        let cumulativeShares = 0;
+        let cumulativeInvested = 0;
+        const dailyRows = [];
+
+        sortedPriceRows.forEach(entry => {
+            const { date, raw } = entry;
+            const events = eventsByDate.get(date) || [];
+            let sharesToday = 0;
+            let investedToday = 0;
+            events.forEach(evt => {
+                const shares = Number(evt['Shares Purchased'] ?? evt['Shares_Purchased'] ?? evt.SharesPurchased ?? 0) || 0;
+                const invested = Number(evt['Dollars Invested'] ?? evt['Dollars_Invested'] ?? evt.DollarsInvested ?? evt['Buy_Price'] ?? 0) || 0;
+                sharesToday += shares;
+                investedToday += invested;
+            });
+
+            cumulativeShares += sharesToday;
+            cumulativeInvested += investedToday;
+            const closePrice = raw.Close != null ? Number(raw.Close) : null;
+            const weekday = raw.Weekday || (parseDateStringAsLocal(date)?.toLocaleDateString('en-US', { weekday: 'long' }) || '');
+
+            dailyRows.push({
+                Date_add: date,
+                Weekday: weekday,
+                Symbol: ticker,
+                Close: closePrice,
+                'Shares Purchased': sharesToday,
+                'Dollars Invested': investedToday,
+                cumulativeShares,
+                cumulativeInvested,
+                isEventDay: events.length > 0
+            });
+        });
+
+        return dailyRows;
+    }
+
     function prepareSeries(data, tickers, allDates) {
         // Build cumulative series from raw per-date rows (Dollars Invested and Shares Purchased)
         const series = [];
@@ -935,25 +994,27 @@
             updateProgress(40, 'Calculating BOD events for selected ticker...');
 
             // Use the new V2 calculation that reads per-ticker CSV files
-            const filteredBodData = await calculateBODFromTickerData([selectedTicker], activePeriod || 'YTD');
+            const bodEventRows = await calculateBODFromTickerData([selectedTicker], activePeriod || 'YTD');
             
             updateProgress(60, 'Building cumulative metrics...');
             
-            // Store the filtered data so download and debug can use exactly what was rendered
-            lastRenderedBodData = filteredBodData.slice();
+            // Store the event data so download and debug can use exactly what was rendered
+            lastRenderedBodData = bodEventRows.slice();
+
+            const bodDailyRows = await buildDailyBodRows(selectedTicker, activePeriod || 'YTD', bodEventRows);
+            const bodRowsForChart = bodDailyRows.length ? bodDailyRows : bodEventRows;
             
-            const filteredDates = new Set(filteredBodData.map(r => r.Date_add));
-            const allDates = filteredDates;
+            const filteredDates = new Set(bodRowsForChart.map(r => r.Date_add));
 
             updateProgress(90, 'Preparing chart...');
-            const sortedDates = Array.from(filteredDates.size ? filteredDates : allDates).sort();
-            const series = prepareSeries(filteredBodData, [selectedTicker], sortedDates);
+            const sortedDates = Array.from(filteredDates).sort();
+            const series = prepareSeries(bodRowsForChart, [selectedTicker], sortedDates);
             
             // Build lookup for percent gain using recomputed cumulatives within the filtered (period) data
-            // Optimization: pre-group filteredBodData by ticker to avoid repeated .filter() scans
+            // Optimization: pre-group the chart rows by ticker to avoid repeated .filter() scans
             const gainLookup = {};
             const groups = {};
-            filteredBodData.forEach(r => {
+            bodRowsForChart.forEach(r => {
                 const s = r.Symbol || 'UNKNOWN';
                 if (!groups[s]) groups[s] = [];
                 groups[s].push(r);
@@ -991,26 +1052,22 @@
                         const date = params[0].axisValue;
                         let html = date + '<br/>';
                         params.forEach(p => {
-                            // Avoid printing Value/Invested/Shares here to prevent duplication —
-                            // those are shown in the consolidated ticker summary below.
-                            if (p.seriesName.includes('Value') || p.seriesName.includes('Invested') || p.seriesName.includes('Shares')) {
-                                return; // skip this series line
-                            }
                             let val = (typeof p.value === 'number' && !isNaN(p.value)) ? p.value : (Array.isArray(p.value) && p.value.length > 1 && !isNaN(p.value[1]) ? p.value[1] : '');
-                            // format any other series values generically
+                            if (typeof val === 'number' && (p.seriesName.includes('Value') || p.seriesName.includes('Invested'))) {
+                                val = formatCurrency(val);
+                            }
                             html += '<span style="color:' + p.color + '">●</span> ' + p.seriesName + ': ' + val + '<br/>';
                         });
-                                    // show total shares, invested, and value per ticker for this date
-                                    [selectedTicker].forEach(ticker => {
-                                        const key = ticker + '_' + date;
-                                        if (gainLookup[key]) {
-                                            const info = gainLookup[key];
-                                            const shares = info.shares != null ? info.shares : '';
-                                            const invested = info.invested != null ? formatCurrency(info.invested) : '';
-                                            const value = info.value != null ? formatCurrency(info.value) : '';
-                                            html += '<b>' + ticker + ' — Shares: ' + shares + ', Invested: ' + invested + ', Value: ' + value + '</b><br/>';
-                                        }
-                                    });
+                        [selectedTicker].forEach(ticker => {
+                            const key = ticker + '_' + date;
+                            if (gainLookup[key]) {
+                                const info = gainLookup[key];
+                                const pct = percentGain(info.value, info.invested);
+                                if (pct != null && !isNaN(pct)) {
+                                    html += '<b>' + ticker + ' % Gain: ' + pct.toFixed(2) + '%</b><br/>';
+                                }
+                            }
+                        });
                         return html;
                     }
                 },
@@ -1028,7 +1085,7 @@
         };
         chart.setOption(option);
         
-            // Calculate overall percent return for each ticker (last value)
+            // Calculate overall percent return for the selected ticker using the grouped daily rows
                 // Use grouped rows (built earlier) to compute summary efficiently
                 let summaryArr = [selectedTicker].map(ticker => {
                     const tickerRows = (groups[ticker] || []).slice().sort((a,b)=> new Date(a.Date_add)-new Date(b.Date_add));
@@ -1051,7 +1108,9 @@
     document.getElementById('selected-ticker-display').textContent = 'Selected: ' + selectedTicker;
     document.getElementById('download-analysis-btn').disabled = false;
 
-    // Compute and display detailed metrics based on filteredBodData and the selected period
+    const filteredBodData = bodRowsForChart;
+
+    // Compute and display detailed metrics based on the rows driving the chart and the selected period
     if (!filteredBodData || filteredBodData.length === 0) {
         document.getElementById('detailed-metrics').style.display = 'none';
     } else {
