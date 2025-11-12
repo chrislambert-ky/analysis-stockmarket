@@ -23,23 +23,23 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:46.421163+00:00",
+    "last_updated": "2025-11-12T23:35:09.534583+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/AAPL/AAPL-2005.csv",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 127191,
-        "last_updated": "2025-11-11T23:34:46.431878+00:00"
+        "size_bytes": 127212,
+        "last_updated": "2025-11-12T23:35:09.545366+00:00"
       },
       "2006": {
         "path": "data/tickers/AAPL/AAPL-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 126741,
-        "last_updated": "2025-11-11T23:34:46.442019+00:00"
+        "size_bytes": 126791,
+        "last_updated": "2025-11-12T23:35:09.555689+00:00"
       },
       "2007": {
         "path": "data/tickers/AAPL/AAPL-2007.csv",
@@ -47,31 +47,31 @@
         "max_date": "2007-12-31",
         "row_count": 251,
         "size_bytes": 126367,
-        "last_updated": "2025-11-11T23:34:46.452065+00:00"
+        "last_updated": "2025-11-12T23:35:09.565945+00:00"
       },
       "2008": {
         "path": "data/tickers/AAPL/AAPL-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 127291,
-        "last_updated": "2025-11-11T23:34:46.462124+00:00"
+        "size_bytes": 127303,
+        "last_updated": "2025-11-12T23:35:09.576261+00:00"
       },
       "2009": {
         "path": "data/tickers/AAPL/AAPL-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 126754,
-        "last_updated": "2025-11-11T23:34:46.472162+00:00"
+        "size_bytes": 126810,
+        "last_updated": "2025-11-12T23:35:09.586366+00:00"
       },
       "2010": {
         "path": "data/tickers/AAPL/AAPL-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 126467,
-        "last_updated": "2025-11-11T23:34:46.482195+00:00"
+        "size_bytes": 126471,
+        "last_updated": "2025-11-12T23:35:09.596576+00:00"
       },
       "2011": {
         "path": "data/tickers/AAPL/AAPL-2011.csv",
@@ -79,119 +79,119 @@
         "max_date": "2011-12-30",
         "row_count": 252,
         "size_bytes": 129529,
-        "last_updated": "2025-11-11T23:34:46.492560+00:00"
+        "last_updated": "2025-11-12T23:35:09.607024+00:00"
       },
       "2012": {
         "path": "data/tickers/AAPL/AAPL-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 132552,
-        "last_updated": "2025-11-11T23:34:46.502971+00:00"
+        "size_bytes": 132596,
+        "last_updated": "2025-11-12T23:35:09.617569+00:00"
       },
       "2013": {
         "path": "data/tickers/AAPL/AAPL-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 133817,
-        "last_updated": "2025-11-11T23:34:46.513469+00:00"
+        "size_bytes": 133815,
+        "last_updated": "2025-11-12T23:35:09.628155+00:00"
       },
       "2014": {
         "path": "data/tickers/AAPL/AAPL-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 133446,
-        "last_updated": "2025-11-11T23:34:46.523934+00:00"
+        "size_bytes": 133475,
+        "last_updated": "2025-11-12T23:35:09.638787+00:00"
       },
       "2015": {
         "path": "data/tickers/AAPL/AAPL-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 133433,
-        "last_updated": "2025-11-11T23:34:46.534416+00:00"
+        "size_bytes": 133400,
+        "last_updated": "2025-11-12T23:35:09.649427+00:00"
       },
       "2016": {
         "path": "data/tickers/AAPL/AAPL-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 133432,
-        "last_updated": "2025-11-11T23:34:46.544943+00:00"
+        "size_bytes": 133373,
+        "last_updated": "2025-11-12T23:35:09.660088+00:00"
       },
       "2017": {
         "path": "data/tickers/AAPL/AAPL-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 132397,
-        "last_updated": "2025-11-11T23:34:46.555310+00:00"
+        "size_bytes": 132412,
+        "last_updated": "2025-11-12T23:35:09.670587+00:00"
       },
       "2018": {
         "path": "data/tickers/AAPL/AAPL-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 132484,
-        "last_updated": "2025-11-11T23:34:46.565690+00:00"
+        "size_bytes": 132478,
+        "last_updated": "2025-11-12T23:35:09.681103+00:00"
       },
       "2019": {
         "path": "data/tickers/AAPL/AAPL-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 132778,
-        "last_updated": "2025-11-11T23:34:46.576520+00:00"
+        "size_bytes": 132812,
+        "last_updated": "2025-11-12T23:35:09.691639+00:00"
       },
       "2020": {
         "path": "data/tickers/AAPL/AAPL-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 135189,
-        "last_updated": "2025-11-11T23:34:46.587166+00:00"
+        "size_bytes": 135192,
+        "last_updated": "2025-11-12T23:35:09.702401+00:00"
       },
       "2021": {
         "path": "data/tickers/AAPL/AAPL-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 139437,
-        "last_updated": "2025-11-11T23:34:46.597892+00:00"
+        "size_bytes": 139348,
+        "last_updated": "2025-11-12T23:35:09.713225+00:00"
       },
       "2022": {
         "path": "data/tickers/AAPL/AAPL-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 139627,
-        "last_updated": "2025-11-11T23:34:46.608658+00:00"
+        "size_bytes": 139583,
+        "last_updated": "2025-11-12T23:35:09.724084+00:00"
       },
       "2023": {
         "path": "data/tickers/AAPL/AAPL-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 138663,
-        "last_updated": "2025-11-11T23:34:46.619664+00:00"
+        "size_bytes": 138666,
+        "last_updated": "2025-11-12T23:35:09.734836+00:00"
       },
       "2024": {
         "path": "data/tickers/AAPL/AAPL-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 139626,
-        "last_updated": "2025-11-11T23:34:46.630368+00:00"
+        "size_bytes": 139682,
+        "last_updated": "2025-11-12T23:35:09.745746+00:00"
       },
       "2025": {
         "path": "data/tickers/AAPL/AAPL-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 119732,
-        "last_updated": "2025-11-11T23:34:46.639755+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 120264,
+        "last_updated": "2025-11-12T23:35:09.755329+00:00"
       }
     }
   },
@@ -210,55 +210,55 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:46.644248+00:00",
+    "last_updated": "2025-11-12T23:35:09.759896+00:00",
     "files": {
       "2014": {
         "path": "data/tickers/ALLY/ALLY-2014.csv",
         "min_date": "2014-01-28",
         "max_date": "2014-12-31",
         "row_count": 235,
-        "size_bytes": 123160,
-        "last_updated": "2025-11-11T23:34:46.654127+00:00"
+        "size_bytes": 123292,
+        "last_updated": "2025-11-12T23:35:09.769783+00:00"
       },
       "2015": {
         "path": "data/tickers/ALLY/ALLY-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 133224,
-        "last_updated": "2025-11-11T23:34:46.664640+00:00"
+        "size_bytes": 133294,
+        "last_updated": "2025-11-12T23:35:09.780452+00:00"
       },
       "2016": {
         "path": "data/tickers/ALLY/ALLY-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 133110,
-        "last_updated": "2025-11-11T23:34:46.675166+00:00"
+        "size_bytes": 133116,
+        "last_updated": "2025-11-12T23:35:09.791407+00:00"
       },
       "2017": {
         "path": "data/tickers/ALLY/ALLY-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 132607,
-        "last_updated": "2025-11-11T23:34:46.685558+00:00"
+        "size_bytes": 132583,
+        "last_updated": "2025-11-12T23:35:09.802008+00:00"
       },
       "2018": {
         "path": "data/tickers/ALLY/ALLY-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 132459,
-        "last_updated": "2025-11-11T23:34:46.695924+00:00"
+        "size_bytes": 132390,
+        "last_updated": "2025-11-12T23:35:09.812612+00:00"
       },
       "2019": {
         "path": "data/tickers/ALLY/ALLY-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 132782,
-        "last_updated": "2025-11-11T23:34:46.706315+00:00"
+        "size_bytes": 132785,
+        "last_updated": "2025-11-12T23:35:09.823288+00:00"
       },
       "2020": {
         "path": "data/tickers/ALLY/ALLY-2020.csv",
@@ -266,47 +266,47 @@
         "max_date": "2020-12-31",
         "row_count": 253,
         "size_bytes": 133167,
-        "last_updated": "2025-11-11T23:34:46.716792+00:00"
+        "last_updated": "2025-11-12T23:35:09.833947+00:00"
       },
       "2021": {
         "path": "data/tickers/ALLY/ALLY-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 132632,
-        "last_updated": "2025-11-11T23:34:46.727134+00:00"
+        "size_bytes": 132619,
+        "last_updated": "2025-11-12T23:35:09.844523+00:00"
       },
       "2022": {
         "path": "data/tickers/ALLY/ALLY-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 132305,
-        "last_updated": "2025-11-11T23:34:46.737522+00:00"
+        "size_bytes": 132357,
+        "last_updated": "2025-11-12T23:35:09.855072+00:00"
       },
       "2023": {
         "path": "data/tickers/ALLY/ALLY-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 131890,
-        "last_updated": "2025-11-11T23:34:46.747870+00:00"
+        "size_bytes": 131903,
+        "last_updated": "2025-11-12T23:35:09.865643+00:00"
       },
       "2024": {
         "path": "data/tickers/ALLY/ALLY-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 132680,
-        "last_updated": "2025-11-11T23:34:46.758230+00:00"
+        "size_bytes": 132648,
+        "last_updated": "2025-11-12T23:35:09.876205+00:00"
       },
       "2025": {
         "path": "data/tickers/ALLY/ALLY-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 113737,
-        "last_updated": "2025-11-11T23:34:46.767342+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 114264,
+        "last_updated": "2025-11-12T23:35:09.885523+00:00"
       }
     }
   },
@@ -334,7 +334,7 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:46.774313+00:00",
+    "last_updated": "2025-11-12T23:35:09.892520+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/AMZN/AMZN-2005.csv",
@@ -342,7 +342,7 @@
         "max_date": "2005-12-30",
         "row_count": 252,
         "size_bytes": 126873,
-        "last_updated": "2025-11-11T23:34:46.784460+00:00"
+        "last_updated": "2025-11-12T23:35:09.902730+00:00"
       },
       "2006": {
         "path": "data/tickers/AMZN/AMZN-2006.csv",
@@ -350,7 +350,7 @@
         "max_date": "2006-12-29",
         "row_count": 251,
         "size_bytes": 126559,
-        "last_updated": "2025-11-11T23:34:46.794437+00:00"
+        "last_updated": "2025-11-12T23:35:09.912893+00:00"
       },
       "2007": {
         "path": "data/tickers/AMZN/AMZN-2007.csv",
@@ -358,7 +358,7 @@
         "max_date": "2007-12-31",
         "row_count": 251,
         "size_bytes": 126036,
-        "last_updated": "2025-11-11T23:34:46.804308+00:00"
+        "last_updated": "2025-11-12T23:35:09.922926+00:00"
       },
       "2008": {
         "path": "data/tickers/AMZN/AMZN-2008.csv",
@@ -366,7 +366,7 @@
         "max_date": "2008-12-31",
         "row_count": 253,
         "size_bytes": 126913,
-        "last_updated": "2025-11-11T23:34:46.814347+00:00"
+        "last_updated": "2025-11-12T23:35:09.933104+00:00"
       },
       "2009": {
         "path": "data/tickers/AMZN/AMZN-2009.csv",
@@ -374,7 +374,7 @@
         "max_date": "2009-12-31",
         "row_count": 252,
         "size_bytes": 126337,
-        "last_updated": "2025-11-11T23:34:46.824260+00:00"
+        "last_updated": "2025-11-12T23:35:09.943280+00:00"
       },
       "2010": {
         "path": "data/tickers/AMZN/AMZN-2010.csv",
@@ -382,7 +382,7 @@
         "max_date": "2010-12-31",
         "row_count": 252,
         "size_bytes": 126130,
-        "last_updated": "2025-11-11T23:34:46.834185+00:00"
+        "last_updated": "2025-11-12T23:35:09.953610+00:00"
       },
       "2011": {
         "path": "data/tickers/AMZN/AMZN-2011.csv",
@@ -390,7 +390,7 @@
         "max_date": "2011-12-30",
         "row_count": 252,
         "size_bytes": 127082,
-        "last_updated": "2025-11-11T23:34:46.844397+00:00"
+        "last_updated": "2025-11-12T23:35:09.964181+00:00"
       },
       "2012": {
         "path": "data/tickers/AMZN/AMZN-2012.csv",
@@ -398,7 +398,7 @@
         "max_date": "2012-12-31",
         "row_count": 250,
         "size_bytes": 128139,
-        "last_updated": "2025-11-11T23:34:46.854652+00:00"
+        "last_updated": "2025-11-12T23:35:09.974732+00:00"
       },
       "2013": {
         "path": "data/tickers/AMZN/AMZN-2013.csv",
@@ -406,7 +406,7 @@
         "max_date": "2013-12-31",
         "row_count": 252,
         "size_bytes": 133198,
-        "last_updated": "2025-11-11T23:34:46.865137+00:00"
+        "last_updated": "2025-11-12T23:35:09.987286+00:00"
       },
       "2014": {
         "path": "data/tickers/AMZN/AMZN-2014.csv",
@@ -414,7 +414,7 @@
         "max_date": "2014-12-31",
         "row_count": 252,
         "size_bytes": 133014,
-        "last_updated": "2025-11-11T23:34:46.875564+00:00"
+        "last_updated": "2025-11-12T23:35:09.998383+00:00"
       },
       "2015": {
         "path": "data/tickers/AMZN/AMZN-2015.csv",
@@ -422,7 +422,7 @@
         "max_date": "2015-12-31",
         "row_count": 252,
         "size_bytes": 132968,
-        "last_updated": "2025-11-11T23:34:46.886011+00:00"
+        "last_updated": "2025-11-12T23:35:10.009157+00:00"
       },
       "2016": {
         "path": "data/tickers/AMZN/AMZN-2016.csv",
@@ -430,7 +430,7 @@
         "max_date": "2016-12-30",
         "row_count": 252,
         "size_bytes": 132290,
-        "last_updated": "2025-11-11T23:34:46.896391+00:00"
+        "last_updated": "2025-11-12T23:35:10.019850+00:00"
       },
       "2017": {
         "path": "data/tickers/AMZN/AMZN-2017.csv",
@@ -438,7 +438,7 @@
         "max_date": "2017-12-29",
         "row_count": 251,
         "size_bytes": 131512,
-        "last_updated": "2025-11-11T23:34:46.906779+00:00"
+        "last_updated": "2025-11-12T23:35:10.030385+00:00"
       },
       "2018": {
         "path": "data/tickers/AMZN/AMZN-2018.csv",
@@ -446,7 +446,7 @@
         "max_date": "2018-12-31",
         "row_count": 251,
         "size_bytes": 130788,
-        "last_updated": "2025-11-11T23:34:46.917142+00:00"
+        "last_updated": "2025-11-12T23:35:10.040969+00:00"
       },
       "2019": {
         "path": "data/tickers/AMZN/AMZN-2019.csv",
@@ -454,7 +454,7 @@
         "max_date": "2019-12-31",
         "row_count": 252,
         "size_bytes": 131692,
-        "last_updated": "2025-11-11T23:34:46.927598+00:00"
+        "last_updated": "2025-11-12T23:35:10.051612+00:00"
       },
       "2020": {
         "path": "data/tickers/AMZN/AMZN-2020.csv",
@@ -462,7 +462,7 @@
         "max_date": "2020-12-31",
         "row_count": 253,
         "size_bytes": 136461,
-        "last_updated": "2025-11-11T23:34:46.938298+00:00"
+        "last_updated": "2025-11-12T23:35:10.062459+00:00"
       },
       "2021": {
         "path": "data/tickers/AMZN/AMZN-2021.csv",
@@ -470,7 +470,7 @@
         "max_date": "2021-12-31",
         "row_count": 252,
         "size_bytes": 138587,
-        "last_updated": "2025-11-11T23:34:46.949023+00:00"
+        "last_updated": "2025-11-12T23:35:10.073350+00:00"
       },
       "2022": {
         "path": "data/tickers/AMZN/AMZN-2022.csv",
@@ -478,7 +478,7 @@
         "max_date": "2022-12-30",
         "row_count": 251,
         "size_bytes": 135060,
-        "last_updated": "2025-11-11T23:34:46.959625+00:00"
+        "last_updated": "2025-11-12T23:35:10.084074+00:00"
       },
       "2023": {
         "path": "data/tickers/AMZN/AMZN-2023.csv",
@@ -486,7 +486,7 @@
         "max_date": "2023-12-29",
         "row_count": 250,
         "size_bytes": 133493,
-        "last_updated": "2025-11-11T23:34:46.970144+00:00"
+        "last_updated": "2025-11-12T23:35:10.094729+00:00"
       },
       "2024": {
         "path": "data/tickers/AMZN/AMZN-2024.csv",
@@ -494,15 +494,15 @@
         "max_date": "2024-12-31",
         "row_count": 252,
         "size_bytes": 136395,
-        "last_updated": "2025-11-11T23:34:46.980782+00:00"
+        "last_updated": "2025-11-12T23:35:10.105494+00:00"
       },
       "2025": {
         "path": "data/tickers/AMZN/AMZN-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 117711,
-        "last_updated": "2025-11-11T23:34:46.990099+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 118216,
+        "last_updated": "2025-11-12T23:35:10.114913+00:00"
       }
     }
   },
@@ -521,71 +521,71 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:46.994359+00:00",
+    "last_updated": "2025-11-12T23:35:10.119263+00:00",
     "files": {
       "2014": {
         "path": "data/tickers/ARKK/ARKK-2014.csv",
         "min_date": "2014-10-31",
         "max_date": "2014-12-31",
         "row_count": 42,
-        "size_bytes": 22554,
-        "last_updated": "2025-11-11T23:34:46.997168+00:00"
+        "size_bytes": 22549,
+        "last_updated": "2025-11-12T23:35:10.122119+00:00"
       },
       "2015": {
         "path": "data/tickers/ARKK/ARKK-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 131878,
-        "last_updated": "2025-11-11T23:34:47.007664+00:00"
+        "size_bytes": 131867,
+        "last_updated": "2025-11-12T23:35:10.132614+00:00"
       },
       "2016": {
         "path": "data/tickers/ARKK/ARKK-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 132044,
-        "last_updated": "2025-11-11T23:34:47.018046+00:00"
+        "size_bytes": 132093,
+        "last_updated": "2025-11-12T23:35:10.143128+00:00"
       },
       "2017": {
         "path": "data/tickers/ARKK/ARKK-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 131714,
-        "last_updated": "2025-11-11T23:34:47.028447+00:00"
+        "size_bytes": 131705,
+        "last_updated": "2025-11-12T23:35:10.153561+00:00"
       },
       "2018": {
         "path": "data/tickers/ARKK/ARKK-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 131764,
-        "last_updated": "2025-11-11T23:34:47.038798+00:00"
+        "size_bytes": 131761,
+        "last_updated": "2025-11-12T23:35:10.164023+00:00"
       },
       "2019": {
         "path": "data/tickers/ARKK/ARKK-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 132269,
-        "last_updated": "2025-11-11T23:34:47.049141+00:00"
+        "size_bytes": 132270,
+        "last_updated": "2025-11-12T23:35:10.174519+00:00"
       },
       "2020": {
         "path": "data/tickers/ARKK/ARKK-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 133218,
-        "last_updated": "2025-11-11T23:34:47.059667+00:00"
+        "size_bytes": 133231,
+        "last_updated": "2025-11-12T23:35:10.185141+00:00"
       },
       "2021": {
         "path": "data/tickers/ARKK/ARKK-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 137064,
-        "last_updated": "2025-11-11T23:34:47.070362+00:00"
+        "size_bytes": 137052,
+        "last_updated": "2025-11-12T23:35:10.195957+00:00"
       },
       "2022": {
         "path": "data/tickers/ARKK/ARKK-2022.csv",
@@ -593,7 +593,7 @@
         "max_date": "2022-12-30",
         "row_count": 251,
         "size_bytes": 132327,
-        "last_updated": "2025-11-11T23:34:47.080772+00:00"
+        "last_updated": "2025-11-12T23:35:10.206456+00:00"
       },
       "2023": {
         "path": "data/tickers/ARKK/ARKK-2023.csv",
@@ -601,7 +601,7 @@
         "max_date": "2023-12-29",
         "row_count": 250,
         "size_bytes": 131396,
-        "last_updated": "2025-11-11T23:34:47.091042+00:00"
+        "last_updated": "2025-11-12T23:35:10.216858+00:00"
       },
       "2024": {
         "path": "data/tickers/ARKK/ARKK-2024.csv",
@@ -609,15 +609,15 @@
         "max_date": "2024-12-31",
         "row_count": 252,
         "size_bytes": 130931,
-        "last_updated": "2025-11-11T23:34:47.101313+00:00"
+        "last_updated": "2025-11-12T23:35:10.227320+00:00"
       },
       "2025": {
         "path": "data/tickers/ARKK/ARKK-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 111885,
-        "last_updated": "2025-11-11T23:34:47.110402+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 112391,
+        "last_updated": "2025-11-12T23:35:10.236583+00:00"
       }
     }
   },
@@ -630,55 +630,55 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:47.113238+00:00",
+    "last_updated": "2025-11-12T23:35:10.239457+00:00",
     "files": {
       "2020": {
         "path": "data/tickers/FBCG/FBCG-2020.csv",
         "min_date": "2020-06-05",
         "max_date": "2020-12-31",
         "row_count": 146,
-        "size_bytes": 76924,
-        "last_updated": "2025-11-11T23:34:47.119832+00:00"
+        "size_bytes": 76921,
+        "last_updated": "2025-11-12T23:35:10.246088+00:00"
       },
       "2021": {
         "path": "data/tickers/FBCG/FBCG-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 132348,
-        "last_updated": "2025-11-11T23:34:47.130173+00:00"
+        "size_bytes": 132362,
+        "last_updated": "2025-11-12T23:35:10.256541+00:00"
       },
       "2022": {
         "path": "data/tickers/FBCG/FBCG-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 132288,
-        "last_updated": "2025-11-11T23:34:47.140536+00:00"
+        "size_bytes": 132307,
+        "last_updated": "2025-11-12T23:35:10.266984+00:00"
       },
       "2023": {
         "path": "data/tickers/FBCG/FBCG-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 131506,
-        "last_updated": "2025-11-11T23:34:47.150795+00:00"
+        "size_bytes": 131509,
+        "last_updated": "2025-11-12T23:35:10.277453+00:00"
       },
       "2024": {
         "path": "data/tickers/FBCG/FBCG-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 132209,
-        "last_updated": "2025-11-11T23:34:47.161130+00:00"
+        "size_bytes": 132218,
+        "last_updated": "2025-11-12T23:35:10.287965+00:00"
       },
       "2025": {
         "path": "data/tickers/FBCG/FBCG-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 113238,
-        "last_updated": "2025-11-11T23:34:47.170141+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 113695,
+        "last_updated": "2025-11-12T23:35:10.297186+00:00"
       }
     }
   },
@@ -690,47 +690,47 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:47.172756+00:00",
+    "last_updated": "2025-11-12T23:35:10.299853+00:00",
     "files": {
       "2021": {
         "path": "data/tickers/FMAG/FMAG-2021.csv",
         "min_date": "2021-02-04",
         "max_date": "2021-12-31",
         "row_count": 230,
-        "size_bytes": 120638,
-        "last_updated": "2025-11-11T23:34:47.182321+00:00"
+        "size_bytes": 120599,
+        "last_updated": "2025-11-12T23:35:10.309558+00:00"
       },
       "2022": {
         "path": "data/tickers/FMAG/FMAG-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 131889,
-        "last_updated": "2025-11-11T23:34:47.192651+00:00"
+        "size_bytes": 131995,
+        "last_updated": "2025-11-12T23:35:10.320019+00:00"
       },
       "2023": {
         "path": "data/tickers/FMAG/FMAG-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 131162,
-        "last_updated": "2025-11-11T23:34:47.202875+00:00"
+        "size_bytes": 131113,
+        "last_updated": "2025-11-12T23:35:10.330438+00:00"
       },
       "2024": {
         "path": "data/tickers/FMAG/FMAG-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 132223,
-        "last_updated": "2025-11-11T23:34:47.213195+00:00"
+        "size_bytes": 132179,
+        "last_updated": "2025-11-12T23:35:10.340902+00:00"
       },
       "2025": {
         "path": "data/tickers/FMAG/FMAG-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 113248,
-        "last_updated": "2025-11-11T23:34:47.222204+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 113771,
+        "last_updated": "2025-11-12T23:35:10.350098+00:00"
       }
     }
   },
@@ -758,175 +758,175 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:47.228903+00:00",
+    "last_updated": "2025-11-12T23:35:10.356978+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/GOOGL/GOOGL-2005.csv",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 126832,
-        "last_updated": "2025-11-11T23:34:47.238933+00:00"
+        "size_bytes": 126876,
+        "last_updated": "2025-11-12T23:35:10.367168+00:00"
       },
       "2006": {
         "path": "data/tickers/GOOGL/GOOGL-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 127976,
-        "last_updated": "2025-11-11T23:34:47.249160+00:00"
+        "size_bytes": 127939,
+        "last_updated": "2025-11-12T23:35:10.377520+00:00"
       },
       "2007": {
         "path": "data/tickers/GOOGL/GOOGL-2007.csv",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 132147,
-        "last_updated": "2025-11-11T23:34:47.259527+00:00"
+        "size_bytes": 132142,
+        "last_updated": "2025-11-12T23:35:10.388068+00:00"
       },
       "2008": {
         "path": "data/tickers/GOOGL/GOOGL-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 131648,
-        "last_updated": "2025-11-11T23:34:47.269936+00:00"
+        "size_bytes": 131654,
+        "last_updated": "2025-11-12T23:35:10.398613+00:00"
       },
       "2009": {
         "path": "data/tickers/GOOGL/GOOGL-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 129666,
-        "last_updated": "2025-11-11T23:34:47.280272+00:00"
+        "size_bytes": 129640,
+        "last_updated": "2025-11-12T23:35:10.408995+00:00"
       },
       "2010": {
         "path": "data/tickers/GOOGL/GOOGL-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 133195,
-        "last_updated": "2025-11-11T23:34:47.290732+00:00"
+        "size_bytes": 133154,
+        "last_updated": "2025-11-12T23:35:10.419585+00:00"
       },
       "2011": {
         "path": "data/tickers/GOOGL/GOOGL-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 133695,
-        "last_updated": "2025-11-11T23:34:47.301118+00:00"
+        "size_bytes": 133677,
+        "last_updated": "2025-11-12T23:35:10.430147+00:00"
       },
       "2012": {
         "path": "data/tickers/GOOGL/GOOGL-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 132850,
-        "last_updated": "2025-11-11T23:34:47.311454+00:00"
+        "size_bytes": 132851,
+        "last_updated": "2025-11-12T23:35:10.440619+00:00"
       },
       "2013": {
         "path": "data/tickers/GOOGL/GOOGL-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 133402,
-        "last_updated": "2025-11-11T23:34:47.321885+00:00"
+        "size_bytes": 133400,
+        "last_updated": "2025-11-12T23:35:10.451158+00:00"
       },
       "2014": {
         "path": "data/tickers/GOOGL/GOOGL-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 133503,
-        "last_updated": "2025-11-11T23:34:47.332495+00:00"
+        "size_bytes": 133468,
+        "last_updated": "2025-11-12T23:35:10.461682+00:00"
       },
       "2015": {
         "path": "data/tickers/GOOGL/GOOGL-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 133309,
-        "last_updated": "2025-11-11T23:34:47.342947+00:00"
+        "size_bytes": 133298,
+        "last_updated": "2025-11-12T23:35:10.472240+00:00"
       },
       "2016": {
         "path": "data/tickers/GOOGL/GOOGL-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 133063,
-        "last_updated": "2025-11-11T23:34:47.353383+00:00"
+        "size_bytes": 133051,
+        "last_updated": "2025-11-12T23:35:10.482786+00:00"
       },
       "2017": {
         "path": "data/tickers/GOOGL/GOOGL-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 132353,
-        "last_updated": "2025-11-11T23:34:47.363770+00:00"
+        "size_bytes": 132330,
+        "last_updated": "2025-11-12T23:35:10.493275+00:00"
       },
       "2018": {
         "path": "data/tickers/GOOGL/GOOGL-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 132620,
-        "last_updated": "2025-11-11T23:34:47.374152+00:00"
+        "size_bytes": 132605,
+        "last_updated": "2025-11-12T23:35:10.503847+00:00"
       },
       "2019": {
         "path": "data/tickers/GOOGL/GOOGL-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 132999,
-        "last_updated": "2025-11-11T23:34:47.384609+00:00"
+        "size_bytes": 133027,
+        "last_updated": "2025-11-12T23:35:10.514383+00:00"
       },
       "2020": {
         "path": "data/tickers/GOOGL/GOOGL-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 133373,
-        "last_updated": "2025-11-11T23:34:47.395133+00:00"
+        "size_bytes": 133360,
+        "last_updated": "2025-11-12T23:35:10.525043+00:00"
       },
       "2021": {
         "path": "data/tickers/GOOGL/GOOGL-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 137732,
-        "last_updated": "2025-11-11T23:34:47.405980+00:00"
+        "size_bytes": 137674,
+        "last_updated": "2025-11-12T23:35:10.535986+00:00"
       },
       "2022": {
         "path": "data/tickers/GOOGL/GOOGL-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 136307,
-        "last_updated": "2025-11-11T23:34:47.416709+00:00"
+        "size_bytes": 136339,
+        "last_updated": "2025-11-12T23:35:10.546835+00:00"
       },
       "2023": {
         "path": "data/tickers/GOOGL/GOOGL-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 136351,
-        "last_updated": "2025-11-11T23:34:47.427376+00:00"
+        "size_bytes": 136365,
+        "last_updated": "2025-11-12T23:35:10.557626+00:00"
       },
       "2024": {
         "path": "data/tickers/GOOGL/GOOGL-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 140143,
-        "last_updated": "2025-11-11T23:34:47.438237+00:00"
+        "size_bytes": 140149,
+        "last_updated": "2025-11-12T23:35:10.568605+00:00"
       },
       "2025": {
         "path": "data/tickers/GOOGL/GOOGL-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 119645,
-        "last_updated": "2025-11-11T23:34:47.447779+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 120191,
+        "last_updated": "2025-11-12T23:35:10.578150+00:00"
       }
     }
   },
@@ -954,175 +954,175 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:47.454630+00:00",
+    "last_updated": "2025-11-12T23:35:10.585066+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/HSBC/HSBC-2005.csv",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 132361,
-        "last_updated": "2025-11-11T23:34:47.465065+00:00"
+        "size_bytes": 132436,
+        "last_updated": "2025-11-12T23:35:10.595580+00:00"
       },
       "2006": {
         "path": "data/tickers/HSBC/HSBC-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 131884,
-        "last_updated": "2025-11-11T23:34:47.475480+00:00"
+        "size_bytes": 131909,
+        "last_updated": "2025-11-12T23:35:10.606085+00:00"
       },
       "2007": {
         "path": "data/tickers/HSBC/HSBC-2007.csv",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 132046,
-        "last_updated": "2025-11-11T23:34:47.485986+00:00"
+        "size_bytes": 132037,
+        "last_updated": "2025-11-12T23:35:10.616534+00:00"
       },
       "2008": {
         "path": "data/tickers/HSBC/HSBC-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 133440,
-        "last_updated": "2025-11-11T23:34:47.496624+00:00"
+        "size_bytes": 133365,
+        "last_updated": "2025-11-12T23:35:10.627137+00:00"
       },
       "2009": {
         "path": "data/tickers/HSBC/HSBC-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 132774,
-        "last_updated": "2025-11-11T23:34:47.507115+00:00"
+        "size_bytes": 132737,
+        "last_updated": "2025-11-12T23:35:10.637761+00:00"
       },
       "2010": {
         "path": "data/tickers/HSBC/HSBC-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 132893,
-        "last_updated": "2025-11-11T23:34:47.517727+00:00"
+        "size_bytes": 132917,
+        "last_updated": "2025-11-12T23:35:10.648369+00:00"
       },
       "2011": {
         "path": "data/tickers/HSBC/HSBC-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 132998,
-        "last_updated": "2025-11-11T23:34:47.528225+00:00"
+        "size_bytes": 133037,
+        "last_updated": "2025-11-12T23:35:10.658901+00:00"
       },
       "2012": {
         "path": "data/tickers/HSBC/HSBC-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 131840,
-        "last_updated": "2025-11-11T23:34:47.538679+00:00"
+        "size_bytes": 131791,
+        "last_updated": "2025-11-12T23:35:10.669475+00:00"
       },
       "2013": {
         "path": "data/tickers/HSBC/HSBC-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 132830,
-        "last_updated": "2025-11-11T23:34:47.549137+00:00"
+        "size_bytes": 132864,
+        "last_updated": "2025-11-12T23:35:10.679996+00:00"
       },
       "2014": {
         "path": "data/tickers/HSBC/HSBC-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 132806,
-        "last_updated": "2025-11-11T23:34:47.559660+00:00"
+        "size_bytes": 132864,
+        "last_updated": "2025-11-12T23:35:10.690558+00:00"
       },
       "2015": {
         "path": "data/tickers/HSBC/HSBC-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 132946,
-        "last_updated": "2025-11-11T23:34:47.570139+00:00"
+        "size_bytes": 132969,
+        "last_updated": "2025-11-12T23:35:10.701135+00:00"
       },
       "2016": {
         "path": "data/tickers/HSBC/HSBC-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 132966,
-        "last_updated": "2025-11-11T23:34:47.581134+00:00"
+        "size_bytes": 132964,
+        "last_updated": "2025-11-12T23:35:10.711699+00:00"
       },
       "2017": {
         "path": "data/tickers/HSBC/HSBC-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 132154,
-        "last_updated": "2025-11-11T23:34:47.591545+00:00"
+        "size_bytes": 132120,
+        "last_updated": "2025-11-12T23:35:10.722203+00:00"
       },
       "2018": {
         "path": "data/tickers/HSBC/HSBC-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 132374,
-        "last_updated": "2025-11-11T23:34:47.602154+00:00"
+        "size_bytes": 132395,
+        "last_updated": "2025-11-12T23:35:10.732774+00:00"
       },
       "2019": {
         "path": "data/tickers/HSBC/HSBC-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 132887,
-        "last_updated": "2025-11-11T23:34:47.613083+00:00"
+        "size_bytes": 132838,
+        "last_updated": "2025-11-12T23:35:10.743317+00:00"
       },
       "2020": {
         "path": "data/tickers/HSBC/HSBC-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 133596,
-        "last_updated": "2025-11-11T23:34:47.623892+00:00"
+        "size_bytes": 133593,
+        "last_updated": "2025-11-12T23:35:10.753925+00:00"
       },
       "2021": {
         "path": "data/tickers/HSBC/HSBC-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 132881,
-        "last_updated": "2025-11-11T23:34:47.634528+00:00"
+        "size_bytes": 132895,
+        "last_updated": "2025-11-12T23:35:10.764458+00:00"
       },
       "2022": {
         "path": "data/tickers/HSBC/HSBC-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 132357,
-        "last_updated": "2025-11-11T23:34:47.645258+00:00"
+        "size_bytes": 132400,
+        "last_updated": "2025-11-12T23:35:10.774992+00:00"
       },
       "2023": {
         "path": "data/tickers/HSBC/HSBC-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 131626,
-        "last_updated": "2025-11-11T23:34:47.655751+00:00"
+        "size_bytes": 131701,
+        "last_updated": "2025-11-12T23:35:10.785638+00:00"
       },
       "2024": {
         "path": "data/tickers/HSBC/HSBC-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 132315,
-        "last_updated": "2025-11-11T23:34:47.666239+00:00"
+        "size_bytes": 132375,
+        "last_updated": "2025-11-12T23:35:10.796227+00:00"
       },
       "2025": {
         "path": "data/tickers/HSBC/HSBC-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 113459,
-        "last_updated": "2025-11-11T23:34:47.675495+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 113993,
+        "last_updated": "2025-11-12T23:35:10.805527+00:00"
       }
     }
   },
@@ -1148,7 +1148,7 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:47.681522+00:00",
+    "last_updated": "2025-11-12T23:35:10.811548+00:00",
     "files": {
       "2007": {
         "path": "data/tickers/MGK/MGK-2007.csv",
@@ -1156,151 +1156,151 @@
         "max_date": "2007-12-31",
         "row_count": 3,
         "size_bytes": 2215,
-        "last_updated": "2025-11-11T23:34:47.682960+00:00"
+        "last_updated": "2025-11-12T23:35:10.812990+00:00"
       },
       "2008": {
         "path": "data/tickers/MGK/MGK-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 132455,
-        "last_updated": "2025-11-11T23:34:47.693509+00:00"
+        "size_bytes": 132496,
+        "last_updated": "2025-11-12T23:35:10.823566+00:00"
       },
       "2009": {
         "path": "data/tickers/MGK/MGK-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 132159,
-        "last_updated": "2025-11-11T23:34:47.704008+00:00"
+        "size_bytes": 132217,
+        "last_updated": "2025-11-12T23:35:10.834052+00:00"
       },
       "2010": {
         "path": "data/tickers/MGK/MGK-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 131799,
-        "last_updated": "2025-11-11T23:34:47.714458+00:00"
+        "size_bytes": 131842,
+        "last_updated": "2025-11-12T23:35:10.844634+00:00"
       },
       "2011": {
         "path": "data/tickers/MGK/MGK-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 131800,
-        "last_updated": "2025-11-11T23:34:47.724878+00:00"
+        "size_bytes": 131761,
+        "last_updated": "2025-11-12T23:35:10.855108+00:00"
       },
       "2012": {
         "path": "data/tickers/MGK/MGK-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 130744,
-        "last_updated": "2025-11-11T23:34:47.735264+00:00"
+        "size_bytes": 130688,
+        "last_updated": "2025-11-12T23:35:10.865513+00:00"
       },
       "2013": {
         "path": "data/tickers/MGK/MGK-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 131645,
-        "last_updated": "2025-11-11T23:34:47.745675+00:00"
+        "size_bytes": 131673,
+        "last_updated": "2025-11-12T23:35:10.876187+00:00"
       },
       "2014": {
         "path": "data/tickers/MGK/MGK-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 131535,
-        "last_updated": "2025-11-11T23:34:47.756104+00:00"
+        "size_bytes": 131508,
+        "last_updated": "2025-11-12T23:35:10.886892+00:00"
       },
       "2015": {
         "path": "data/tickers/MGK/MGK-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 131451,
-        "last_updated": "2025-11-11T23:34:47.766562+00:00"
+        "size_bytes": 131493,
+        "last_updated": "2025-11-12T23:35:10.897563+00:00"
       },
       "2016": {
         "path": "data/tickers/MGK/MGK-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 131439,
-        "last_updated": "2025-11-11T23:34:47.777017+00:00"
+        "size_bytes": 131443,
+        "last_updated": "2025-11-12T23:35:10.908204+00:00"
       },
       "2017": {
         "path": "data/tickers/MGK/MGK-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 131319,
-        "last_updated": "2025-11-11T23:34:47.787454+00:00"
+        "size_bytes": 131322,
+        "last_updated": "2025-11-12T23:35:10.918804+00:00"
       },
       "2018": {
         "path": "data/tickers/MGK/MGK-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 135112,
-        "last_updated": "2025-11-11T23:34:47.798101+00:00"
+        "size_bytes": 135155,
+        "last_updated": "2025-11-12T23:35:10.929553+00:00"
       },
       "2019": {
         "path": "data/tickers/MGK/MGK-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 137317,
-        "last_updated": "2025-11-11T23:34:47.808814+00:00"
+        "size_bytes": 137350,
+        "last_updated": "2025-11-12T23:35:10.940364+00:00"
       },
       "2020": {
         "path": "data/tickers/MGK/MGK-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 139270,
-        "last_updated": "2025-11-11T23:34:47.819666+00:00"
+        "size_bytes": 139295,
+        "last_updated": "2025-11-12T23:35:10.951211+00:00"
       },
       "2021": {
         "path": "data/tickers/MGK/MGK-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 138600,
-        "last_updated": "2025-11-11T23:34:47.830401+00:00"
+        "size_bytes": 138645,
+        "last_updated": "2025-11-12T23:35:10.962067+00:00"
       },
       "2022": {
         "path": "data/tickers/MGK/MGK-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 138514,
-        "last_updated": "2025-11-11T23:34:47.841158+00:00"
+        "size_bytes": 138523,
+        "last_updated": "2025-11-12T23:35:10.972901+00:00"
       },
       "2023": {
         "path": "data/tickers/MGK/MGK-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 137552,
-        "last_updated": "2025-11-11T23:34:47.851835+00:00"
+        "size_bytes": 137566,
+        "last_updated": "2025-11-12T23:35:10.983674+00:00"
       },
       "2024": {
         "path": "data/tickers/MGK/MGK-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 138373,
-        "last_updated": "2025-11-11T23:34:47.862523+00:00"
+        "size_bytes": 138403,
+        "last_updated": "2025-11-12T23:35:10.994511+00:00"
       },
       "2025": {
         "path": "data/tickers/MGK/MGK-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 118486,
-        "last_updated": "2025-11-11T23:34:47.872025+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 119034,
+        "last_updated": "2025-11-12T23:35:11.003998+00:00"
       }
     }
   },
@@ -1328,175 +1328,175 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:47.878873+00:00",
+    "last_updated": "2025-11-12T23:35:11.010886+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/MSFT/MSFT-2005.csv",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 133088,
-        "last_updated": "2025-11-11T23:34:47.889305+00:00"
+        "size_bytes": 133140,
+        "last_updated": "2025-11-12T23:35:11.021427+00:00"
       },
       "2006": {
         "path": "data/tickers/MSFT/MSFT-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 132763,
-        "last_updated": "2025-11-11T23:34:47.899790+00:00"
+        "size_bytes": 132789,
+        "last_updated": "2025-11-12T23:35:11.032016+00:00"
       },
       "2007": {
         "path": "data/tickers/MSFT/MSFT-2007.csv",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 132772,
-        "last_updated": "2025-11-11T23:34:47.910263+00:00"
+        "size_bytes": 132756,
+        "last_updated": "2025-11-12T23:35:11.042547+00:00"
       },
       "2008": {
         "path": "data/tickers/MSFT/MSFT-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 133971,
-        "last_updated": "2025-11-11T23:34:47.920829+00:00"
+        "size_bytes": 133946,
+        "last_updated": "2025-11-12T23:35:11.053110+00:00"
       },
       "2009": {
         "path": "data/tickers/MSFT/MSFT-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 133285,
-        "last_updated": "2025-11-11T23:34:47.931306+00:00"
+        "size_bytes": 133305,
+        "last_updated": "2025-11-12T23:35:11.063711+00:00"
       },
       "2010": {
         "path": "data/tickers/MSFT/MSFT-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 133263,
-        "last_updated": "2025-11-11T23:34:47.941796+00:00"
+        "size_bytes": 133286,
+        "last_updated": "2025-11-12T23:35:11.074232+00:00"
       },
       "2011": {
         "path": "data/tickers/MSFT/MSFT-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 133245,
-        "last_updated": "2025-11-11T23:34:47.952329+00:00"
+        "size_bytes": 133295,
+        "last_updated": "2025-11-12T23:35:11.084745+00:00"
       },
       "2012": {
         "path": "data/tickers/MSFT/MSFT-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 132237,
-        "last_updated": "2025-11-11T23:34:47.962806+00:00"
+        "size_bytes": 132260,
+        "last_updated": "2025-11-12T23:35:11.095178+00:00"
       },
       "2013": {
         "path": "data/tickers/MSFT/MSFT-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 133151,
-        "last_updated": "2025-11-11T23:34:47.973246+00:00"
+        "size_bytes": 133224,
+        "last_updated": "2025-11-12T23:35:11.105672+00:00"
       },
       "2014": {
         "path": "data/tickers/MSFT/MSFT-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 132990,
-        "last_updated": "2025-11-11T23:34:47.983744+00:00"
+        "size_bytes": 132945,
+        "last_updated": "2025-11-12T23:35:11.116131+00:00"
       },
       "2015": {
         "path": "data/tickers/MSFT/MSFT-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 132902,
-        "last_updated": "2025-11-11T23:34:47.994221+00:00"
+        "size_bytes": 132848,
+        "last_updated": "2025-11-12T23:35:11.126653+00:00"
       },
       "2016": {
         "path": "data/tickers/MSFT/MSFT-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 132713,
-        "last_updated": "2025-11-11T23:34:48.004708+00:00"
+        "size_bytes": 132681,
+        "last_updated": "2025-11-12T23:35:11.137178+00:00"
       },
       "2017": {
         "path": "data/tickers/MSFT/MSFT-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 131984,
-        "last_updated": "2025-11-11T23:34:48.015193+00:00"
+        "size_bytes": 131947,
+        "last_updated": "2025-11-12T23:35:11.147594+00:00"
       },
       "2018": {
         "path": "data/tickers/MSFT/MSFT-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 132537,
-        "last_updated": "2025-11-11T23:34:48.025761+00:00"
+        "size_bytes": 132567,
+        "last_updated": "2025-11-12T23:35:11.158167+00:00"
       },
       "2019": {
         "path": "data/tickers/MSFT/MSFT-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 137725,
-        "last_updated": "2025-11-11T23:34:48.036521+00:00"
+        "size_bytes": 137723,
+        "last_updated": "2025-11-12T23:35:11.169148+00:00"
       },
       "2020": {
         "path": "data/tickers/MSFT/MSFT-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 140047,
-        "last_updated": "2025-11-11T23:34:48.047345+00:00"
+        "size_bytes": 140079,
+        "last_updated": "2025-11-12T23:35:11.179990+00:00"
       },
       "2021": {
         "path": "data/tickers/MSFT/MSFT-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 139347,
-        "last_updated": "2025-11-11T23:34:48.058129+00:00"
+        "size_bytes": 139385,
+        "last_updated": "2025-11-12T23:35:11.190818+00:00"
       },
       "2022": {
         "path": "data/tickers/MSFT/MSFT-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 139044,
-        "last_updated": "2025-11-11T23:34:48.068967+00:00"
+        "size_bytes": 139080,
+        "last_updated": "2025-11-12T23:35:11.201680+00:00"
       },
       "2023": {
         "path": "data/tickers/MSFT/MSFT-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 138244,
-        "last_updated": "2025-11-11T23:34:48.079726+00:00"
+        "size_bytes": 138212,
+        "last_updated": "2025-11-12T23:35:11.212392+00:00"
       },
       "2024": {
         "path": "data/tickers/MSFT/MSFT-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 139093,
-        "last_updated": "2025-11-11T23:34:48.090478+00:00"
+        "size_bytes": 139107,
+        "last_updated": "2025-11-12T23:35:11.223182+00:00"
       },
       "2025": {
         "path": "data/tickers/MSFT/MSFT-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 118642,
-        "last_updated": "2025-11-11T23:34:48.099935+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 119189,
+        "last_updated": "2025-11-12T23:35:11.232675+00:00"
       }
     }
   },
@@ -1524,175 +1524,175 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:48.106699+00:00",
+    "last_updated": "2025-11-12T23:35:11.239486+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/NVDA/NVDA-2005.csv",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 127519,
-        "last_updated": "2025-11-11T23:34:48.116859+00:00"
+        "size_bytes": 127507,
+        "last_updated": "2025-11-12T23:35:11.249477+00:00"
       },
       "2006": {
         "path": "data/tickers/NVDA/NVDA-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 127108,
-        "last_updated": "2025-11-11T23:34:48.126927+00:00"
+        "size_bytes": 127118,
+        "last_updated": "2025-11-12T23:35:11.259465+00:00"
       },
       "2007": {
         "path": "data/tickers/NVDA/NVDA-2007.csv",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 127112,
-        "last_updated": "2025-11-11T23:34:48.136875+00:00"
+        "size_bytes": 127106,
+        "last_updated": "2025-11-12T23:35:11.269531+00:00"
       },
       "2008": {
         "path": "data/tickers/NVDA/NVDA-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 127975,
-        "last_updated": "2025-11-11T23:34:48.147029+00:00"
+        "size_bytes": 127979,
+        "last_updated": "2025-11-12T23:35:11.279652+00:00"
       },
       "2009": {
         "path": "data/tickers/NVDA/NVDA-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 127557,
-        "last_updated": "2025-11-11T23:34:48.157230+00:00"
+        "size_bytes": 127577,
+        "last_updated": "2025-11-12T23:35:11.289753+00:00"
       },
       "2010": {
         "path": "data/tickers/NVDA/NVDA-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 127657,
-        "last_updated": "2025-11-11T23:34:48.167324+00:00"
+        "size_bytes": 127648,
+        "last_updated": "2025-11-12T23:35:11.299822+00:00"
       },
       "2011": {
         "path": "data/tickers/NVDA/NVDA-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 127695,
-        "last_updated": "2025-11-11T23:34:48.177535+00:00"
+        "size_bytes": 127667,
+        "last_updated": "2025-11-12T23:35:11.309901+00:00"
       },
       "2012": {
         "path": "data/tickers/NVDA/NVDA-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 126710,
-        "last_updated": "2025-11-11T23:34:48.187540+00:00"
+        "size_bytes": 126693,
+        "last_updated": "2025-11-12T23:35:11.319905+00:00"
       },
       "2013": {
         "path": "data/tickers/NVDA/NVDA-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 127652,
-        "last_updated": "2025-11-11T23:34:48.197600+00:00"
+        "size_bytes": 127680,
+        "last_updated": "2025-11-12T23:35:11.329952+00:00"
       },
       "2014": {
         "path": "data/tickers/NVDA/NVDA-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 127722,
-        "last_updated": "2025-11-11T23:34:48.207701+00:00"
+        "size_bytes": 127721,
+        "last_updated": "2025-11-12T23:35:11.340017+00:00"
       },
       "2015": {
         "path": "data/tickers/NVDA/NVDA-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 127696,
-        "last_updated": "2025-11-11T23:34:48.217684+00:00"
+        "size_bytes": 127693,
+        "last_updated": "2025-11-12T23:35:11.350061+00:00"
       },
       "2016": {
         "path": "data/tickers/NVDA/NVDA-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 127356,
-        "last_updated": "2025-11-11T23:34:48.227634+00:00"
+        "size_bytes": 127377,
+        "last_updated": "2025-11-12T23:35:11.360044+00:00"
       },
       "2017": {
         "path": "data/tickers/NVDA/NVDA-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 126268,
-        "last_updated": "2025-11-11T23:34:48.237596+00:00"
+        "size_bytes": 126279,
+        "last_updated": "2025-11-12T23:35:11.370094+00:00"
       },
       "2018": {
         "path": "data/tickers/NVDA/NVDA-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 126031,
-        "last_updated": "2025-11-11T23:34:48.247480+00:00"
+        "size_bytes": 126038,
+        "last_updated": "2025-11-12T23:35:11.380094+00:00"
       },
       "2019": {
         "path": "data/tickers/NVDA/NVDA-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 126639,
-        "last_updated": "2025-11-11T23:34:48.257485+00:00"
+        "size_bytes": 126604,
+        "last_updated": "2025-11-12T23:35:11.390199+00:00"
       },
       "2020": {
         "path": "data/tickers/NVDA/NVDA-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 129695,
-        "last_updated": "2025-11-11T23:34:48.267781+00:00"
+        "size_bytes": 129704,
+        "last_updated": "2025-11-12T23:35:11.400695+00:00"
       },
       "2021": {
         "path": "data/tickers/NVDA/NVDA-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 133522,
-        "last_updated": "2025-11-11T23:34:48.278238+00:00"
+        "size_bytes": 133560,
+        "last_updated": "2025-11-12T23:35:11.411456+00:00"
       },
       "2022": {
         "path": "data/tickers/NVDA/NVDA-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 132953,
-        "last_updated": "2025-11-11T23:34:48.288699+00:00"
+        "size_bytes": 132940,
+        "last_updated": "2025-11-12T23:35:11.422157+00:00"
       },
       "2023": {
         "path": "data/tickers/NVDA/NVDA-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 132224,
-        "last_updated": "2025-11-11T23:34:48.299048+00:00"
+        "size_bytes": 132258,
+        "last_updated": "2025-11-12T23:35:11.432803+00:00"
       },
       "2024": {
         "path": "data/tickers/NVDA/NVDA-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 136382,
-        "last_updated": "2025-11-11T23:34:48.309858+00:00"
+        "size_bytes": 136354,
+        "last_updated": "2025-11-12T23:35:11.443778+00:00"
       },
       "2025": {
         "path": "data/tickers/NVDA/NVDA-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 119067,
-        "last_updated": "2025-11-11T23:34:48.319293+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 119622,
+        "last_updated": "2025-11-12T23:35:11.453393+00:00"
       }
     }
   },
@@ -1720,175 +1720,175 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:48.326096+00:00",
+    "last_updated": "2025-11-12T23:35:11.460188+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/OEF/OEF-2005.csv",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 131630,
-        "last_updated": "2025-11-11T23:34:48.336514+00:00"
+        "size_bytes": 131636,
+        "last_updated": "2025-11-12T23:35:11.470592+00:00"
       },
       "2006": {
         "path": "data/tickers/OEF/OEF-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 131305,
-        "last_updated": "2025-11-11T23:34:48.346841+00:00"
+        "size_bytes": 131304,
+        "last_updated": "2025-11-12T23:35:11.480984+00:00"
       },
       "2007": {
         "path": "data/tickers/OEF/OEF-2007.csv",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 131582,
-        "last_updated": "2025-11-11T23:34:48.357183+00:00"
+        "size_bytes": 131583,
+        "last_updated": "2025-11-12T23:35:11.491469+00:00"
       },
       "2008": {
         "path": "data/tickers/OEF/OEF-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 132856,
-        "last_updated": "2025-11-11T23:34:48.367654+00:00"
+        "size_bytes": 132937,
+        "last_updated": "2025-11-12T23:35:11.502045+00:00"
       },
       "2009": {
         "path": "data/tickers/OEF/OEF-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 132468,
-        "last_updated": "2025-11-11T23:34:48.378050+00:00"
+        "size_bytes": 132451,
+        "last_updated": "2025-11-12T23:35:11.512611+00:00"
       },
       "2010": {
         "path": "data/tickers/OEF/OEF-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 131989,
-        "last_updated": "2025-11-11T23:34:48.388416+00:00"
+        "size_bytes": 132040,
+        "last_updated": "2025-11-12T23:35:11.523206+00:00"
       },
       "2011": {
         "path": "data/tickers/OEF/OEF-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 132073,
-        "last_updated": "2025-11-11T23:34:48.398794+00:00"
+        "size_bytes": 132130,
+        "last_updated": "2025-11-12T23:35:11.533716+00:00"
       },
       "2012": {
         "path": "data/tickers/OEF/OEF-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 130976,
-        "last_updated": "2025-11-11T23:34:48.409132+00:00"
+        "size_bytes": 130959,
+        "last_updated": "2025-11-12T23:35:11.544170+00:00"
       },
       "2013": {
         "path": "data/tickers/OEF/OEF-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 131939,
-        "last_updated": "2025-11-11T23:34:48.419470+00:00"
+        "size_bytes": 131882,
+        "last_updated": "2025-11-12T23:35:11.554730+00:00"
       },
       "2014": {
         "path": "data/tickers/OEF/OEF-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 131702,
-        "last_updated": "2025-11-11T23:34:48.429876+00:00"
+        "size_bytes": 131705,
+        "last_updated": "2025-11-12T23:35:11.565343+00:00"
       },
       "2015": {
         "path": "data/tickers/OEF/OEF-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 131821,
-        "last_updated": "2025-11-11T23:34:48.440267+00:00"
+        "size_bytes": 131782,
+        "last_updated": "2025-11-12T23:35:11.575900+00:00"
       },
       "2016": {
         "path": "data/tickers/OEF/OEF-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 131660,
-        "last_updated": "2025-11-11T23:34:48.450712+00:00"
+        "size_bytes": 131709,
+        "last_updated": "2025-11-12T23:35:11.586490+00:00"
       },
       "2017": {
         "path": "data/tickers/OEF/OEF-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 131387,
-        "last_updated": "2025-11-11T23:34:48.461103+00:00"
+        "size_bytes": 131472,
+        "last_updated": "2025-11-12T23:35:11.597005+00:00"
       },
       "2018": {
         "path": "data/tickers/OEF/OEF-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 134598,
-        "last_updated": "2025-11-11T23:34:48.471775+00:00"
+        "size_bytes": 134621,
+        "last_updated": "2025-11-12T23:35:11.607816+00:00"
       },
       "2019": {
         "path": "data/tickers/OEF/OEF-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 136539,
-        "last_updated": "2025-11-11T23:34:48.482444+00:00"
+        "size_bytes": 136514,
+        "last_updated": "2025-11-12T23:35:11.618692+00:00"
       },
       "2020": {
         "path": "data/tickers/OEF/OEF-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 138985,
-        "last_updated": "2025-11-11T23:34:48.493304+00:00"
+        "size_bytes": 138961,
+        "last_updated": "2025-11-12T23:35:11.629603+00:00"
       },
       "2021": {
         "path": "data/tickers/OEF/OEF-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 138704,
-        "last_updated": "2025-11-11T23:34:48.504110+00:00"
+        "size_bytes": 138677,
+        "last_updated": "2025-11-12T23:35:11.640515+00:00"
       },
       "2022": {
         "path": "data/tickers/OEF/OEF-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 138552,
-        "last_updated": "2025-11-11T23:34:48.514917+00:00"
+        "size_bytes": 138597,
+        "last_updated": "2025-11-12T23:35:11.651381+00:00"
       },
       "2023": {
         "path": "data/tickers/OEF/OEF-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 137693,
-        "last_updated": "2025-11-11T23:34:48.525643+00:00"
+        "size_bytes": 137710,
+        "last_updated": "2025-11-12T23:35:11.662188+00:00"
       },
       "2024": {
         "path": "data/tickers/OEF/OEF-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 138414,
-        "last_updated": "2025-11-11T23:34:48.536383+00:00"
+        "size_bytes": 138415,
+        "last_updated": "2025-11-12T23:35:11.673035+00:00"
       },
       "2025": {
         "path": "data/tickers/OEF/OEF-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 118353,
-        "last_updated": "2025-11-11T23:34:48.545819+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 118899,
+        "last_updated": "2025-11-12T23:35:11.682609+00:00"
       }
     }
   },
@@ -1916,175 +1916,175 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:48.552726+00:00",
+    "last_updated": "2025-11-12T23:35:11.689485+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/QQQ/QQQ-2005.csv",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 132581,
-        "last_updated": "2025-11-11T23:34:48.563267+00:00"
+        "size_bytes": 132595,
+        "last_updated": "2025-11-12T23:35:11.700050+00:00"
       },
       "2006": {
         "path": "data/tickers/QQQ/QQQ-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 132231,
-        "last_updated": "2025-11-11T23:34:48.573735+00:00"
+        "size_bytes": 132265,
+        "last_updated": "2025-11-12T23:35:11.710592+00:00"
       },
       "2007": {
         "path": "data/tickers/QQQ/QQQ-2007.csv",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 132125,
-        "last_updated": "2025-11-11T23:34:48.584686+00:00"
+        "size_bytes": 132124,
+        "last_updated": "2025-11-12T23:35:11.721038+00:00"
       },
       "2008": {
         "path": "data/tickers/QQQ/QQQ-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 133558,
-        "last_updated": "2025-11-11T23:34:48.595130+00:00"
+        "size_bytes": 133541,
+        "last_updated": "2025-11-12T23:35:11.731706+00:00"
       },
       "2009": {
         "path": "data/tickers/QQQ/QQQ-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 132956,
-        "last_updated": "2025-11-11T23:34:48.605540+00:00"
+        "size_bytes": 132917,
+        "last_updated": "2025-11-12T23:35:11.742232+00:00"
       },
       "2010": {
         "path": "data/tickers/QQQ/QQQ-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 132483,
-        "last_updated": "2025-11-11T23:34:48.616113+00:00"
+        "size_bytes": 132519,
+        "last_updated": "2025-11-12T23:35:11.752749+00:00"
       },
       "2011": {
         "path": "data/tickers/QQQ/QQQ-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 132595,
-        "last_updated": "2025-11-11T23:34:48.626557+00:00"
+        "size_bytes": 132620,
+        "last_updated": "2025-11-12T23:35:11.763356+00:00"
       },
       "2012": {
         "path": "data/tickers/QQQ/QQQ-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 131475,
-        "last_updated": "2025-11-11T23:34:48.636940+00:00"
+        "size_bytes": 131446,
+        "last_updated": "2025-11-12T23:35:11.773793+00:00"
       },
       "2013": {
         "path": "data/tickers/QQQ/QQQ-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 132238,
-        "last_updated": "2025-11-11T23:34:48.647391+00:00"
+        "size_bytes": 132225,
+        "last_updated": "2025-11-12T23:35:11.784719+00:00"
       },
       "2014": {
         "path": "data/tickers/QQQ/QQQ-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 132139,
-        "last_updated": "2025-11-11T23:34:48.657980+00:00"
+        "size_bytes": 132047,
+        "last_updated": "2025-11-12T23:35:11.795315+00:00"
       },
       "2015": {
         "path": "data/tickers/QQQ/QQQ-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 133205,
-        "last_updated": "2025-11-11T23:34:48.668609+00:00"
+        "size_bytes": 133248,
+        "last_updated": "2025-11-12T23:35:11.805934+00:00"
       },
       "2016": {
         "path": "data/tickers/QQQ/QQQ-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 134190,
-        "last_updated": "2025-11-11T23:34:48.679335+00:00"
+        "size_bytes": 134331,
+        "last_updated": "2025-11-12T23:35:11.816643+00:00"
       },
       "2017": {
         "path": "data/tickers/QQQ/QQQ-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 138137,
-        "last_updated": "2025-11-11T23:34:48.690203+00:00"
+        "size_bytes": 138146,
+        "last_updated": "2025-11-12T23:35:11.827572+00:00"
       },
       "2018": {
         "path": "data/tickers/QQQ/QQQ-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 139094,
-        "last_updated": "2025-11-11T23:34:48.701035+00:00"
+        "size_bytes": 139135,
+        "last_updated": "2025-11-12T23:35:11.838442+00:00"
       },
       "2019": {
         "path": "data/tickers/QQQ/QQQ-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 139279,
-        "last_updated": "2025-11-11T23:34:48.711809+00:00"
+        "size_bytes": 139200,
+        "last_updated": "2025-11-12T23:35:11.849243+00:00"
       },
       "2020": {
         "path": "data/tickers/QQQ/QQQ-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 139586,
-        "last_updated": "2025-11-11T23:34:48.722606+00:00"
+        "size_bytes": 139588,
+        "last_updated": "2025-11-12T23:35:11.860139+00:00"
       },
       "2021": {
         "path": "data/tickers/QQQ/QQQ-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 139048,
-        "last_updated": "2025-11-11T23:34:48.733341+00:00"
+        "size_bytes": 138913,
+        "last_updated": "2025-11-12T23:35:11.871007+00:00"
       },
       "2022": {
         "path": "data/tickers/QQQ/QQQ-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 138711,
-        "last_updated": "2025-11-11T23:34:48.744144+00:00"
+        "size_bytes": 138674,
+        "last_updated": "2025-11-12T23:35:11.881861+00:00"
       },
       "2023": {
         "path": "data/tickers/QQQ/QQQ-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 137841,
-        "last_updated": "2025-11-11T23:34:48.754810+00:00"
+        "size_bytes": 137844,
+        "last_updated": "2025-11-12T23:35:11.892596+00:00"
       },
       "2024": {
         "path": "data/tickers/QQQ/QQQ-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 138594,
-        "last_updated": "2025-11-11T23:34:48.765500+00:00"
+        "size_bytes": 138676,
+        "last_updated": "2025-11-12T23:35:11.903448+00:00"
       },
       "2025": {
         "path": "data/tickers/QQQ/QQQ-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 118450,
-        "last_updated": "2025-11-11T23:34:48.774929+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 118974,
+        "last_updated": "2025-11-12T23:35:11.913062+00:00"
       }
     }
   },
@@ -2097,23 +2097,23 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:48.777652+00:00",
+    "last_updated": "2025-11-12T23:35:11.915876+00:00",
     "files": {
       "2020": {
         "path": "data/tickers/QQQJ/QQQJ-2020.csv",
         "min_date": "2020-10-13",
         "max_date": "2020-12-31",
         "row_count": 56,
-        "size_bytes": 29989,
-        "last_updated": "2025-11-11T23:34:48.780967+00:00"
+        "size_bytes": 29977,
+        "last_updated": "2025-11-12T23:35:11.919254+00:00"
       },
       "2021": {
         "path": "data/tickers/QQQJ/QQQJ-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 132429,
-        "last_updated": "2025-11-11T23:34:48.791373+00:00"
+        "size_bytes": 132424,
+        "last_updated": "2025-11-12T23:35:11.929681+00:00"
       },
       "2022": {
         "path": "data/tickers/QQQJ/QQQJ-2022.csv",
@@ -2121,31 +2121,31 @@
         "max_date": "2022-12-30",
         "row_count": 251,
         "size_bytes": 132242,
-        "last_updated": "2025-11-11T23:34:48.801771+00:00"
+        "last_updated": "2025-11-12T23:35:11.940096+00:00"
       },
       "2023": {
         "path": "data/tickers/QQQJ/QQQJ-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 131512,
-        "last_updated": "2025-11-11T23:34:48.812072+00:00"
+        "size_bytes": 131547,
+        "last_updated": "2025-11-12T23:35:11.950484+00:00"
       },
       "2024": {
         "path": "data/tickers/QQQJ/QQQJ-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 132483,
-        "last_updated": "2025-11-11T23:34:48.822435+00:00"
+        "size_bytes": 132488,
+        "last_updated": "2025-11-12T23:35:11.960902+00:00"
       },
       "2025": {
         "path": "data/tickers/QQQJ/QQQJ-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 113349,
-        "last_updated": "2025-11-11T23:34:48.831608+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 113865,
+        "last_updated": "2025-11-12T23:35:11.970110+00:00"
       }
     }
   },
@@ -2154,23 +2154,23 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:48.833189+00:00",
+    "last_updated": "2025-11-12T23:35:11.971841+00:00",
     "files": {
       "2024": {
         "path": "data/tickers/QTOP/QTOP-2024.csv",
         "min_date": "2024-10-24",
         "max_date": "2024-12-31",
         "row_count": 47,
-        "size_bytes": 25238,
-        "last_updated": "2025-11-11T23:34:48.836111+00:00"
+        "size_bytes": 25245,
+        "last_updated": "2025-11-12T23:35:11.974854+00:00"
       },
       "2025": {
         "path": "data/tickers/QTOP/QTOP-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 113326,
-        "last_updated": "2025-11-11T23:34:48.845123+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 113853,
+        "last_updated": "2025-11-12T23:35:11.984036+00:00"
       }
     }
   },
@@ -2194,127 +2194,127 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:48.850721+00:00",
+    "last_updated": "2025-11-12T23:35:11.989739+00:00",
     "files": {
       "2009": {
         "path": "data/tickers/SPLG/SPLG-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 124918,
-        "last_updated": "2025-11-11T23:34:48.860731+00:00"
+        "size_bytes": 124960,
+        "last_updated": "2025-11-12T23:35:11.999864+00:00"
       },
       "2010": {
         "path": "data/tickers/SPLG/SPLG-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 126495,
-        "last_updated": "2025-11-11T23:34:48.870913+00:00"
+        "size_bytes": 126516,
+        "last_updated": "2025-11-12T23:35:12.010194+00:00"
       },
       "2011": {
         "path": "data/tickers/SPLG/SPLG-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 129534,
-        "last_updated": "2025-11-11T23:34:48.881210+00:00"
+        "size_bytes": 129500,
+        "last_updated": "2025-11-12T23:35:12.020644+00:00"
       },
       "2012": {
         "path": "data/tickers/SPLG/SPLG-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 130330,
-        "last_updated": "2025-11-11T23:34:48.891508+00:00"
+        "size_bytes": 130388,
+        "last_updated": "2025-11-12T23:35:12.030995+00:00"
       },
       "2013": {
         "path": "data/tickers/SPLG/SPLG-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 132261,
-        "last_updated": "2025-11-11T23:34:48.901937+00:00"
+        "size_bytes": 132278,
+        "last_updated": "2025-11-12T23:35:12.041476+00:00"
       },
       "2014": {
         "path": "data/tickers/SPLG/SPLG-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 131897,
-        "last_updated": "2025-11-11T23:34:48.912338+00:00"
+        "size_bytes": 131923,
+        "last_updated": "2025-11-12T23:35:12.051899+00:00"
       },
       "2015": {
         "path": "data/tickers/SPLG/SPLG-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 132066,
-        "last_updated": "2025-11-11T23:34:48.922775+00:00"
+        "size_bytes": 132097,
+        "last_updated": "2025-11-12T23:35:12.062360+00:00"
       },
       "2016": {
         "path": "data/tickers/SPLG/SPLG-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 132113,
-        "last_updated": "2025-11-11T23:34:48.933151+00:00"
+        "size_bytes": 132082,
+        "last_updated": "2025-11-12T23:35:12.072937+00:00"
       },
       "2017": {
         "path": "data/tickers/SPLG/SPLG-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 131651,
-        "last_updated": "2025-11-11T23:34:48.943513+00:00"
+        "size_bytes": 131653,
+        "last_updated": "2025-11-12T23:35:12.083380+00:00"
       },
       "2018": {
         "path": "data/tickers/SPLG/SPLG-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 132189,
-        "last_updated": "2025-11-11T23:34:48.953924+00:00"
+        "size_bytes": 132134,
+        "last_updated": "2025-11-12T23:35:12.093783+00:00"
       },
       "2019": {
         "path": "data/tickers/SPLG/SPLG-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 132514,
-        "last_updated": "2025-11-11T23:34:48.964357+00:00"
+        "size_bytes": 132444,
+        "last_updated": "2025-11-12T23:35:12.104257+00:00"
       },
       "2020": {
         "path": "data/tickers/SPLG/SPLG-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 133053,
-        "last_updated": "2025-11-11T23:34:48.974800+00:00"
+        "size_bytes": 133066,
+        "last_updated": "2025-11-12T23:35:12.114783+00:00"
       },
       "2021": {
         "path": "data/tickers/SPLG/SPLG-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 132341,
-        "last_updated": "2025-11-11T23:34:48.985177+00:00"
+        "size_bytes": 132406,
+        "last_updated": "2025-11-12T23:35:12.125341+00:00"
       },
       "2022": {
         "path": "data/tickers/SPLG/SPLG-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 132141,
-        "last_updated": "2025-11-11T23:34:48.995605+00:00"
+        "size_bytes": 132177,
+        "last_updated": "2025-11-12T23:35:12.135911+00:00"
       },
       "2023": {
         "path": "data/tickers/SPLG/SPLG-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 131392,
-        "last_updated": "2025-11-11T23:34:49.005930+00:00"
+        "size_bytes": 131458,
+        "last_updated": "2025-11-12T23:35:12.146362+00:00"
       },
       "2024": {
         "path": "data/tickers/SPLG/SPLG-2024.csv",
@@ -2322,15 +2322,15 @@
         "max_date": "2024-12-31",
         "row_count": 252,
         "size_bytes": 132318,
-        "last_updated": "2025-11-11T23:34:49.016318+00:00"
+        "last_updated": "2025-11-12T23:35:12.156882+00:00"
       },
       "2025": {
         "path": "data/tickers/SPLG/SPLG-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-10",
-        "row_count": 214,
-        "size_bytes": 112015,
-        "last_updated": "2025-11-11T23:34:49.025397+00:00"
+        "max_date": "2025-11-11",
+        "row_count": 215,
+        "size_bytes": 112536,
+        "last_updated": "2025-11-12T23:35:12.166202+00:00"
       }
     }
   },
@@ -2339,23 +2339,23 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:49.027001+00:00",
+    "last_updated": "2025-11-12T23:35:12.168022+00:00",
     "files": {
       "2024": {
         "path": "data/tickers/TOPT/TOPT-2024.csv",
         "min_date": "2024-10-24",
         "max_date": "2024-12-31",
         "row_count": 47,
-        "size_bytes": 25230,
-        "last_updated": "2025-11-11T23:34:49.029981+00:00"
+        "size_bytes": 25226,
+        "last_updated": "2025-11-12T23:35:12.171065+00:00"
       },
       "2025": {
         "path": "data/tickers/TOPT/TOPT-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 113436,
-        "last_updated": "2025-11-11T23:34:49.039005+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 113951,
+        "last_updated": "2025-11-12T23:35:12.180359+00:00"
       }
     }
   },
@@ -2378,7 +2378,7 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:49.044164+00:00",
+    "last_updated": "2025-11-12T23:35:12.185843+00:00",
     "files": {
       "2010": {
         "path": "data/tickers/TSLA/TSLA-2010.csv",
@@ -2386,7 +2386,7 @@
         "max_date": "2010-12-31",
         "row_count": 130,
         "size_bytes": 65599,
-        "last_updated": "2025-11-11T23:34:49.049979+00:00"
+        "last_updated": "2025-11-12T23:35:12.192141+00:00"
       },
       "2011": {
         "path": "data/tickers/TSLA/TSLA-2011.csv",
@@ -2394,7 +2394,7 @@
         "max_date": "2011-12-30",
         "row_count": 252,
         "size_bytes": 126686,
-        "last_updated": "2025-11-11T23:34:49.059975+00:00"
+        "last_updated": "2025-11-12T23:35:12.202519+00:00"
       },
       "2012": {
         "path": "data/tickers/TSLA/TSLA-2012.csv",
@@ -2402,7 +2402,7 @@
         "max_date": "2012-12-31",
         "row_count": 250,
         "size_bytes": 125266,
-        "last_updated": "2025-11-11T23:34:49.069994+00:00"
+        "last_updated": "2025-11-12T23:35:12.212559+00:00"
       },
       "2013": {
         "path": "data/tickers/TSLA/TSLA-2013.csv",
@@ -2410,7 +2410,7 @@
         "max_date": "2013-12-31",
         "row_count": 252,
         "size_bytes": 127027,
-        "last_updated": "2025-11-11T23:34:49.080183+00:00"
+        "last_updated": "2025-11-12T23:35:12.222819+00:00"
       },
       "2014": {
         "path": "data/tickers/TSLA/TSLA-2014.csv",
@@ -2418,7 +2418,7 @@
         "max_date": "2014-12-31",
         "row_count": 252,
         "size_bytes": 132926,
-        "last_updated": "2025-11-11T23:34:49.090649+00:00"
+        "last_updated": "2025-11-12T23:35:12.233442+00:00"
       },
       "2015": {
         "path": "data/tickers/TSLA/TSLA-2015.csv",
@@ -2426,7 +2426,7 @@
         "max_date": "2015-12-31",
         "row_count": 252,
         "size_bytes": 133459,
-        "last_updated": "2025-11-11T23:34:49.101069+00:00"
+        "last_updated": "2025-11-12T23:35:12.244013+00:00"
       },
       "2016": {
         "path": "data/tickers/TSLA/TSLA-2016.csv",
@@ -2434,7 +2434,7 @@
         "max_date": "2016-12-30",
         "row_count": 252,
         "size_bytes": 132854,
-        "last_updated": "2025-11-11T23:34:49.111506+00:00"
+        "last_updated": "2025-11-12T23:35:12.254628+00:00"
       },
       "2017": {
         "path": "data/tickers/TSLA/TSLA-2017.csv",
@@ -2442,7 +2442,7 @@
         "max_date": "2017-12-29",
         "row_count": 251,
         "size_bytes": 132585,
-        "last_updated": "2025-11-11T23:34:49.121934+00:00"
+        "last_updated": "2025-11-12T23:35:12.265133+00:00"
       },
       "2018": {
         "path": "data/tickers/TSLA/TSLA-2018.csv",
@@ -2450,7 +2450,7 @@
         "max_date": "2018-12-31",
         "row_count": 251,
         "size_bytes": 132364,
-        "last_updated": "2025-11-11T23:34:49.132260+00:00"
+        "last_updated": "2025-11-12T23:35:12.275679+00:00"
       },
       "2019": {
         "path": "data/tickers/TSLA/TSLA-2019.csv",
@@ -2458,7 +2458,7 @@
         "max_date": "2019-12-31",
         "row_count": 252,
         "size_bytes": 133250,
-        "last_updated": "2025-11-11T23:34:49.142688+00:00"
+        "last_updated": "2025-11-12T23:35:12.286270+00:00"
       },
       "2020": {
         "path": "data/tickers/TSLA/TSLA-2020.csv",
@@ -2466,7 +2466,7 @@
         "max_date": "2020-12-31",
         "row_count": 253,
         "size_bytes": 134881,
-        "last_updated": "2025-11-11T23:34:49.153330+00:00"
+        "last_updated": "2025-11-12T23:35:12.297215+00:00"
       },
       "2021": {
         "path": "data/tickers/TSLA/TSLA-2021.csv",
@@ -2474,7 +2474,7 @@
         "max_date": "2021-12-31",
         "row_count": 252,
         "size_bytes": 137847,
-        "last_updated": "2025-11-11T23:34:49.164152+00:00"
+        "last_updated": "2025-11-12T23:35:12.308155+00:00"
       },
       "2022": {
         "path": "data/tickers/TSLA/TSLA-2022.csv",
@@ -2482,7 +2482,7 @@
         "max_date": "2022-12-30",
         "row_count": 251,
         "size_bytes": 136477,
-        "last_updated": "2025-11-11T23:34:49.174856+00:00"
+        "last_updated": "2025-11-12T23:35:12.318984+00:00"
       },
       "2023": {
         "path": "data/tickers/TSLA/TSLA-2023.csv",
@@ -2490,7 +2490,7 @@
         "max_date": "2023-12-29",
         "row_count": 250,
         "size_bytes": 135912,
-        "last_updated": "2025-11-11T23:34:49.185490+00:00"
+        "last_updated": "2025-11-12T23:35:12.329702+00:00"
       },
       "2024": {
         "path": "data/tickers/TSLA/TSLA-2024.csv",
@@ -2498,15 +2498,15 @@
         "max_date": "2024-12-31",
         "row_count": 252,
         "size_bytes": 136840,
-        "last_updated": "2025-11-11T23:34:49.196165+00:00"
+        "last_updated": "2025-11-12T23:35:12.340518+00:00"
       },
       "2025": {
         "path": "data/tickers/TSLA/TSLA-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 117094,
-        "last_updated": "2025-11-11T23:34:49.205481+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 117647,
+        "last_updated": "2025-11-12T23:35:12.350000+00:00"
       }
     }
   },
@@ -2534,175 +2534,175 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:49.212319+00:00",
+    "last_updated": "2025-11-12T23:35:12.356928+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/VGT/VGT-2005.csv",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 131230,
-        "last_updated": "2025-11-11T23:34:49.222768+00:00"
+        "size_bytes": 131290,
+        "last_updated": "2025-11-12T23:35:12.367512+00:00"
       },
       "2006": {
         "path": "data/tickers/VGT/VGT-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 131153,
-        "last_updated": "2025-11-11T23:34:49.233194+00:00"
+        "size_bytes": 131175,
+        "last_updated": "2025-11-12T23:35:12.377917+00:00"
       },
       "2007": {
         "path": "data/tickers/VGT/VGT-2007.csv",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 131218,
-        "last_updated": "2025-11-11T23:34:49.243652+00:00"
+        "size_bytes": 131202,
+        "last_updated": "2025-11-12T23:35:12.388420+00:00"
       },
       "2008": {
         "path": "data/tickers/VGT/VGT-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 132607,
-        "last_updated": "2025-11-11T23:34:49.254140+00:00"
+        "size_bytes": 132604,
+        "last_updated": "2025-11-12T23:35:12.398972+00:00"
       },
       "2009": {
         "path": "data/tickers/VGT/VGT-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 132020,
-        "last_updated": "2025-11-11T23:34:49.264566+00:00"
+        "size_bytes": 132102,
+        "last_updated": "2025-11-12T23:35:12.409608+00:00"
       },
       "2010": {
         "path": "data/tickers/VGT/VGT-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 131914,
-        "last_updated": "2025-11-11T23:34:49.274995+00:00"
+        "size_bytes": 131907,
+        "last_updated": "2025-11-12T23:35:12.420276+00:00"
       },
       "2011": {
         "path": "data/tickers/VGT/VGT-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 132014,
-        "last_updated": "2025-11-11T23:34:49.285409+00:00"
+        "size_bytes": 132081,
+        "last_updated": "2025-11-12T23:35:12.430839+00:00"
       },
       "2012": {
         "path": "data/tickers/VGT/VGT-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 130912,
-        "last_updated": "2025-11-11T23:34:49.295751+00:00"
+        "size_bytes": 130863,
+        "last_updated": "2025-11-12T23:35:12.441325+00:00"
       },
       "2013": {
         "path": "data/tickers/VGT/VGT-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 131687,
-        "last_updated": "2025-11-11T23:34:49.306162+00:00"
+        "size_bytes": 131706,
+        "last_updated": "2025-11-12T23:35:12.451875+00:00"
       },
       "2014": {
         "path": "data/tickers/VGT/VGT-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 131608,
-        "last_updated": "2025-11-11T23:34:49.316690+00:00"
+        "size_bytes": 131578,
+        "last_updated": "2025-11-12T23:35:12.462470+00:00"
       },
       "2015": {
         "path": "data/tickers/VGT/VGT-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 131847,
-        "last_updated": "2025-11-11T23:34:49.327197+00:00"
+        "size_bytes": 131820,
+        "last_updated": "2025-11-12T23:35:12.473075+00:00"
       },
       "2016": {
         "path": "data/tickers/VGT/VGT-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 133409,
-        "last_updated": "2025-11-11T23:34:49.337821+00:00"
+        "size_bytes": 133354,
+        "last_updated": "2025-11-12T23:35:12.483873+00:00"
       },
       "2017": {
         "path": "data/tickers/VGT/VGT-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 137742,
-        "last_updated": "2025-11-11T23:34:49.348628+00:00"
+        "size_bytes": 137723,
+        "last_updated": "2025-11-12T23:35:12.494982+00:00"
       },
       "2018": {
         "path": "data/tickers/VGT/VGT-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 138407,
-        "last_updated": "2025-11-11T23:34:49.359344+00:00"
+        "size_bytes": 138471,
+        "last_updated": "2025-11-12T23:35:12.506011+00:00"
       },
       "2019": {
         "path": "data/tickers/VGT/VGT-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 138646,
-        "last_updated": "2025-11-11T23:34:49.370117+00:00"
+        "size_bytes": 138630,
+        "last_updated": "2025-11-12T23:35:12.516853+00:00"
       },
       "2020": {
         "path": "data/tickers/VGT/VGT-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 139150,
-        "last_updated": "2025-11-11T23:34:49.381014+00:00"
+        "size_bytes": 139204,
+        "last_updated": "2025-11-12T23:35:12.527751+00:00"
       },
       "2021": {
         "path": "data/tickers/VGT/VGT-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 138421,
-        "last_updated": "2025-11-11T23:34:49.391764+00:00"
+        "size_bytes": 138417,
+        "last_updated": "2025-11-12T23:35:12.538610+00:00"
       },
       "2022": {
         "path": "data/tickers/VGT/VGT-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 138192,
-        "last_updated": "2025-11-11T23:34:49.402490+00:00"
+        "size_bytes": 138119,
+        "last_updated": "2025-11-12T23:35:12.549402+00:00"
       },
       "2023": {
         "path": "data/tickers/VGT/VGT-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 137375,
-        "last_updated": "2025-11-11T23:34:49.413173+00:00"
+        "size_bytes": 137349,
+        "last_updated": "2025-11-12T23:35:12.560092+00:00"
       },
       "2024": {
         "path": "data/tickers/VGT/VGT-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 138044,
-        "last_updated": "2025-11-11T23:34:49.423938+00:00"
+        "size_bytes": 138029,
+        "last_updated": "2025-11-12T23:35:12.570986+00:00"
       },
       "2025": {
         "path": "data/tickers/VGT/VGT-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 118188,
-        "last_updated": "2025-11-11T23:34:49.433355+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 118703,
+        "last_updated": "2025-11-12T23:35:12.580551+00:00"
       }
     }
   },
@@ -2730,175 +2730,175 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:49.440114+00:00",
+    "last_updated": "2025-11-12T23:35:12.587337+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/VTI/VTI-2005.csv",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 131643,
-        "last_updated": "2025-11-11T23:34:49.450559+00:00"
+        "size_bytes": 131626,
+        "last_updated": "2025-11-12T23:35:12.597753+00:00"
       },
       "2006": {
         "path": "data/tickers/VTI/VTI-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 131279,
-        "last_updated": "2025-11-11T23:34:49.460932+00:00"
+        "size_bytes": 131321,
+        "last_updated": "2025-11-12T23:35:12.608164+00:00"
       },
       "2007": {
         "path": "data/tickers/VTI/VTI-2007.csv",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 131451,
-        "last_updated": "2025-11-11T23:34:49.471301+00:00"
+        "size_bytes": 131442,
+        "last_updated": "2025-11-12T23:35:12.618601+00:00"
       },
       "2008": {
         "path": "data/tickers/VTI/VTI-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 132886,
-        "last_updated": "2025-11-11T23:34:49.481864+00:00"
+        "size_bytes": 132934,
+        "last_updated": "2025-11-12T23:35:12.629211+00:00"
       },
       "2009": {
         "path": "data/tickers/VTI/VTI-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 132460,
-        "last_updated": "2025-11-11T23:34:49.492293+00:00"
+        "size_bytes": 132489,
+        "last_updated": "2025-11-12T23:35:12.639796+00:00"
       },
       "2010": {
         "path": "data/tickers/VTI/VTI-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 132283,
-        "last_updated": "2025-11-11T23:34:49.502739+00:00"
+        "size_bytes": 132290,
+        "last_updated": "2025-11-12T23:35:12.650242+00:00"
       },
       "2011": {
         "path": "data/tickers/VTI/VTI-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 132299,
-        "last_updated": "2025-11-11T23:34:49.513166+00:00"
+        "size_bytes": 132275,
+        "last_updated": "2025-11-12T23:35:12.660715+00:00"
       },
       "2012": {
         "path": "data/tickers/VTI/VTI-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 131192,
-        "last_updated": "2025-11-11T23:34:49.523501+00:00"
+        "size_bytes": 131227,
+        "last_updated": "2025-11-12T23:35:12.671136+00:00"
       },
       "2013": {
         "path": "data/tickers/VTI/VTI-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 131914,
-        "last_updated": "2025-11-11T23:34:49.533963+00:00"
+        "size_bytes": 131889,
+        "last_updated": "2025-11-12T23:35:12.681633+00:00"
       },
       "2014": {
         "path": "data/tickers/VTI/VTI-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 131857,
-        "last_updated": "2025-11-11T23:34:49.544459+00:00"
+        "size_bytes": 131850,
+        "last_updated": "2025-11-12T23:35:12.692144+00:00"
       },
       "2015": {
         "path": "data/tickers/VTI/VTI-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 131922,
-        "last_updated": "2025-11-11T23:34:49.554946+00:00"
+        "size_bytes": 131863,
+        "last_updated": "2025-11-12T23:35:12.702688+00:00"
       },
       "2016": {
         "path": "data/tickers/VTI/VTI-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 131945,
-        "last_updated": "2025-11-11T23:34:49.565461+00:00"
+        "size_bytes": 131934,
+        "last_updated": "2025-11-12T23:35:12.713177+00:00"
       },
       "2017": {
         "path": "data/tickers/VTI/VTI-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 134793,
-        "last_updated": "2025-11-11T23:34:49.576106+00:00"
+        "size_bytes": 134821,
+        "last_updated": "2025-11-12T23:35:12.723878+00:00"
       },
       "2018": {
         "path": "data/tickers/VTI/VTI-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 137523,
-        "last_updated": "2025-11-11T23:34:49.587454+00:00"
+        "size_bytes": 137544,
+        "last_updated": "2025-11-12T23:35:12.734741+00:00"
       },
       "2019": {
         "path": "data/tickers/VTI/VTI-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 138738,
-        "last_updated": "2025-11-11T23:34:49.598228+00:00"
+        "size_bytes": 138694,
+        "last_updated": "2025-11-12T23:35:12.745682+00:00"
       },
       "2020": {
         "path": "data/tickers/VTI/VTI-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 139573,
-        "last_updated": "2025-11-11T23:34:49.609186+00:00"
+        "size_bytes": 139564,
+        "last_updated": "2025-11-12T23:35:12.756597+00:00"
       },
       "2021": {
         "path": "data/tickers/VTI/VTI-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 138837,
-        "last_updated": "2025-11-11T23:34:49.619955+00:00"
+        "size_bytes": 138895,
+        "last_updated": "2025-11-12T23:35:12.767429+00:00"
       },
       "2022": {
         "path": "data/tickers/VTI/VTI-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 138686,
-        "last_updated": "2025-11-11T23:34:49.630740+00:00"
+        "size_bytes": 138677,
+        "last_updated": "2025-11-12T23:35:12.778227+00:00"
       },
       "2023": {
         "path": "data/tickers/VTI/VTI-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 137830,
-        "last_updated": "2025-11-11T23:34:49.641419+00:00"
+        "size_bytes": 137857,
+        "last_updated": "2025-11-12T23:35:12.789329+00:00"
       },
       "2024": {
         "path": "data/tickers/VTI/VTI-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 138658,
-        "last_updated": "2025-11-11T23:34:49.652180+00:00"
+        "size_bytes": 138608,
+        "last_updated": "2025-11-12T23:35:12.800120+00:00"
       },
       "2025": {
         "path": "data/tickers/VTI/VTI-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 118734,
-        "last_updated": "2025-11-11T23:34:49.661628+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 119280,
+        "last_updated": "2025-11-12T23:35:12.809660+00:00"
       }
     }
   },
@@ -2926,175 +2926,175 @@
       2024,
       2025
     ],
-    "last_updated": "2025-11-11T23:34:49.668355+00:00",
+    "last_updated": "2025-11-12T23:35:12.816391+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/XLG/XLG-2005.csv",
         "min_date": "2005-05-10",
         "max_date": "2005-12-30",
         "row_count": 164,
-        "size_bytes": 81647,
-        "last_updated": "2025-11-11T23:34:49.675791+00:00"
+        "size_bytes": 81650,
+        "last_updated": "2025-11-12T23:35:12.823821+00:00"
       },
       "2006": {
         "path": "data/tickers/XLG/XLG-2006.csv",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 124883,
-        "last_updated": "2025-11-11T23:34:49.685702+00:00"
+        "size_bytes": 124836,
+        "last_updated": "2025-11-12T23:35:12.833818+00:00"
       },
       "2007": {
         "path": "data/tickers/XLG/XLG-2007.csv",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 124913,
-        "last_updated": "2025-11-11T23:34:49.695638+00:00"
+        "size_bytes": 124875,
+        "last_updated": "2025-11-12T23:35:12.843815+00:00"
       },
       "2008": {
         "path": "data/tickers/XLG/XLG-2008.csv",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 126286,
-        "last_updated": "2025-11-11T23:34:49.705633+00:00"
+        "size_bytes": 126262,
+        "last_updated": "2025-11-12T23:35:12.853824+00:00"
       },
       "2009": {
         "path": "data/tickers/XLG/XLG-2009.csv",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 125661,
-        "last_updated": "2025-11-11T23:34:49.715672+00:00"
+        "size_bytes": 125704,
+        "last_updated": "2025-11-12T23:35:12.863826+00:00"
       },
       "2010": {
         "path": "data/tickers/XLG/XLG-2010.csv",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 125551,
-        "last_updated": "2025-11-11T23:34:49.725692+00:00"
+        "size_bytes": 125559,
+        "last_updated": "2025-11-12T23:35:12.873846+00:00"
       },
       "2011": {
         "path": "data/tickers/XLG/XLG-2011.csv",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 125442,
-        "last_updated": "2025-11-11T23:34:49.735697+00:00"
+        "size_bytes": 125419,
+        "last_updated": "2025-11-12T23:35:12.883798+00:00"
       },
       "2012": {
         "path": "data/tickers/XLG/XLG-2012.csv",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 124325,
-        "last_updated": "2025-11-11T23:34:49.745618+00:00"
+        "size_bytes": 124328,
+        "last_updated": "2025-11-12T23:35:12.893768+00:00"
       },
       "2013": {
         "path": "data/tickers/XLG/XLG-2013.csv",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 125621,
-        "last_updated": "2025-11-11T23:34:49.755770+00:00"
+        "size_bytes": 125604,
+        "last_updated": "2025-11-12T23:35:12.903964+00:00"
       },
       "2014": {
         "path": "data/tickers/XLG/XLG-2014.csv",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 129451,
-        "last_updated": "2025-11-11T23:34:49.766122+00:00"
+        "size_bytes": 129454,
+        "last_updated": "2025-11-12T23:35:12.914408+00:00"
       },
       "2015": {
         "path": "data/tickers/XLG/XLG-2015.csv",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 130993,
-        "last_updated": "2025-11-11T23:34:49.776535+00:00"
+        "size_bytes": 131048,
+        "last_updated": "2025-11-12T23:35:12.924855+00:00"
       },
       "2016": {
         "path": "data/tickers/XLG/XLG-2016.csv",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 132099,
-        "last_updated": "2025-11-11T23:34:49.786985+00:00"
+        "size_bytes": 132048,
+        "last_updated": "2025-11-12T23:35:12.935371+00:00"
       },
       "2017": {
         "path": "data/tickers/XLG/XLG-2017.csv",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 131995,
-        "last_updated": "2025-11-11T23:34:49.797363+00:00"
+        "size_bytes": 132049,
+        "last_updated": "2025-11-12T23:35:12.945809+00:00"
       },
       "2018": {
         "path": "data/tickers/XLG/XLG-2018.csv",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 131907,
-        "last_updated": "2025-11-11T23:34:49.807782+00:00"
+        "size_bytes": 131949,
+        "last_updated": "2025-11-12T23:35:12.956355+00:00"
       },
       "2019": {
         "path": "data/tickers/XLG/XLG-2019.csv",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 132250,
-        "last_updated": "2025-11-11T23:34:49.818204+00:00"
+        "size_bytes": 132318,
+        "last_updated": "2025-11-12T23:35:12.966854+00:00"
       },
       "2020": {
         "path": "data/tickers/XLG/XLG-2020.csv",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 132834,
-        "last_updated": "2025-11-11T23:34:49.828714+00:00"
+        "size_bytes": 132849,
+        "last_updated": "2025-11-12T23:35:12.977412+00:00"
       },
       "2021": {
         "path": "data/tickers/XLG/XLG-2021.csv",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 132148,
-        "last_updated": "2025-11-11T23:34:49.839132+00:00"
+        "size_bytes": 132216,
+        "last_updated": "2025-11-12T23:35:12.987951+00:00"
       },
       "2022": {
         "path": "data/tickers/XLG/XLG-2022.csv",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 132032,
-        "last_updated": "2025-11-11T23:34:49.849560+00:00"
+        "size_bytes": 131982,
+        "last_updated": "2025-11-12T23:35:12.998510+00:00"
       },
       "2023": {
         "path": "data/tickers/XLG/XLG-2023.csv",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 131151,
-        "last_updated": "2025-11-11T23:34:49.859938+00:00"
+        "size_bytes": 131134,
+        "last_updated": "2025-11-12T23:35:13.008898+00:00"
       },
       "2024": {
         "path": "data/tickers/XLG/XLG-2024.csv",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 132081,
-        "last_updated": "2025-11-11T23:34:49.870400+00:00"
+        "size_bytes": 132034,
+        "last_updated": "2025-11-12T23:35:13.019474+00:00"
       },
       "2025": {
         "path": "data/tickers/XLG/XLG-2025.csv",
         "min_date": "2025-01-02",
-        "max_date": "2025-11-11",
-        "row_count": 216,
-        "size_bytes": 113045,
-        "last_updated": "2025-11-11T23:34:49.879467+00:00"
+        "max_date": "2025-11-12",
+        "row_count": 217,
+        "size_bytes": 113577,
+        "last_updated": "2025-11-12T23:35:13.028709+00:00"
       }
     }
   }
