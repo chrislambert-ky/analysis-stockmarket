@@ -192,6 +192,7 @@ bod_levels = {
     "BOD86-14": 0.86,
     "BOD85-15": 0.85,
     "BOD84-16": 0.84,
+    "BOD83-17": 0.83,
     "BOD82-18": 0.82,
     "BOD81-19": 0.81,
     "BOD80-20": 0.80,
@@ -216,8 +217,9 @@ limits_rounded = np.round(limits, 4)
 for i, col in enumerate(cols):
     df[col] = limits_rounded[:, i]
 
-# Executed when: low <= limit_price <= previous_close (and prev/low are numeric)
-executed_mask = (~np.isnan(prev))[:, None] & (~np.isnan(low))[:, None] & (limits >= low[:, None]) & (limits <= prev[:, None])
+# Executed when: low <= limit_price (and prev/low are numeric)
+# Note: limits <= prev is always true (all factors < 1.0) so it is omitted
+executed_mask = (~np.isnan(prev))[:, None] & (~np.isnan(low))[:, None] & (limits >= low[:, None])
 
 # Compute shares purchased (1 share per executed bucket) and total invested (sum of executed limit prices)
 shares = executed_mask.sum(axis=1).astype(int)
@@ -294,13 +296,14 @@ for sym, grp in combined.groupby('Symbol'):
                     return norm_map[key]
             return None
 
-        shares_col = find_variant(['Shares_Purchased', 'Shares Purchased', 'shares_purchased', 'SharesPurchased'], cols)
-        total_col = find_variant(['Total_Value_Purchased', 'Total Value Purchased', 'TotalValuePurchased', 'total_value_purchased'], cols)
+        available_cols = list(year_grp.columns)
+        shares_col = find_variant(['Shares_Purchased', 'Shares Purchased', 'shares_purchased', 'SharesPurchased'], available_cols)
+        total_col = find_variant(['Total_Value_Purchased', 'Total Value Purchased', 'TotalValuePurchased', 'total_value_purchased'], available_cols)
 
-        bod_cols = [c for c in cols if isinstance(c, str) and (c.startswith('BOD') or 'BOD[' in c or c.upper().startswith('BOD'))]
+        bod_cols = [c for c in available_cols if isinstance(c, str) and (c.startswith('BOD') or 'BOD[' in c or c.upper().startswith('BOD'))]
 
         if (shares_col or total_col):
-            remaining = [c for c in cols if c not in (shares_col, total_col)]
+            remaining = [c for c in available_cols if c not in (shares_col, total_col)]
             if bod_cols:
                 bod_indices = [remaining.index(b) for b in bod_cols if b in remaining]
                 insert_idx = min(bod_indices) if bod_indices else 0
