@@ -18,7 +18,7 @@ RAW_COMBINED_CSV = os.path.join(OUTPUT_FOLDER, "etl-data-raw.csv")
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 # List of tickers to fetch
-etf_list = ["AAPL","ALLY","AMZN","ARKK","FBCG","FMAG",
+etf_list = ["AAPL","ALLY","AMZN","FBCG","FMAG",
             "GOOGL","HSBC","MGK","MSFT","NVDA","OEF",
             "QQQ","QQQJ","QTOP","SPYM","TOPT","TSLA",
             "VGT","VTI","XLG"]
