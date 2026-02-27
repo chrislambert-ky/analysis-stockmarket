@@ -429,6 +429,7 @@
     var getTickerSymbols = window.V2Shared.getTickerSymbols;
     var formatDateToYMD = window.V2Shared.formatDateToYMD;
     var parseDateStringAsLocal = window.V2Shared.parseDateStringAsLocal;
+    var toYMDFromString = window.V2Shared.toYMDFromString;
     console.log('[dca-strat-v2] V2Shared functions imported');
     
     // Simple mobile nav toggle
@@ -454,40 +455,40 @@
         });
     }
 
-    // Load stock data and populate ticker dropdown using V2 smart loading
+    // Populate ticker dropdown from index (data is loaded on-demand when user calculates)
     async function loadStockData() {
         try {
-            console.log('[dca-strat-v2] Loading stock data...');
+            console.log('[dca-strat-v2] Getting ticker list...');
             const tickerList = await getTickerSymbols();
-            console.log('[dca-strat-v2] Loading data for', tickerList.length, 'tickers');
-            
-            stockData = [];
-            for (const ticker of tickerList) {
-                const tickerData = await loadTickerDataForPeriod(ticker, '20Y'); // Load max history
-                stockData.push(...tickerData);
+
+            if (!tickerList || tickerList.length === 0) {
+                console.warn('[dca-strat-v2] No tickers found');
+                return;
             }
-            
-            console.log('[dca-strat-v2] Loaded', stockData.length, 'total rows');
-            
+
+            console.log('[dca-strat-v2] Found', tickerList.length, 'tickers');
+
             // Populate ticker dropdown - already sorted from getTickerSymbols()
             const select = document.getElementById('tickerSelect');
+            select.innerHTML = '<option value="">-- Select Ticker --</option>';
             tickerList.forEach(ticker => {
                 const option = document.createElement('option');
                 option.value = ticker;
                 option.textContent = ticker;
                 select.appendChild(option);
             });
-            
-            console.log(`Loaded ${stockData.length} records for ${tickers.length} tickers`);
+
+            console.log('[dca-strat-v2] Ticker dropdown populated with', tickerList.length, 'tickers');
         } catch (error) {
-            console.error('Error loading stock data:', error);
+            console.error('[dca-strat-v2] Error loading ticker list:', error);
+            alert('Failed to load ticker list. Please refresh the page.');
         }
     }
 
-    function calculateStrategy() {
+    async function calculateStrategy() {
         const amount = parseFloat(document.getElementById('investmentAmount').value);
-        const startDate = new Date(document.getElementById('startDate').value);
-        const endDate = new Date(document.getElementById('endDate').value);
+        const startDate = parseDateStringAsLocal(document.getElementById('startDate').value);
+        const endDate = parseDateStringAsLocal(document.getElementById('endDate').value);
         const investmentDay = parseInt(document.getElementById('investmentDay').value);
         const selectedTicker = document.getElementById('tickerSelect').value;
         
@@ -503,6 +504,26 @@
         
         if (startDate >= endDate) {
             alert('End date must be after start date');
+            return;
+        }
+
+        // Load data on-demand for the selected ticker
+        try {
+            // Always load max history for a single ticker (~20 CSV files) so the
+            // user's custom date range is never truncated by a period filter.
+            console.log('[dca-strat-v2] Loading data for', selectedTicker);
+            const loaded = await loadTickerDataForPeriod(selectedTicker, '20Y');
+
+            if (!loaded || loaded.length === 0) {
+                alert('No data found for ' + selectedTicker + '. Please try a different ticker or date range.');
+                return;
+            }
+
+            stockData = loaded;
+            console.log('[dca-strat-v2] Loaded', stockData.length, 'rows for', selectedTicker);
+        } catch (err) {
+            console.error('[dca-strat-v2] Failed to load data for', selectedTicker, err);
+            alert('Failed to load data for ' + selectedTicker + '. Please try again.');
             return;
         }
         
