@@ -128,7 +128,7 @@
         <a href="aboutv2.html">About</a>
     </nav>
     <h1>Buy-on-Dip - All Tickers</h1>
-    <h2>Buying 1 share for each percent drop (1-5%) using limit orders at predetermined prices</h2>
+    <h2>Buying 1 share for each percent drop (2-5%) using limit orders at predetermined prices</h2>
     <div class="period-controls" style="text-align:center;">
         <button id="ytd-btn" class="period-btn">YTD</button>
         <button id="5y-btn" class="period-btn">5 Years</button>
@@ -303,9 +303,8 @@
                     const close = Number(row.Close);
                     const previousClose = Number(row.Previous_Close);
                     
-                    // Define the BOD levels we're checking (BOD99-1 through BOD95-5 for 1-5%)
+                    // Define the BOD levels we're checking (BOD98-2 through BOD95-5 for 2-5%)
                     const bodLevels = [
-                        { level: '1%', priceCol: 'BOD99-1', execCol: 'BOD99-1_Executed' },
                         { level: '2%', priceCol: 'BOD98-2', execCol: 'BOD98-2_Executed' },
                         { level: '3%', priceCol: 'BOD97-3', execCol: 'BOD97-3_Executed' },
                         { level: '4%', priceCol: 'BOD96-4', execCol: 'BOD96-4_Executed' },

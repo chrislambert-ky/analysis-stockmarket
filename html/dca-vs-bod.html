@@ -113,7 +113,9 @@
     <header style="text-align:center; margin: 20px 0 10px;">
         <h1 style="margin-bottom:10px;">Dollar Cost Averaging vs Buy-on-Dip</h1>
         <p style="color: var(--gray); max-width: 760px; margin: 0 auto;">
-            Select a ticker to compare results from the weekly Dollar Cost Averaging strategy against the Buy-on-Dip execution strategy across matching timeframes.
+            Select a ticker to compare results from the weekly Dollar Cost Averaging strategy against the Buy-on-Dip strategy across matching timeframes.
+            The Buy-on-Dip strategy buys 1 share at each dip level of 2%, 3%, 4%, and 5% below the previous day's closing price.
+            The 1% dip level is excluded, as frequent small-dip purchases have historically reduced overall returns.
         </p>
     </header>
 
@@ -450,10 +452,12 @@
             const gainAmount = totalValue - totalInvested;
             const gainPct = percentGain(totalValue, totalInvested);
             const purchaseDays = results.filter(r => r.isPurchaseDay).length;
+            const avgCostBasis = totalShares > 0 ? totalInvested / totalShares : null;
 
             const metrics = [
                 { label: 'Weeks / Purchases', value: purchaseDays },
                 { label: 'Total Invested', value: formatCurrency(totalInvested) },
+                { label: 'Avg Cost / Share', value: avgCostBasis != null ? formatCurrency(avgCostBasis) : 'N/A' },
                 { label: 'Total Value', value: formatCurrency(totalValue) },
                 { label: 'Total Shares', value: totalShares.toFixed(4) },
                 { label: 'Gain / Loss', value: formatCurrency(gainAmount) },
@@ -538,30 +542,10 @@
                         return rowDate && rowDate >= startDate && rowDate <= endDate;
                     });
                     const bodLevels = [
-                        { level: '1%', priceCol: 'BOD99-1', execCol: 'BOD99-1_Executed' },
                         { level: '2%', priceCol: 'BOD98-2', execCol: 'BOD98-2_Executed' },
                         { level: '3%', priceCol: 'BOD97-3', execCol: 'BOD97-3_Executed' },
                         { level: '4%', priceCol: 'BOD96-4', execCol: 'BOD96-4_Executed' },
-                        { level: '5%', priceCol: 'BOD95-5', execCol: 'BOD95-5_Executed' },
-                        { level: '6%', priceCol: 'BOD94-6', execCol: 'BOD94-6_Executed' },
-                        { level: '7%', priceCol: 'BOD93-7', execCol: 'BOD93-7_Executed' },
-                        { level: '8%', priceCol: 'BOD92-8', execCol: 'BOD92-8_Executed' },
-                        { level: '9%', priceCol: 'BOD91-9', execCol: 'BOD91-9_Executed' },
-                        { level: '10%', priceCol: 'BOD90-10', execCol: 'BOD90-10_Executed' },
-                        { level: '11%', priceCol: 'BOD89-11', execCol: 'BOD89-11_Executed' },
-                        { level: '12%', priceCol: 'BOD88-12', execCol: 'BOD88-12_Executed' },
-                        { level: '13%', priceCol: 'BOD87-13', execCol: 'BOD87-13_Executed' },
-                        { level: '14%', priceCol: 'BOD86-14', execCol: 'BOD86-14_Executed' },
-                        { level: '15%', priceCol: 'BOD85-15', execCol: 'BOD85-15_Executed' },
-                        { level: '16%', priceCol: 'BOD84-16', execCol: 'BOD84-16_Executed' },
-                        { level: '18%', priceCol: 'BOD82-18', execCol: 'BOD82-18_Executed' },
-                        { level: '19%', priceCol: 'BOD81-19', execCol: 'BOD81-19_Executed' },
-                        { level: '20%', priceCol: 'BOD80-20', execCol: 'BOD80-20_Executed' },
-                        { level: '21%', priceCol: 'BOD79-21', execCol: 'BOD79-21_Executed' },
-                        { level: '22%', priceCol: 'BOD78-22', execCol: 'BOD78-22_Executed' },
-                        { level: '23%', priceCol: 'BOD77-23', execCol: 'BOD77-23_Executed' },
-                        { level: '24%', priceCol: 'BOD76-24', execCol: 'BOD76-24_Executed' },
-                        { level: '25%', priceCol: 'BOD75-25', execCol: 'BOD75-25_Executed' }
+                        { level: '5%', priceCol: 'BOD95-5', execCol: 'BOD95-5_Executed' }
                     ];
 
                     filtered.forEach(row => {
@@ -676,9 +660,11 @@
             const gainAmount = totalValue != null ? totalValue - totalInvested : null;
             const gainPct = percentGain(totalValue, totalInvested);
 
+            const avgCostBasis = totalShares > 0 ? totalInvested / totalShares : null;
             const metrics = [
-                { label: 'Total Dip Purchases', value: totalShares.toFixed(4) },
+                { label: 'Total Shares Owned', value: totalShares.toFixed(4) },
                 { label: 'Total Invested', value: formatCurrency(totalInvested) },
+                { label: 'Avg Cost / Share', value: avgCostBasis != null ? formatCurrency(avgCostBasis) : 'N/A' },
                 { label: 'Portfolio Value', value: totalValue != null ? formatCurrency(totalValue) : 'N/A' },
                 { label: 'Gain / Loss', value: gainAmount != null ? formatCurrency(gainAmount) : 'N/A' },
                 { label: 'Return %', value: gainPct != null ? gainPct.toFixed(2) + '%' : 'N/A' }
