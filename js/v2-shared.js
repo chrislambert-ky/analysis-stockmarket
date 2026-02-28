@@ -41,10 +41,21 @@ function parseDateStringAsLocal(s) {
     m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (m) return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
     
-    // Fallback to Date parser but normalize to local midnight for the parsed date
-    const parsed = new Date(str);
+    // Has time/timezone component - parse as UTC then extract the America/New_York calendar date
+    const parsed = new Date(str.replace(' ', 'T'));
     if (isNaN(parsed)) return null;
-    return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+    try {
+        const etParts = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'America/New_York',
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        }).formatToParts(parsed);
+        const year  = Number(etParts.find(p => p.type === 'year').value);
+        const month = Number(etParts.find(p => p.type === 'month').value);
+        const day   = Number(etParts.find(p => p.type === 'day').value);
+        return new Date(year, month - 1, day);
+    } catch (_) {
+        return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+    }
 }
 
 /**

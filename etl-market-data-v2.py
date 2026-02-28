@@ -266,11 +266,13 @@ for sym, grp in combined.groupby('Symbol'):
     sym_dir = os.path.join(tickers_dir, sym)
     os.makedirs(sym_dir, exist_ok=True)
 
-    # Ensure Date is parsed
-    grp['Date'] = pd.to_datetime(grp['Date'], errors='coerce')
+    # Ensure Date is parsed; convert UTC timestamps to Eastern Time, then format as YYYY-MM-DD
+    _dates = pd.to_datetime(grp['Date'], errors='coerce', utc=True)
+    grp = grp.copy()
+    grp['Date'] = _dates.dt.tz_convert('America/New_York').dt.strftime('%Y-%m-%d')
     grp = grp.sort_values('Date')
 
-    years = sorted(grp['Date'].dt.year.dropna().unique().astype(int).tolist())
+    years = sorted(grp['Date'].str[:4].dropna().astype(int).unique().tolist())
     index[sym] = {
         'years': years,
         'last_updated': datetime.now(timezone.utc).isoformat(),
@@ -279,7 +281,7 @@ for sym, grp in combined.groupby('Symbol'):
 
     # For each year, write a per-year CSV for this symbol
     for year in years:
-        year_grp = grp[grp['Date'].dt.year == int(year)]
+        year_grp = grp[grp['Date'].str.startswith(str(year))]
         if year_grp.empty:
             continue
         fname = f"{sym}-{year}.csv"
@@ -324,16 +326,8 @@ for sym, grp in combined.groupby('Symbol'):
 
         # compute file metadata
         try:
-            min_date = year_grp['Date'].min()
-            max_date = year_grp['Date'].max()
-            if hasattr(min_date, 'strftime'):
-                min_date_s = min_date.strftime('%Y-%m-%d')
-            else:
-                min_date_s = str(min_date)
-            if hasattr(max_date, 'strftime'):
-                max_date_s = max_date.strftime('%Y-%m-%d')
-            else:
-                max_date_s = str(max_date)
+            min_date_s = year_grp['Date'].min() or ''
+            max_date_s = year_grp['Date'].max() or ''
         except Exception:
             min_date_s = ''
             max_date_s = ''
