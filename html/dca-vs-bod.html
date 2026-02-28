@@ -353,7 +353,7 @@
 
             while (currentDate <= finalEndDate) {
                 const targetDateStr = currentDate.toISOString().split('T')[0];
-                const closestTradingDay = findClosestTradingDay(filteredData, targetDateStr);
+                const closestTradingDay = findFirstTradingDayOnOrAfter(filteredData, targetDateStr);
 
                 if (closestTradingDay) {
                     const avgDailyPrice = parseFloat(closestTradingDay.avg_daily_price ?? closestTradingDay.Close);
@@ -423,20 +423,22 @@
             return dailyResults;
         }
 
-        function findClosestTradingDay(tickerData, targetDate) {
-            const target = new Date(targetDate);
-            let closest = null;
-            let minDiff = Infinity;
-            (tickerData || []).forEach(row => {
-                const rowDate = parseDateStringAsLocal(row.Date_add);
-                if (!rowDate) return;
-                const diff = Math.abs(rowDate - target);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closest = row;
+        // Find the first trading day on or after targetDateStr (YYYY-MM-DD).
+        // tickerData must be sorted ascending by Date_add.
+        // Returns null if no trading day exists on or after the target date.
+        function findFirstTradingDayOnOrAfter(tickerData, targetDateStr) {
+            if (!tickerData || tickerData.length === 0) return null;
+            let lo = 0, hi = tickerData.length - 1;
+            while (lo < hi) {
+                const mid = (lo + hi) >> 1;
+                if (tickerData[mid].Date_add < targetDateStr) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
-            });
-            return closest;
+            }
+            const row = tickerData[lo];
+            return (row && row.Date_add >= targetDateStr) ? row : null;
         }
 
         function renderDcaMetrics(ticker, results) {

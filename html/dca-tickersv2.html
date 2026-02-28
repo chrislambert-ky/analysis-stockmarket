@@ -321,8 +321,8 @@
         while (currentDate <= endDate) {
             const targetDateStr = currentDate.toISOString().split('T')[0];
             
-            // Use optimized binary search instead of linear search
-            const closestTradingDay = findClosestTradingDay(filteredData, targetDateStr);
+            // Find the first trading day on or after this Monday (handles holidays)
+            const closestTradingDay = findFirstTradingDayOnOrAfter(filteredData, targetDateStr);
             
             if (closestTradingDay) {
                 const avgDailyPrice = parseFloat(closestTradingDay.avg_daily_price);
@@ -352,46 +352,22 @@
         return results;
     }
     
-    // Helper function to find closest trading day to a target date using binary search
-    function findClosestTradingDay(sortedTickerData, targetDate) {
+    // Find the first trading day on or after targetDateStr (YYYY-MM-DD).
+    // sortedTickerData must be sorted ascending by Date_add.
+    // Returns null if no trading day exists on or after the target date.
+    function findFirstTradingDayOnOrAfter(sortedTickerData, targetDateStr) {
         if (!sortedTickerData || sortedTickerData.length === 0) return null;
-        
-        const target = new Date(targetDate).getTime();
-        
-        // Binary search for closest date
-        let left = 0;
-        let right = sortedTickerData.length - 1;
-        
-        // Handle edge cases
-        const firstDate = new Date(sortedTickerData[0].Date_add).getTime();
-        const lastDate = new Date(sortedTickerData[right].Date_add).getTime();
-        
-        if (target <= firstDate) return sortedTickerData[0];
-        if (target >= lastDate) return sortedTickerData[right];
-        
-        // Binary search
-        while (left <= right) {
-            const mid = Math.floor((left + right) / 2);
-            const midDate = new Date(sortedTickerData[mid].Date_add).getTime();
-            
-            if (midDate === target) return sortedTickerData[mid];
-            
-            if (midDate < target) {
-                left = mid + 1;
+        let lo = 0, hi = sortedTickerData.length - 1;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (sortedTickerData[mid].Date_add < targetDateStr) {
+                lo = mid + 1;
             } else {
-                right = mid - 1;
+                hi = mid;
             }
         }
-        
-        // After binary search, left and right are adjacent
-        // Compare which is closer
-        if (right < 0) return sortedTickerData[left];
-        if (left >= sortedTickerData.length) return sortedTickerData[right];
-        
-        const leftDiff = Math.abs(new Date(sortedTickerData[left].Date_add).getTime() - target);
-        const rightDiff = Math.abs(new Date(sortedTickerData[right].Date_add).getTime() - target);
-        
-        return leftDiff < rightDiff ? sortedTickerData[left] : sortedTickerData[right];
+        const row = sortedTickerData[lo];
+        return (row && row.Date_add >= targetDateStr) ? row : null;
     }
 
     // Global variable to track current period

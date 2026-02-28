@@ -626,8 +626,8 @@
         while (currentDate <= finalEndDate) {
             const targetDateStr = currentDate.toISOString().split('T')[0];
             
-            // Find closest trading day to this Monday
-            const closestTradingDay = findClosestTradingDay(filteredData, targetDateStr);
+            // Find the first trading day on or after this Monday (handles holidays)
+            const closestTradingDay = findFirstTradingDayOnOrAfter(filteredData, targetDateStr);
             
             if (closestTradingDay) {
                 const avgDailyPrice = parseFloat(closestTradingDay.avg_daily_price ?? closestTradingDay.Close);
@@ -698,27 +698,22 @@
         return dailyResults;
     }
     
-    // Helper function to find closest trading day to a target date
-    function findClosestTradingDay(tickerData, targetDate) {
-        const target = new Date(targetDate);
-        const targetStr = formatDateToYMD(target);
-        let closest = null;
-        let minDiff = Infinity;
-        
-        for (const row of tickerData) {
-            const rowDateStr = row.Date_add;
-            // Convert both to dates for comparison
-            const rowDate = parseDateStringAsLocal(rowDateStr);
-            if (!rowDate) continue;
-            
-            const diff = Math.abs(rowDate - target);
-            if (diff < minDiff) {
-                minDiff = diff;
-                closest = row;
+    // Find the first trading day on or after targetDateStr (YYYY-MM-DD).
+    // sortedData must be sorted ascending by Date_add.
+    // Returns null if no trading day exists on or after the target date.
+    function findFirstTradingDayOnOrAfter(sortedData, targetDateStr) {
+        if (!sortedData || sortedData.length === 0) return null;
+        let lo = 0, hi = sortedData.length - 1;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (sortedData[mid].Date_add < targetDateStr) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
             }
         }
-        
-        return closest;
+        const row = sortedData[lo];
+        return (row && row.Date_add >= targetDateStr) ? row : null;
     }
     
     // Dead code removed: populateDcaTickerDropdown() - not used, referenced deleted fetchData()
