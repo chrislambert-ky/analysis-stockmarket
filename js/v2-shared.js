@@ -67,6 +67,27 @@ function toYMDFromString(s) {
 }
 
 /**
+ * Normalize a row's date value into a stable YYYY-MM-DD string.
+ * Handles Date objects, ISO strings, and values already stored in Date_add.
+ */
+function normalizeDateKey(row) {
+    if (!row) return '';
+
+    const rawDate = row.Date_add || row.Date || row.date || '';
+    if (!rawDate) return '';
+
+    if (rawDate instanceof Date) {
+        return formatDateToYMD(rawDate);
+    }
+
+    if (typeof rawDate === 'string') {
+        return toYMDFromString(rawDate);
+    }
+
+    return String(rawDate);
+}
+
+/**
  * Deduplicate rows by calendar date (keep only the latest entry per date)
  */
 function dedupeRowsByDate(rows) {
@@ -75,7 +96,7 @@ function dedupeRowsByDate(rows) {
     // Group by date string
     const byDate = {};
     rows.forEach(row => {
-        const dateKey = row.Date_add || row.Date || '';
+        const dateKey = normalizeDateKey(row);
         if (!dateKey) return;
         // Keep the last occurrence (assumes rows are in chronological order or we want latest)
         byDate[dateKey] = row;
@@ -83,9 +104,9 @@ function dedupeRowsByDate(rows) {
     
     // Return sorted by date
     return Object.values(byDate).sort((a, b) => {
-        const da = a.Date_add || a.Date || '';
-        const db = b.Date_add || b.Date || '';
-        return da.localeCompare(db);
+        const da = normalizeDateKey(a);
+        const db = normalizeDateKey(b);
+        return String(da).localeCompare(String(db));
     });
 }
 

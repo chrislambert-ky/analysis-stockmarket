@@ -160,7 +160,7 @@
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=4"></script>
+    <script src="../js/v2-shared.js?v=5"></script>
     <script>
     console.log('=== DCAV2 SCRIPT BLOCK STARTING ===');
     
@@ -605,12 +605,7 @@
                 const rowDateStr = row.Date_add;
                 return rowDateStr >= startDateStr && rowDateStr <= endDateStr;
             })
-            .sort((a, b) => a.Date_add.localeCompare(b.Date_add));
-        
-        if (filteredData.length === 0) {
-            return [];
-        }
-        
+            .sort((a, b) => String(a.Date_add || '').localeCompare(String(b.Date_add || '')));
     let cumulativeShares = 0;
     let cumulativeInvested = 0;
     const weeklyInvestment = 25;
