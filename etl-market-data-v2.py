@@ -4,7 +4,6 @@
 # =============================
 import os
 import json
-import argparse
 import yfinance as yf
 import pandas as pd
 from datetime import datetime, timedelta, timezone
@@ -13,9 +12,26 @@ from datetime import datetime, timedelta, timezone
 # Configuration
 # =============================
 OUTPUT_FOLDER = "data"
-RAW_COMBINED_CSV = os.path.join(OUTPUT_FOLDER, "etl-data-raw.csv")
+RAW_COMBINED_PARQUET = os.path.join(OUTPUT_FOLDER, "etl-data-raw.parquet")
+PROCESSED_PARQUET = os.path.join(OUTPUT_FOLDER, "etl-data-processed.parquet")
+BOD_PARQUET = os.path.join(OUTPUT_FOLDER, "etl-data-bod.parquet")
+TICKERS_INDEX = os.path.join(OUTPUT_FOLDER, "tickers", "tickers_index.json")
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+
+legacy_csv_paths = [
+    os.path.join(OUTPUT_FOLDER, "etl-data-raw.csv"),
+    os.path.join(OUTPUT_FOLDER, "etl-data-processed.csv"),
+    os.path.join(OUTPUT_FOLDER, "etl-data-bod.csv"),
+]
+if os.path.exists(TICKERS_INDEX):
+    with open(TICKERS_INDEX, encoding="utf-8") as index_file:
+        old_index = json.load(index_file)
+    for ticker_entry in old_index.values():
+        for file_info in ticker_entry.get("files", {}).values():
+            path = file_info.get("path") if isinstance(file_info, dict) else file_info
+            if isinstance(path, str) and path.lower().endswith(".csv"):
+                legacy_csv_paths.append(path)
 
 # List of tickers to fetch
 etf_list = ["AAPL","ALLY","AMZN","FBCG","FMAG",
@@ -32,25 +48,8 @@ etf_list = ["AAPL","ALLY","AMZN","FBCG","FMAG",
 #        return dt.strftime("%Y-%m-%d")
 #    return str(dt)
 
-# %%
-def parse_args():
-    p = argparse.ArgumentParser(description="ETL v2 - fetch and split per-ticker yearly files")
-    p.add_argument("--force", action="store_true", help="Force re-fetch from Yahoo even if today's raw CSV exists")
-    return p.parse_args()
-
-
-def raw_csv_is_fresh(path):
-    if not os.path.exists(path):
-        return False
-    # consider the raw CSV fresh if it was modified today (local date)
-    mtime = datetime.fromtimestamp(os.path.getmtime(path))
-    return mtime.date() == datetime.now().date()
-
-
-args = parse_args()
-
 rows = []
-print("Downloading raw combined CSV (overwriting any existing file)...")
+print("Downloading raw combined Parquet data...")
 for sym in etf_list:
     try:
         t = yf.Ticker(sym)
@@ -79,18 +78,17 @@ for sym in etf_list:
 
 if rows:
     combined = pd.concat(rows, ignore_index=True)
-    combined.to_csv(RAW_COMBINED_CSV, index=False)
-    print(f"Wrote raw combined CSV -> {RAW_COMBINED_CSV}")
+    combined.to_parquet(RAW_COMBINED_PARQUET, index=False, compression="zstd")
+    print(f"Wrote raw combined Parquet -> {RAW_COMBINED_PARQUET}")
 else:
-    print("No data downloaded.")
+    raise RuntimeError("No market data downloaded; existing outputs were left unchanged.")
 
 
 # %%
 from datetime import datetime, timedelta
 
-# Load raw CSV
-# Load raw CSV
-df = pd.read_csv(RAW_COMBINED_CSV)
+# Load raw Parquet
+df = pd.read_parquet(RAW_COMBINED_PARQUET)
 
 # Ensure Date is parsed as datetime (use utc=True to avoid mixed timezone FutureWarning)
 df["Date"] = pd.to_datetime(df["Date"], errors="coerce", utc=True)
@@ -163,12 +161,11 @@ if mask.any():
     df.loc[mask, "Close_vs_PrevClose_Pct"] = df.loc[mask, "Daily_Gain_Loss_Pct"]
     df.loc[mask, "mx_percent_decline"] = ((prev - df.loc[mask, "Low"]) / prev * 100).round(2)
 
-df.to_csv(os.path.join(OUTPUT_FOLDER, "etl-data-processed.csv"), index=False)
+df.to_parquet(PROCESSED_PARQUET, index=False, compression="zstd")
 
 # %%
 # Load processed daily history (from prior cell output)
-proc_path = os.path.join(OUTPUT_FOLDER, "etl-data-processed.csv")
-df = pd.read_csv(proc_path)
+df = pd.read_parquet(PROCESSED_PARQUET)
 
 # Parse and ensure numeric types
 df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
@@ -238,18 +235,16 @@ for i, col in enumerate(cols):
 df = df.sort_values(['Symbol', 'Date'])
 
 # --- Save BOD-enhanced file ---
-bod_path = os.path.join(OUTPUT_FOLDER, "etl-data-bod.csv")
-df.to_csv(bod_path, index=False)
-print(f"Wrote BOD-enhanced data -> {bod_path}")
+df.to_parquet(BOD_PARQUET, index=False, compression="zstd")
+print(f"Wrote BOD-enhanced data -> {BOD_PARQUET}")
 
 # %%
-# Export per-ticker CSV files for UI consumption
+# Export per-ticker Parquet files for UI consumption
 import os
 import json
 
-# Read the BOD-enhanced CSV we just wrote
-bod_path = os.path.join(OUTPUT_FOLDER, "etl-data-bod.csv")
-combined = pd.read_csv(bod_path)
+# Read the BOD-enhanced Parquet we just wrote
+combined = pd.read_parquet(BOD_PARQUET)
 
 # Ensure avg_daily_price exists (compute if missing)
 if 'avg_daily_price' not in combined.columns:
@@ -279,12 +274,12 @@ for sym, grp in combined.groupby('Symbol'):
         'files': {}
     }
 
-    # For each year, write a per-year CSV for this symbol
+    # For each year, write a per-year Parquet file for this symbol
     for year in years:
         year_grp = grp[grp['Date'].str.startswith(str(year))]
         if year_grp.empty:
             continue
-        fname = f"{sym}-{year}.csv"
+        fname = f"{sym}-{year}.parquet"
         path = os.path.join(sym_dir, fname)
         # Find possible column variants
         def find_variant(preferred_names, available_cols):
@@ -322,7 +317,7 @@ for sym, grp in combined.groupby('Symbol'):
             new_order = [c for c in new_order if c in year_grp.columns]
             year_grp = year_grp.reindex(columns=new_order)
 
-        year_grp.to_csv(path, index=False)
+        year_grp.to_parquet(path, index=False, compression="zstd")
 
         # compute file metadata
         try:
@@ -353,85 +348,9 @@ index_path = os.path.join(tickers_dir, 'tickers_index.json')
 with open(index_path, 'w') as f:
     json.dump(index, f, indent=2)
 
-print(f"Wrote per-ticker per-year files -> {tickers_dir}")
+for legacy_path in set(legacy_csv_paths):
+    if os.path.isfile(legacy_path):
+        os.remove(legacy_path)
+
+print(f"Wrote per-ticker per-year Parquet files -> {tickers_dir}")
 print(f"Tickers index file -> {index_path}")
-
-# %%
-# Incremental Update Code
-# This code fetches only new data since the last run and appends it to the existing CSV
-
-# import os
-# from datetime import datetime, timedelta
-
-# # Check if raw data file exists
-# if os.path.exists(RAW_COMBINED_CSV):
-    
-#     # Read existing data
-#     existing_df = pd.read_csv(RAW_COMBINED_CSV)
-#     existing_df["Date"] = pd.to_datetime(existing_df["Date"], errors="coerce")
-    
-#     # Find the most recent date we have
-#     if not existing_df.empty and existing_df["Date"].notna().any():
-#         last_date = existing_df["Date"].max()
-#         # Start from the day after our last data point
-#         start_date = (last_date + pd.Timedelta(days=1)).strftime("%Y-%m-%d")
-#     else:
-#         # If no valid dates, fall back to full fetch
-#         start_date = "2015-01-01"
-# else:
-#     # First run - get all data from 2015
-#     start_date = "2015-01-01"
-
-# # Set end date to today
-# end_date = datetime.now().strftime("%Y-%m-%d")
-
-# # Fetch new data
-# new_rows = []
-# for sym in etf_list:
-#     print(f"[incremental fetch] {sym}")
-#     try:
-#         t = yf.Ticker(sym)
-#         df = t.history(start=start_date, end=end_date, interval="1d", auto_adjust=True)
-#         if df is None or df.empty:
-#             print(f"  no new data for {sym}")
-#             continue
-
-#         df = df.reset_index()
-#         df["Symbol"] = sym
-
-#         keep_cols = ["Symbol", "Date", "Open", "High", "Low", "Close", "Volume"]
-#         for c in keep_cols:
-#             if c not in df.columns:
-#                 df[c] = pd.NA
-#         df = df[keep_cols]
-
-#         new_rows.append(df)
-#         print(f"  fetched {len(df)} new rows for {sym}")
-        
-#     except Exception as e:
-#         print(f"  error fetching {sym}: {e}")
-
-# # Append new data to existing file
-# if new_rows:
-#     new_combined = pd.concat(new_rows, ignore_index=True)
-    
-#     if os.path.exists(RAW_COMBINED_CSV):
-#         # Append to existing file
-#         new_combined.to_csv(RAW_COMBINED_CSV, mode='a', header=False, index=False)
-#         print(f"Appended {len(new_combined)} new rows to existing CSV -> {RAW_COMBINED_CSV}")
-#     else:
-#         # Create new file
-#         new_combined.to_csv(RAW_COMBINED_CSV, index=False)
-#         print(f"Created new CSV with {len(new_combined)} rows -> {RAW_COMBINED_CSV}")
-        
-#     # Show summary of new data
-#     print(f"\nNew data summary:")
-#     print(f"Date range: {new_combined['Date'].min()} to {new_combined['Date'].max()}")
-#     print(f"Symbols updated: {new_combined['Symbol'].nunique()}")
-#     print(f"Total new records: {len(new_combined)}")
-    
-# else:
-#     print("No new data to fetch.")
-
-
-

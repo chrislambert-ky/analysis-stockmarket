@@ -12,13 +12,13 @@ Interactive tools for analyzing investment strategies including Dollar Cost Aver
 
 - Local site entry: `index.html`
 - Pages: `html/dcav2.html`, `html/bodv2.html`, `html/dca-stratv2.html`, `html/bod-stratv2.html`, `html/dca-tickersv2.html`, `html/bod-tickersv2.html`, `html/metricsv2.html`, `html/aboutv2.html`
-- ETL: `etl-market-data-v2.py` (generates `data/etl-data-processed.csv` and `data/etl-data-bod.csv`)
+- ETL: `etl-market-data-v2.py` (generates Parquet datasets under `data/`)
 
 ## Minimum Requirements
 
-- Python 3.8+
+- Python 3.15.2
 - pip packages: see `requirements.txt`
-- A modern browser for the frontend (ECharts)
+- A modern browser for the frontend (DuckDB-Wasm and ECharts)
 
 ## Getting Started (Local)
 
@@ -28,9 +28,9 @@ Interactive tools for analyzing investment strategies including Dollar Cost Aver
    cd analysis-stockmarket
    ```
 
-2. Create a virtual environment and install dependencies:
+2. Create a Python 3.15 virtual environment and install the pinned dependencies:
    ```powershell
-   python -m venv .venv
+   pymanager.exe exec -3.15.2 -m venv .venv
    .\.venv\Scripts\pip.exe install -r requirements.txt
    ```
 
@@ -38,7 +38,7 @@ Interactive tools for analyzing investment strategies including Dollar Cost Aver
    ```powershell
    .\.venv\Scripts\python.exe .\etl-market-data-v2.py
    ```
-   This will overwrite `data/etl-data-processed.csv` and `data/etl-data-bod.csv`.
+   This writes compressed Parquet files and updates `data/tickers/tickers_index.json`.
 
 4. Serve the site locally and open the pages:
    ```powershell
@@ -86,41 +86,43 @@ Interactive tools for analyzing investment strategies including Dollar Cost Aver
 - `html/dca-stratv2.html` — Advanced DCA configurator (custom weekly amounts, day selection).
 - `html/bodv2.html` — Buy-on-Dip overview (grid of tickers, per-ticker detail, timeframe controls).
 - `html/bod-tickersv2.html` — Grid of per-ticker BOD mini-charts (YTD default).
-- `html/bod-stratv2.html` — Advanced BOD configurator (configure declines 1%–10% and share quantities). Uses `data/etl-data-bod.csv` fast-path when available.
+- `html/bod-stratv2.html` — Advanced BOD configurator (configure declines 1%–10% and share quantities).
 - `html/metricsv2.html` — Comprehensive metrics dashboard with statistical analysis, price drop frequency, and individual ticker performance analytics.
 - `html/dca-vs-bod.html` — Side-by-side strategy comparison visualization.
 - `html/aboutv2.html` — Project explanation, methodology, contact.
 
 ## Data Files (Produced by ETL)
 
-- `data/etl-data-processed.csv` — Per-ticker daily OHLC with weekday and auxiliary fields used to compute time-filtered metrics.
-- `data/etl-data-bod.csv` — Precomputed buy-on-dip events (Buy_Price, Buy_Level, Executed_Price, Executed_Level, Shares Purchased, Dollars Invested, cumulative fields). The frontend uses this as a fast path for advanced strategy simulations.
-- `data/tickers/<TICKER>/<TICKER>-<YEAR>.csv` — Per-ticker, per-year CSV files for targeted fetching.
+- `data/etl-data-raw.parquet` — Combined raw daily OHLCV history.
+- `data/etl-data-processed.parquet` — Per-ticker daily OHLC with weekday and auxiliary fields used to compute time-filtered metrics.
+- `data/etl-data-bod.parquet` — Per-ticker history with precomputed buy-on-dip levels and execution flags.
+- `data/tickers/<TICKER>/<TICKER>-<YEAR>.parquet` — Per-ticker, per-year files queried on demand by DuckDB-Wasm.
 - `data/tickers/tickers_index.json` — Metadata index with per-ticker last-updated timestamps and available years.
 
 ## 🔧 Technical Implementation
 
 ### Data Processing
-- **Python ETL Pipeline**: Uses pandas and yfinance for historical data collection with enhanced CSV generation including weekday analysis and price averaging
+- **Python ETL Pipeline**: Uses pandas, NumPy, PyArrow, and yfinance for historical data collection and compressed Parquet generation
 - **Data Source**: Yahoo Finance historical price data via yfinance with comprehensive OHLCV data
 - **Analysis Period**: Configurable date ranges with focus on multi-year performance comparisons
 
 ### Frontend Framework
 - **HTML/CSS/JavaScript**: Responsive design with professional styling using CSS variables and modern layout techniques
-- **ECharts 5.x Library**: Interactive visualizations and chart components with real-time data updates
+- **DuckDB-Wasm 1.32.0**: Browser-side queries over per-ticker Parquet data
+- **ECharts 5.x Library**: Interactive visualizations and chart components
 - **Calculation Engine**: Advanced JavaScript-based portfolio calculations with precise currency formatting, trade tracking, and market pattern analysis
 - **Analytics Integration**: Google Analytics tracking for usage insights and performance monitoring
 
 ### Key Implementation Notes
-- The ETL script (`etl-market-data-v2.py`) pulls historical OHLC data and writes normalized CSVs. It intentionally overwrites the data files on each run.
+- The ETL script (`etl-market-data-v2.py`) pulls historical OHLC data and writes Parquet datasets. It removes the corresponding generated CSV datasets after a successful run.
 - Frontend recomputes cumulative invested/value from per-row `Shares Purchased` and `Dollars Invested` within the user-selected timeframe. This avoids carrying full-history cumulative values into time-filtered views.
 - **BOD semantics**:
   - Night-before limit orders at `previous close − N%` for N in 1..configured max.
   - A level is considered filled if the day Low ≤ target_limit.
   - Executed_Price is recorded as the level's target price (multiple fills on a single day remain distinct).
 - **UI performance**:
-  - CSV parsing is cached per page load.
-  - When a single ticker is selected, the frontend takes a fast path and processes only that ticker's rows on period changes.
+  - DuckDB-Wasm queries only the selected ticker/year Parquet files.
+  - Query results are cached in IndexedDB and invalidated using index metadata.
 
 ### UX Conventions Used Across Pages
 - Default selection on load: ALL tickers + YTD period.
@@ -136,10 +138,10 @@ analysis-stockmarket/
 │   ├── metrics.css           # Metrics page styling
 │   ├── ticker-metrics.css    # Ticker metrics component styling
 │   └── about.css             # About page styling
-├── data/                      # Data files
-│   ├── etl-data-processed.csv # Historical price data with weekday analysis
-│   ├── etl-data-bod.csv       # Precomputed buy-on-dip events
-│   └── tickers/               # Per-ticker, per-year CSV files
+├── data/                      # Parquet data files and ticker metadata
+│   ├── etl-data-processed.parquet # Historical price data with weekday analysis
+│   ├── etl-data-bod.parquet       # Precomputed buy-on-dip levels and flags
+│   └── tickers/                   # Per-ticker, per-year Parquet files
 │       └── tickers_index.json # Metadata index
 ├── html/                      # Analysis pages (v2)
 │   ├── dcav2.html            # Dollar Cost Averaging analysis
@@ -179,28 +181,12 @@ analysis-stockmarket/
 - **Improved Mobile Responsiveness**: Enhanced responsive design patterns for better mobile and tablet experience
 - **Advanced Metrics Precision**: All analytics calculations now properly filter data within user-selected date ranges for accurate time-period analysis
 
-## Version 2 Roadmap
+## Data Architecture
 
-Version 2 is a focused modernization and performance pass. Goals include:
-
-- Use a modern CSS framework (Bootstrap 5 or Tailwind CSS) — decision TBD.
-- Prioritize HTML5-first over JavaScript for core functionality. Pages should work with semantic HTML and progressive enhancement.
-- Split JavaScript out of HTML pages into modular files under `js/` (e.g., `js/bod.js`, `js/dca.js`, `js/ticker-loader.js`).
-- Use the smaller per-ticker data files generated by the ETL instead of loading full-history CSVs in the browser.
-- Add additional daily-derived metrics for each ticker:
-  - Moving averages (SMA/EMA) over configurable windows
-  - Linear regression trend line and slope
-  - Optional upper/lower bands (e.g., regression channel or simple volatility bands)
-- Implement IndexedDB for client-side caching:
-  - Cache per-ticker/per-year data keyed by ticker + year and a data-version or timestamp
-  - On page load, check last-updated metadata and only refresh stale data
-  - Implement a stale-while-revalidate flow: serve cached data immediately, then refresh in the background
-- Continue using Apache ECharts; migrate chart initialization and options into the new JS modules.
-
-**Implementation quick wins**
-- Change the ETL to optionally emit per-ticker JSON to avoid browser CSV parsing.
-- Extract current inline scripts into discrete files in `js/` — low risk, enables incremental refactors.
-- Add a small IndexedDB helper and embed `last_updated` in `tickers_index.json` so the client can decide whether to refresh data.
+- The nightly ETL fetches daily historical prices and writes raw, processed, and buy-on-dip datasets as compressed Parquet.
+- The ETL also writes per-ticker/per-year Parquet files and a JSON index containing paths, date bounds, row counts, and update times.
+- Browser pages fetch only the selected years concurrently, query those Parquet buffers together with DuckDB-Wasm, and cache per-year results in IndexedDB.
+- CSV remains the format for user-downloaded analysis exports; generated source datasets are Parquet.
 
 **Layout and compatibility**
 - Version 2 HTML files live in `/html/`. Version 1 pages are preserved in the archive for reference.
@@ -239,7 +225,7 @@ Version 2 is a focused modernization and performance pass. Goals include:
 
 ## Developer Notes: tickers_index.json Schema
 
-The ETL emits a compact index at `data/tickers/tickers_index.json` that the frontend uses for targeted per-year fetches and to provide instant metadata (date ranges and record counts) without fetching CSVs.
+The ETL emits a compact index at `data/tickers/tickers_index.json` that the frontend uses for targeted per-year queries and instant metadata (date ranges and record counts) without downloading Parquet files.
 
 Example excerpt:
 
@@ -250,7 +236,7 @@ Example excerpt:
     "last_updated": "2025-09-17T23:13:28.567456",
     "files": {
       "2025": {
-        "path": "data/tickers/AAPL/AAPL-2025.csv",
+        "path": "data/tickers/AAPL/AAPL-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-09-17",
         "row_count": 184,
@@ -267,38 +253,38 @@ Example excerpt:
 - `years`: list of available years for the ticker (integers)
 - `last_updated`: timestamp for when the ticker's files were last (re)generated
 - `files["<YEAR>"]`: object for the per-year file with:
-  - `path` (string): relative path to the CSV file
+  - `path` (string): relative path to the Parquet file
   - `min_date` / `max_date` (ISO `yyyy-mm-dd`): earliest and latest dates present in that file
   - `row_count` (int): number of data rows (excludes header)
   - `size_bytes` (int | null): file size in bytes when available
   - `last_updated` (ISO timestamp): when this file was written
 
 **Why this helps:**
-- Allows the UI to show exact date range and record counts instantly, avoiding network probes or CSV parsing when the user adjusts the timeframe slider.
+- Allows the UI to show exact date range and record counts instantly, without downloading data files just to populate the timeframe controls.
 - Enables smarter caching: clients compare `last_updated` timestamps and only fetch stale files.
 
-**Per-ticker file naming convention:** `<SYMBOL>-<YEAR>.csv` (or `.json`). This makes it simple to request only the newest files (e.g., `AAPL/AAPL-2025.csv`).
+**Per-ticker file naming convention:** `<SYMBOL>-<YEAR>.parquet`. This makes it simple to query only the requested ticker and years (e.g., `AAPL/AAPL-2025.parquet`).
 
 ## CI Suggestion (Optional): Nightly Data Refresh
 
-Create a GitHub Actions workflow that runs `etl-market-data-v2.py` on a cron schedule and either commits the updated per-year CSVs and `tickers_index.json` back to the repository, or uploads them to blob storage / S3.
+The GitHub Actions workflow runs `etl-market-data-v2.py` on a cron schedule and commits the updated per-year Parquet files and `tickers_index.json` back to the repository.
 
 Example steps:
 1. Checkout repository
 2. Set up Python and install requirements
-3. Run ETL: `python etl-market-data-v2.py --force`
-4. If files changed, commit `data/tickers/*` and push (or sync to storage bucket)
+3. Run ETL: `python etl-market-data-v2.py`
+4. If files changed, commit the Parquet data and `tickers_index.json` and push (or sync to storage bucket)
 
 > **Security note:** If you store credentials for S3 or a private host, use repository secrets and restrict write access appropriately.
 
 ## Troubleshooting
 
-- If a page appears blank after local edits, ensure the HTML file is present and the browser console shows no JS exceptions. Use the `.venv` Python server and inspect network requests for CSV files.
+- If a page appears blank after local edits, ensure the HTML file is present and the browser console shows no JS exceptions. Use the `.venv` Python server and inspect Parquet requests and DuckDB-Wasm worker errors.
 - To force the ETL to include new tickers, edit `etf_list` in `etl-market-data-v2.py` and re-run it (the script overwrites the data files on each run).
 
 ## Contributing
 
-This is a personal project; PRs and issues are welcome. For larger performance improvements, consider generating per-ticker JSON outputs from the ETL to eliminate CSV parsing in the browser.
+This is a personal project; PRs and issues are welcome. For larger performance improvements, benchmark DuckDB-Wasm query plans and Parquet layout against the current per-ticker/year workflow.
 
 ## License
 

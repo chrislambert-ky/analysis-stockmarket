@@ -35,9 +35,9 @@
 - [ ] ✅ = Working correctly!
 
 ### 5. Check IndexedDB Cache (F12 → Application → IndexedDB)
-- [ ] Database: `stockmarket-cache` exists
-- [ ] Store: `files` has entries
-- [ ] Keys look like: `data/tickers/AAPL/AAPL-2024.csv::2025-10-03...`
+- [ ] Database: `stockmarket-v2-cache` exists
+- [ ] Store: `ticker-data` has entries
+- [ ] Keys look like: `AAPL::2024`
 - [ ] ✅ = Caching is working!
 
 ---
@@ -46,7 +46,7 @@
 
 ### First Load:
 - Ticker grid: **Instant** (from metadata)
-- Data loading: **2-5 seconds** (fetching + parsing)
+- Data loading: DuckDB-Wasm loads the requested Parquet files and caches query rows in IndexedDB
 - Progress bar visible during load
 
 ### Second Load (Same Ticker):

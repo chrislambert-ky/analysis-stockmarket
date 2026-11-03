@@ -329,6 +329,7 @@
 
     <!-- ECharts Library -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="../js/v2-shared.js?v=6"></script>
 
     <script>
         // Global variables
@@ -487,7 +488,7 @@
         }
 
         // Load tickers index (supports new per-ticker/year index at data/tickers/tickers_index.json)
-        async function loadTickersIndex() {
+        async function loadMetricsTickersIndex() {
             // Try new index location first
             const newIndexPath = '../data/tickers/tickers_index.json';
             const legacyIndexPath = '../data/tickers_index.json';
@@ -560,7 +561,7 @@
         }
 
         // Load ticker data for a given period (only necessary years)
-        async function loadTickerDataForPeriod(ticker, period) {
+        async function loadTickerDataForPeriodLegacy(ticker, period) {
             // Determine date range for period
             const now = new Date();
             let startDate;
@@ -620,9 +621,6 @@
 
             // Build combined rows array from selected years only (use IndexedDB cache when possible)
             let allRows = [];
-            let csvText = null;
-            let csvCacheKey = null;
-            let csvYear = null;
 
             const entry = tickersIndex[ticker];
             if (entry && typeof entry === 'object' && entry.files) {
@@ -764,19 +762,12 @@
                         console.warn('IDB read error', e);
                     }
 
-                    // If we don't have valid cached rows, fetch and parse the CSV for this year
+                    // If we don't have valid cached rows, query the Parquet file for this year
                     if (!cacheIsValid || !rowsForYear) {
-                        console.log(`⟳ Cache miss or invalid for ${cacheKey} - fetching from CSV`);
+                        console.log(`⟳ Cache miss or invalid for ${cacheKey} - querying Parquet`);
                         try {
-                            const resp = await fetch('../' + fpPath);
-                            if (!resp.ok) {
-                                console.warn('Failed to fetch', fpPath, resp.status);
-                                continue;
-                            }
-                            const txt = await resp.text();
-
-                            // parse CSV for this year's rows
-                            const parsed = parseCSV(txt);
+                            const parsed = (await window.V2Shared.fetchYearParquet(ticker, yr))
+                                .map(normalizeRow);
 
                             // update incremental UI from parsed
                             try {
@@ -846,49 +837,12 @@
                 }
 
             } else if (entry && typeof entry === 'string') {
-                // legacy single-file index value
-                const resp = await fetch('../' + entry);
-                if (!resp.ok) throw new Error('Failed to fetch legacy ticker file');
-                csvText = await resp.text();
-                const matchYear = entry.match(/-(\d{4})\.csv$/);
-                if (matchYear) {
-                    csvYear = Number(matchYear[1]);
-                    csvCacheKey = `${ticker}::${csvYear}`;
-                } else {
-                    csvCacheKey = `${ticker}::legacy`;
-                }
+                const matchYear = entry.match(/-(\d{4})\.(?:csv|parquet)$/i);
+                if (!matchYear) throw new Error(`Unsupported ticker data path: ${entry}`);
+                allRows = (await window.V2Shared.fetchYearParquet(ticker, Number(matchYear[1])))
+                    .map(normalizeRow);
             } else {
-                // fallback to flat per-symbol CSV
-                const fallbackPath = `../data/tickers/${ticker}.csv`;
-                const resp = await fetch(fallbackPath);
-                if (!resp.ok) throw new Error('No data files found for ' + ticker);
-                const txt = await resp.text();
-                csvCacheKey = `${ticker}::legacy`;
-                // compute bounds for fallback single file
-                try {
-                    const lines = txt.trim().split('\n').filter(l => l.trim());
-                    if (lines.length > 1) {
-                        const headers = lines[0].split(',').map(h => h.trim());
-                        const dateIdx = headers.findIndex(h => h.toLowerCase() === 'date');
-                        if (dateIdx >= 0) {
-                            let fileMin = null;
-                            let fileMax = null;
-                            for (let li = 1; li < lines.length; li++) {
-                                const cols = lines[li].split(',');
-                                const raw = cols[dateIdx]?.trim();
-                                if (!raw) continue;
-                                const d = new Date(raw);
-                                if (isNaN(d)) continue;
-                                if (!fileMin || d < fileMin) fileMin = d;
-                                if (!fileMax || d > fileMax) fileMax = d;
-                            }
-                            if (fileMin && fileMax) updateDateRangeDisplayBounds(fileMin, fileMax);
-                        }
-                    }
-                } catch (err) {
-                    console.warn('Error computing fallback file date bounds', err);
-                }
-                csvText = txt;
+                throw new Error(`No Parquet files are listed for ticker ${ticker}`);
             }
 
             updateProgress(95, 'Finalizing data...');
@@ -901,25 +855,6 @@
                     const bDate = b.Date || new Date(b.Date_add);
                     return aDate - bDate;
                 });
-            } else if (typeof csvText === 'string' && csvText.trim().length > 0) {
-                updateProgress(96, 'Parsing CSV...');
-                const parsedRows = parseCSV(csvText) || [];
-                tickerData = parsedRows;
-                if (csvCacheKey) {
-                    try {
-                        await idbPut({
-                            id: csvCacheKey,
-                            ticker: ticker,
-                            year: csvYear != null ? csvYear : undefined,
-                            rows: parsedRows,
-                            last_updated: Date.now(),
-                            cached_at: new Date().toISOString()
-                        });
-                        console.log(`✓ Cached legacy data for ${csvCacheKey} (${parsedRows.length} rows)`);
-                    } catch (err) {
-                        console.warn('IDB write error (legacy cache)', err);
-                    }
-                }
             } else {
                 tickerData = [];
             }
@@ -935,6 +870,21 @@
             } catch (e) {
                 console.warn('Failed to store visit record', e);
             }
+        }
+
+        async function loadTickerDataForPeriod(ticker, period) {
+            updateProgress(10, `Loading ${ticker} ${period} Parquet data...`);
+
+            const index = await window.V2Shared.loadTickersIndex();
+            if (!index || !index[ticker]) {
+                throw new Error(`No Parquet index entry found for ${ticker}`);
+            }
+
+            const rows = await window.V2Shared.loadTickerDataForPeriod(ticker, period);
+            tickerData = rows.map(normalizeRow).sort((a, b) => a.Date - b.Date);
+            updateProgress(100, 'Loaded');
+            updateDateRangeDisplay();
+            updateRecordCountDisplay(tickerData.length);
         }
 
         function updateDateRangeDisplay() {
@@ -978,40 +928,6 @@
             _incrementalCount = Number(finalCount) || 0;
             const el = document.getElementById('recordCountDisplay');
             el.textContent = `Records: ${_incrementalCount}`;
-        }
-
-        // Parse CSV
-        function parseCSV(csvText) {
-            const lines = csvText.trim().split('\n');
-            const headers = lines[0].split(',').map(h => h.trim());
-
-            const data = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',');
-                const row = {};
-                headers.forEach((header, index) => {
-                    let value = values[index]?.trim() || '';
-
-                    // Parse dates
-                    if (header === 'Date') {
-                        row[header] = new Date(value);
-                    }
-                    // Parse numbers
-                    else if (['Open', 'High', 'Low', 'Close', 'Volume', 'avg_daily_price'].includes(header)) {
-                        row[header] = parseFloat(value) || null;
-                    }
-                    // Parse Daily_Gain_Loss_Pct
-                    else if (header === 'Daily_Gain_Loss_Pct') {
-                        row[header] = parseFloat(value) || 0;
-                    }
-                    else {
-                        row[header] = value;
-                    }
-                });
-                data.push(row);
-            }
-
-            return data.sort((a, b) => a.Date - b.Date);
         }
 
         // Filter data by period
@@ -1302,7 +1218,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             // Load tickers index
-            loadTickersIndex();
+            loadMetricsTickersIndex();
         });
 
         // Calculate linear regression

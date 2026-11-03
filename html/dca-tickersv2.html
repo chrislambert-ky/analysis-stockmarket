@@ -192,10 +192,9 @@
     
     <div id="charts-root"></div>
     <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=5"></script>
+    <script src="../js/v2-shared.js?v=6"></script>
     <script>
     console.log('=== DCA-TICKERS-V2 SCRIPT STARTING ===');
     if (!window.V2Shared) {
@@ -237,7 +236,7 @@
         document.getElementById('progress-fill').style.width = percent + '%';
         document.getElementById('progress-text').textContent = message;
     }
-    // Fetch and parse CSV data using smart IDB-cached loading
+    // Load Parquet data using the DuckDB-Wasm and IndexedDB-backed loader
     async function fetchData() {
         console.log('[dca-tickers-v2] fetchData called');
         try {
@@ -264,22 +263,6 @@
         }
     }
     
-    // Legacy text parsing kept for compatibility (not used with v2-shared)
-    function parseCSVText_Unused(text) {
-        // Normalize line endings and trim
-        text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        const rows = text.split('\n').filter(r => r.trim().length > 0);
-        if (rows.length === 0) return [];
-        const headers = rows[0].split(',').map(h => h.trim());
-        const data = rows.slice(1).map(row => {
-            const values = row.split(',').map(v => (v ?? '').trim());
-            const obj = {};
-            headers.forEach((h, i) => obj[h] = values[i] ?? '');
-            return obj;
-        });
-        return data;
-    }
-
     // Calculate weekly DCA strategy for a specific ticker (optimized for performance)
     function calculateWeeklyDCA(tickerData, yearsBack = 'YTD') {
         const endDate = new Date();

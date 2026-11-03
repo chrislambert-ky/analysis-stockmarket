@@ -432,10 +432,9 @@
     </div>
 
     <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=5"></script>
+    <script src="../js/v2-shared.js?v=6"></script>
     <script>
     console.log('=== BOD-STRAT-V2 SCRIPT STARTING ===');
     if (!window.V2Shared) {
@@ -609,7 +608,7 @@
     }
 
     async function calculateBuyOnDip(ticker, startDate, endDate, declineSettings, tickerData) {
-        // V2: Process ticker data loaded from per-ticker CSV files with IndexedDB caching
+        // V2: Process ticker data loaded from per-ticker Parquet files with IndexedDB caching
         const results = [];
         let totalShares = 0;
         let totalInvested = 0;

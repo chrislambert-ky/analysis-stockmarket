@@ -23,7 +23,7 @@ analysis-stockmarket/
 │   └── tickers/
 │       ├── tickers_index.json       # Metadata (26 tickers, date ranges)
 │       └── {SYMBOL}/
-│           └── {SYMBOL}-{YEAR}.csv  # Per-ticker, per-year data files
+│           └── {SYMBOL}-{YEAR}.parquet  # Per-ticker, per-year data files
 │
 ├── docs/
 │   ├── examples/
@@ -102,15 +102,13 @@ All pages use **V2 architecture** with:
 
 **Features:**
 - Per-ticker folders: `data/tickers/{SYMBOL}/`
-- Per-year CSV files: `{SYMBOL}-{YEAR}.csv`
+- Per-year Parquet files: `{SYMBOL}-{YEAR}.parquet`
 - Metadata in `tickers_index.json` (date ranges, last updated)
-- Force refresh: `--force` flag
 - Configurable ticker list in script
 
 **Usage:**
 ```bash
-python etl-market-data-v2.py          # Update all tickers
-python etl-market-data-v2.py --force  # Force refresh all data
+python etl-market-data-v2.py          # Refresh all tickers and write Parquet data
 ```
 
 **Last Run:** October 3, 2025, 11:07 PM  
@@ -132,12 +130,12 @@ data/tickers/
 │   }
 │
 └── AAPL/
-    ├── AAPL-2020.csv
-    ├── AAPL-2021.csv
-    ├── AAPL-2022.csv
-    ├── AAPL-2023.csv
-    ├── AAPL-2024.csv
-    └── AAPL-2025.csv
+    ├── AAPL-2020.parquet
+    ├── AAPL-2021.parquet
+    ├── AAPL-2022.parquet
+    ├── AAPL-2023.parquet
+    ├── AAPL-2024.parquet
+    └── AAPL-2025.parquet
 ```
 
 **Benefits:**
@@ -323,8 +321,8 @@ cd c:\Apps\gh\analysis-stockmarket
 # Run ETL
 python etl-market-data-v2.py
 
-# Or force refresh all data
-python etl-market-data-v2.py --force
+# The ETL always refreshes all data
+python etl-market-data-v2.py
 
 # Commit and push
 git add data/
@@ -335,8 +333,8 @@ git push
 ### **Adding New Tickers:**
 
 1. Edit `etl-market-data-v2.py`
-2. Add ticker symbol to `TICKERS` list
-3. Run ETL: `python etl-market-data-v2.py --force`
+2. Add ticker symbol to `etf_list`
+3. Run ETL: `python etl-market-data-v2.py`
 4. Verify in `data/tickers/` and `tickers_index.json`
 5. Commit and push changes
 
@@ -351,10 +349,9 @@ git push
 4. Hard refresh: Ctrl+Shift+R
 
 ### **ETL Fails:**
-1. Check Python version: `python --version` (needs 3.x)
+1. Check Python version: `.venv\Scripts\python.exe --version` (requires Python 3.15.2)
 2. Verify dependencies: `pip install -r requirements.txt`
 3. Check Yahoo Finance API availability
-4. Try with `--force` flag
 
 ### **Automation Not Working:**
 1. **Local:** Check Task Scheduler for errors

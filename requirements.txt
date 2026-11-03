@@ -1,3 +1,4 @@
-pandas
-openpyxl
-yfinance
+numpy==2.5.4
+pandas==3.1.0
+pyarrow==26.0.0
+yfinance==1.7.0

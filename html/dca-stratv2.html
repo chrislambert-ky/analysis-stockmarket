@@ -414,10 +414,9 @@
     </div>
 
     <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=5"></script>
+    <script src="../js/v2-shared.js?v=6"></script>
     <script>
     console.log('=== DCA-STRAT-V2 SCRIPT STARTING ===');
     if (!window.V2Shared) {
@@ -509,7 +508,7 @@
 
         // Load data on-demand for the selected ticker
         try {
-            // Always load max history for a single ticker (~20 CSV files) so the
+            // Always load max history for a single ticker (~20 Parquet files) so the
             // user's custom date range is never truncated by a period filter.
             console.log('[dca-strat-v2] Loading data for', selectedTicker);
             const loaded = await loadTickerDataForPeriod(selectedTicker, '20Y');

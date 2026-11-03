@@ -5,7 +5,7 @@
  * Key Features:
  * - IndexedDB caching with last_updated timestamp tracking
  * - Smart delta fetching (only fetch missing/new data since last visit)
- * - Per-ticker per-year file loading from data/tickers/${SYMBOL}/${SYMBOL}-${YEAR}.csv
+ * - Per-ticker per-year Parquet loading from data/tickers/${SYMBOL}/${SYMBOL}-${YEAR}.parquet
  * - Uses tickers_index.json metadata for intelligent loading decisions
  * - Date deduplication to handle overlapping cached + fresh data
  */
@@ -292,77 +292,65 @@ async function getTickerMetadata(ticker) {
 // Smart Data Loading with IDB Caching
 // =============================
 
-/**
- * Parse CSV text into row objects
- * Uses simple split-based parsing (or can integrate PapaParse if available)
- */
-function parseCSV(text, headers = null) {
-    const lines = text.split('\n').filter(l => l.trim());
-    if (lines.length === 0) return [];
-    
-    const headerLine = headers || lines[0].split(',').map(h => h.trim());
-    const dataLines = headers ? lines : lines.slice(1);
-    
-    return dataLines.map(line => {
-        const values = line.split(',');
-        const obj = {};
-        headerLine.forEach((h, i) => {
-            obj[h] = values[i]?.trim() || '';
-        });
-        return obj;
-    });
+function normalizeParquetRows(rows, ticker) {
+    return rows.map(row => {
+        const rawDate = row.Date_add || row.Date || row.date;
+        const Date_add = rawDate ? toYMDFromString(rawDate) : null;
+
+        return {
+            ...row,
+            Date_add,
+            Symbol: String(row.Symbol || row.symbol || ticker).trim(),
+            Close: row.Close != null ? Number(row.Close) : null,
+            Low: row.Low != null ? Number(row.Low) : null,
+            Previous_Close: row.Previous_Close != null ? Number(row.Previous_Close) : null,
+            Open: row.Open != null ? Number(row.Open) : null,
+            High: row.High != null ? Number(row.High) : null,
+            Volume: row.Volume != null ? Number(row.Volume) : null
+        };
+    }).filter(row => row.Date_add);
 }
 
 /**
- * Fetch and parse a single year CSV file
+ * Fetch selected year files concurrently, then query them in one DuckDB statement.
  */
-async function fetchYearCSV(ticker, year) {
-    const path = `../data/tickers/${ticker}/${ticker}-${year}.csv`;
-    console.log(`[Fetch] Requesting ${path}`);
-    
-    try {
-        const res = await fetch(path);
-        if (!res.ok) {
-            console.warn(`[Fetch] ${path} not found (${res.status})`);
-            return null;
+async function fetchYearParquetBatch(ticker, years) {
+    const downloads = await Promise.all(years.map(async year => {
+        const path = `../data/tickers/${ticker}/${ticker}-${year}.parquet`;
+        try {
+            const response = await fetch(path);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return { year, buffer: await response.arrayBuffer() };
+        } catch (error) {
+            console.error(`[Fetch] Error fetching ${path}:`, error);
+            return { year, error: new Error(`Failed to fetch ${path}`, { cause: error }) };
         }
-        
-        const text = await res.text();
-        
-        // Use PapaParse if available, otherwise fallback to simple parser
-        let rows;
-        if (typeof Papa !== 'undefined') {
-            const parsed = Papa.parse(text, { header: true, dynamicTyping: false, skipEmptyLines: true });
-            rows = parsed.data;
-        } else {
-            rows = parseCSV(text);
+    }));
+
+    const files = downloads.filter(item => item.buffer);
+    const errors = new Map(downloads.filter(item => item.error).map(item => [item.year, item.error]));
+    let rowsByYear = new Map();
+
+    if (files.length > 0) {
+        try {
+            const { queryParquetBuffers } = await import('./duckdb-client.mjs');
+            rowsByYear = await queryParquetBuffers(files);
+            for (const [year, rows] of rowsByYear) {
+                rowsByYear.set(year, normalizeParquetRows(rows, ticker));
+            }
+        } catch (error) {
+            console.error(`[Fetch] Error querying Parquet files for ${ticker}:`, error);
+            for (const { year } of files) errors.set(year, error);
         }
-        
-        // Normalize date field and essential columns
-        rows = rows.map(row => {
-            const rawDate = row['Date_add'] || row['Date'] || row['date'];
-            const Date_add = rawDate ? toYMDFromString(rawDate) : null;
-            
-            return {
-                Date_add: Date_add,
-                Symbol: String(row['Symbol'] || row['symbol'] || ticker).trim(),
-                Close: row['Close'] != null ? Number(row['Close']) : null,
-                Low: row['Low'] != null ? Number(row['Low']) : null,
-                Previous_Close: row['Previous_Close'] != null ? Number(row['Previous_Close']) : null,
-                Open: row['Open'] != null ? Number(row['Open']) : null,
-                High: row['High'] != null ? Number(row['High']) : null,
-                Volume: row['Volume'] != null ? Number(row['Volume']) : null,
-                // Include all other fields as-is
-                ...row
-            };
-        }).filter(r => r.Date_add); // Filter out rows with no valid date
-        
-        console.log(`[Fetch] Parsed ${rows.length} rows from ${path}`);
-        return rows;
-    } catch (err) {
-        console.error(`[Fetch] Error fetching ${path}:`, err);
-        return null;
     }
+
+    return { rowsByYear, errors };
+}
+
+async function fetchYearParquet(ticker, year) {
+    const { rowsByYear, errors } = await fetchYearParquetBatch(ticker, [year]);
+    if (errors.has(year)) throw errors.get(year);
+    return rowsByYear.get(year) || [];
 }
 
 /**
@@ -378,7 +366,7 @@ async function fetchYearCSV(ticker, year) {
  * @param {Array<number>} years - Years to load (e.g., [2023, 2024, 2025])
  * @returns {Promise<Array>} - Array of row objects sorted by date
  */
-async function loadTickerData(ticker, years) {
+async function loadTickerDataLegacy(ticker, years) {
     console.log(`[Loader] Loading ${ticker} for years:`, years);
     
     // Get server metadata from tickers_index.json
@@ -479,14 +467,13 @@ async function loadTickerData(ticker, years) {
         
         // Fetch from server if needed
         if (shouldFetch) {
-            const freshRows = await fetchYearCSV(ticker, year);
-            
-            if (!freshRows) {
-                // Fetch failed, use cached data if available
-                if (cached) {
-                    console.warn(`[Loader] Fetch failed for ${cacheKey}, using cached data`);
-                    allRows.push(...cached.rows);
-                }
+            let freshRows;
+            try {
+                freshRows = await fetchYearParquet(ticker, year);
+            } catch (err) {
+                if (!cached) throw err;
+                console.warn(`[Loader] Parquet fetch failed for ${cacheKey}, using cached data`, err);
+                allRows.push(...cached.rows);
                 continue;
             }
             
@@ -524,6 +511,79 @@ async function loadTickerData(ticker, years) {
     const dedupedRows = dedupeRowsByDate(allRows);
     console.log(`[Loader] Final result for ${ticker}: ${dedupedRows.length} rows`);
     
+    return dedupedRows;
+}
+
+async function loadTickerData(ticker, years) {
+    const metadata = await getTickerMetadata(ticker);
+    if (!metadata) throw new Error(`No metadata found for ${ticker}`);
+
+    const states = (await Promise.all(years.map(async year => {
+        const serverFileInfo = metadata.files?.[String(year)];
+        if (!serverFileInfo) {
+            console.warn(`[Loader] No server file info for ${ticker} year ${year}`);
+            return null;
+        }
+
+        const cacheKey = `${ticker}::${year}`;
+        const cached = await idbGet(cacheKey);
+        const cachedRows = Array.isArray(cached?.rows)
+            ? cached.rows
+            : Array.isArray(cached?.parsed) ? cached.parsed : [];
+        const cachedDates = cachedRows.map(normalizeDateKey).filter(Boolean).sort();
+        const dateRangeMatches = !serverFileInfo.min_date ||
+            !serverFileInfo.max_date ||
+            cachedDates.length === 0 ||
+            (cachedDates[0] === serverFileInfo.min_date &&
+             cachedDates[cachedDates.length - 1] === serverFileInfo.max_date);
+        const cacheIsValid = cachedRows.length > 0 &&
+            cached.last_updated === serverFileInfo.last_updated &&
+            dateRangeMatches;
+
+        if (cacheIsValid) {
+            console.log(`[Loader] Cache VALID for ${cacheKey} (${cachedRows.length} rows)`);
+        } else {
+            console.log(`[Loader] Cache MISS or STALE for ${cacheKey}`);
+        }
+
+        return { year, cacheKey, serverFileInfo, cachedRows, cacheIsValid };
+    }))).filter(Boolean);
+
+    const statesToFetch = states.filter(state => !state.cacheIsValid);
+    const { rowsByYear, errors } = await fetchYearParquetBatch(
+        ticker,
+        statesToFetch.map(state => state.year)
+    );
+    const allRows = [];
+
+    for (const state of states) {
+        let rows = state.cacheIsValid ? state.cachedRows : rowsByYear.get(state.year);
+
+        if (!rows) {
+            const error = errors.get(state.year) || new Error(`No Parquet rows returned for ${ticker} ${state.year}`);
+            if (state.cachedRows.length === 0) throw error;
+            console.warn(`[Loader] Refresh failed for ${state.cacheKey}; using cached rows`, error);
+            rows = state.cachedRows;
+        } else if (!state.cacheIsValid) {
+            try {
+                await idbPut({
+                    id: state.cacheKey,
+                    ticker,
+                    year: state.year,
+                    last_updated: state.serverFileInfo.last_updated,
+                    rows,
+                    cached_at: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error(`[Loader] Failed to cache ${state.cacheKey}:`, error);
+            }
+        }
+
+        allRows.push(...rows);
+    }
+
+    const dedupedRows = dedupeRowsByDate(allRows);
+    console.log(`[Loader] Final result for ${ticker}: ${dedupedRows.length} rows`);
     return dedupedRows;
 }
 
@@ -902,7 +962,7 @@ window.V2Shared = {
     loadTickerDataForPeriod,
     determineYearsToLoad,
     normalizePeriod,
-    fetchYearCSV,
+    fetchYearParquet,
     
     // UI Components
     initHistorySlider,

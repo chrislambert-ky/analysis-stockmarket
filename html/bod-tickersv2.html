@@ -138,10 +138,9 @@
     </div>
     <div id="charts-root"></div>
     <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=5"></script>
+    <script src="../js/v2-shared.js?v=6"></script>
     <script>
     console.log('[bod-tickersv2] Script starting');
     
@@ -254,7 +253,7 @@
             </div>
         `;
     }
-    // V2 BOD CALCULATION: Calculate BOD events from per-ticker CSV data
+    // V2 BOD CALCULATION: Calculate BOD events from per-ticker Parquet data
     // This uses the same logic as bodv2.html for consistency
     async function calculateBODFromTickerData(tickers, period = 'YTD') {
         console.log('[calculateBODFromTickerData] Starting for tickers:', tickers, 'period:', period);

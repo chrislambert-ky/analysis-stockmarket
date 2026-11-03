@@ -83,8 +83,6 @@
         /* Metric styles moved to css/metrics.css for sharing with DCA page */
     </style>
     <link rel="stylesheet" href="../css/metrics.css">
-    <!-- PapaParse for robust CSV parsing -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
     <nav>
@@ -141,10 +139,9 @@
     
     <div id="main" style="width: 100%; height: 500px;"></div>
     <!-- External Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
     <!-- V2 Shared Module -->
-    <script src="../js/v2-shared.js?v=5"></script>
+    <script src="../js/v2-shared.js?v=6"></script>
     <script>
     console.log('=== BODV2 SCRIPT BLOCK STARTING ===');
     
@@ -166,9 +163,9 @@
     
     console.log('[bodv2] Function references created successfully');
     
-    // Cached precomputed BOD data (loaded from data/all_buy_on_dip.csv)
+    // Cached BOD events generated from the per-ticker Parquet data
     let cachedBodData = null;
-    // IMPORTANT: The CSV `data/all_buy_on_dip.csv` contains cumulative fields
+    // Cumulative values are recomputed from period-filtered Parquet rows.
     // (e.g. `Cumulative Shares`, `Cumulative Invested`, `Cumulative Value`) that
     // are intended for troubleshooting/auditing only. DO NOT use those cumulative
     // fields directly in visualizations or period-based metrics. Always filter
@@ -330,10 +327,10 @@
         document.getElementById('detailed-metrics').style.display = 'block';
     }
     
-    // V2 BOD CALCULATION: Calculate BOD events from per-ticker CSV data
-    // This function loads per-ticker CSV files using V2Shared's smart loader,
+    // V2 BOD CALCULATION: Calculate BOD events from per-ticker Parquet data
+    // This function loads per-ticker Parquet files using V2Shared's smart loader,
     // reads the pre-computed BOD execution flags, and constructs BOD event rows.
-    // Returns data in the same format as the old all_buy_on_dip.csv for compatibility.
+    // Returns event rows in the shape used by the existing chart and export logic.
     async function calculateBODFromTickerData(tickers, period = 'YTD') {
         console.log('[calculateBODFromTickerData] Starting for tickers:', tickers, 'period:', period);
         
@@ -428,7 +425,7 @@
                             const parsedDate = parseDateStringAsLocal(rowDate);
                             const weekday = parsedDate ? parsedDate.toLocaleDateString('en-US', { weekday: 'long' }) : '';
                             
-                            // Create a BOD event row in the same format as all_buy_on_dip.csv
+                            // Create a BOD event row in the shape used by the chart and export logic.
                             allBodEvents.push({
                                 Date_add: rowDate,
                                 Weekday: weekday,
@@ -464,8 +461,7 @@
         return allBodEvents;
     }
     
-    // Fetch and parse precomputed all_buy_on_dip CSV (robustly with PapaParse)
-    // UPDATED: Now calls calculateBODFromTickerData to use per-ticker files with IndexedDB caching
+    // Load BOD events through the Parquet-backed per-ticker loader
     async function fetchHistoricalData() {
         // Check if we have a cached result (but note: cache is period-specific now)
         // For now, we'll bypass the simple cache and always calculate on demand
@@ -487,7 +483,7 @@
         return bodData;
     }
 
-    // Fetch and parse full price history CSV (history_tickers.csv) used to compute available weeks
+    // Load price history used to compute available weeks
     let cachedHistoryData = null;
     async function fetchHistoryData(requestedTickers = null) {
         // When no specific tickers requested, reuse cached aggregate if available
@@ -592,13 +588,13 @@
     
     // Calculate Buy-on-Dip strategy for a specific ticker
     function calculateBuyOnDip(historicalData, ticker, startDate = '2015-09-01', endDate = '2025-09-01') {
-        // Support either Date_add or Date fields from different CSVs
+        // Support Date_add and Date fields from the Parquet query results.
         const tickerData = historicalData
             .filter(row => row.Symbol === ticker && ((row.Date_add ?? row.Date) >= startDate) && ((row.Date_add ?? row.Date) <= endDate))
             .sort((a, b) => new Date((a.Date_add ?? a.Date)) - new Date((b.Date_add ?? b.Date)));
 
         const results = [];
-        // Build cumulatives from per-event rows (do not trust CSV cumulatives)
+        // Build cumulatives from per-event rows rather than stored cumulative fields.
         let cumulativeShares = 0;
         let cumulativeInvested = 0;
 
@@ -993,7 +989,7 @@
             
             updateProgress(40, 'Calculating BOD events for selected ticker...');
 
-            // Use the new V2 calculation that reads per-ticker CSV files
+            // Use the V2 calculation that reads per-ticker Parquet files.
             const bodEventRows = await calculateBODFromTickerData([selectedTicker], activePeriod || 'YTD');
             
             updateProgress(60, 'Building cumulative metrics...');
