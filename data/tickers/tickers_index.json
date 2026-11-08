@@ -24,183 +24,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:30.821259+00:00",
+    "last_updated": "2026-11-08T23:34:18.478331+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/AAPL/AAPL-2005.parquet",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 107463,
-        "last_updated": "2026-11-07T23:34:30.827701+00:00"
+        "size_bytes": 107495,
+        "last_updated": "2026-11-08T23:34:18.483621+00:00"
       },
       "2006": {
         "path": "data/tickers/AAPL/AAPL-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 108968,
-        "last_updated": "2026-11-07T23:34:30.833650+00:00"
+        "size_bytes": 109005,
+        "last_updated": "2026-11-08T23:34:18.488198+00:00"
       },
       "2007": {
         "path": "data/tickers/AAPL/AAPL-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 109937,
-        "last_updated": "2026-11-07T23:34:30.839507+00:00"
+        "size_bytes": 109902,
+        "last_updated": "2026-11-08T23:34:18.492652+00:00"
       },
       "2008": {
         "path": "data/tickers/AAPL/AAPL-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 111006,
-        "last_updated": "2026-11-07T23:34:30.845407+00:00"
+        "size_bytes": 110992,
+        "last_updated": "2026-11-08T23:34:18.497130+00:00"
       },
       "2009": {
         "path": "data/tickers/AAPL/AAPL-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 110332,
-        "last_updated": "2026-11-07T23:34:30.851306+00:00"
+        "size_bytes": 110309,
+        "last_updated": "2026-11-08T23:34:18.501579+00:00"
       },
       "2010": {
         "path": "data/tickers/AAPL/AAPL-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 110985,
-        "last_updated": "2026-11-07T23:34:30.857190+00:00"
+        "size_bytes": 110917,
+        "last_updated": "2026-11-08T23:34:18.506060+00:00"
       },
       "2011": {
         "path": "data/tickers/AAPL/AAPL-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 109067,
-        "last_updated": "2026-11-07T23:34:30.863015+00:00"
+        "size_bytes": 109018,
+        "last_updated": "2026-11-08T23:34:18.510569+00:00"
       },
       "2012": {
         "path": "data/tickers/AAPL/AAPL-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 110520,
-        "last_updated": "2026-11-07T23:34:30.868894+00:00"
+        "size_bytes": 110491,
+        "last_updated": "2026-11-08T23:34:18.515043+00:00"
       },
       "2013": {
         "path": "data/tickers/AAPL/AAPL-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 110361,
-        "last_updated": "2026-11-07T23:34:30.874803+00:00"
+        "size_bytes": 110294,
+        "last_updated": "2026-11-08T23:34:18.519558+00:00"
       },
       "2014": {
         "path": "data/tickers/AAPL/AAPL-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 109523,
-        "last_updated": "2026-11-07T23:34:30.880605+00:00"
+        "size_bytes": 109492,
+        "last_updated": "2026-11-08T23:34:18.524144+00:00"
       },
       "2015": {
         "path": "data/tickers/AAPL/AAPL-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 109833,
-        "last_updated": "2026-11-07T23:34:30.886426+00:00"
+        "size_bytes": 109845,
+        "last_updated": "2026-11-08T23:34:18.528747+00:00"
       },
       "2016": {
         "path": "data/tickers/AAPL/AAPL-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 109402,
-        "last_updated": "2026-11-07T23:34:30.892261+00:00"
+        "size_bytes": 109400,
+        "last_updated": "2026-11-08T23:34:18.533878+00:00"
       },
       "2017": {
         "path": "data/tickers/AAPL/AAPL-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 108029,
-        "last_updated": "2026-11-07T23:34:30.898168+00:00"
+        "size_bytes": 108079,
+        "last_updated": "2026-11-08T23:34:18.538592+00:00"
       },
       "2018": {
         "path": "data/tickers/AAPL/AAPL-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 109845,
-        "last_updated": "2026-11-07T23:34:30.904003+00:00"
+        "size_bytes": 109771,
+        "last_updated": "2026-11-08T23:34:18.543192+00:00"
       },
       "2019": {
         "path": "data/tickers/AAPL/AAPL-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 110760,
-        "last_updated": "2026-11-07T23:34:30.909863+00:00"
+        "size_bytes": 110775,
+        "last_updated": "2026-11-08T23:34:18.547878+00:00"
       },
       "2020": {
         "path": "data/tickers/AAPL/AAPL-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 112113,
-        "last_updated": "2026-11-07T23:34:30.915746+00:00"
+        "size_bytes": 112354,
+        "last_updated": "2026-11-08T23:34:18.552434+00:00"
       },
       "2021": {
         "path": "data/tickers/AAPL/AAPL-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 110600,
-        "last_updated": "2026-11-07T23:34:30.921596+00:00"
+        "size_bytes": 110509,
+        "last_updated": "2026-11-08T23:34:18.556986+00:00"
       },
       "2022": {
         "path": "data/tickers/AAPL/AAPL-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 110688,
-        "last_updated": "2026-11-07T23:34:30.927415+00:00"
+        "size_bytes": 110655,
+        "last_updated": "2026-11-08T23:34:18.561756+00:00"
       },
       "2023": {
         "path": "data/tickers/AAPL/AAPL-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 109543,
-        "last_updated": "2026-11-07T23:34:30.933239+00:00"
+        "size_bytes": 109518,
+        "last_updated": "2026-11-08T23:34:18.566307+00:00"
       },
       "2024": {
         "path": "data/tickers/AAPL/AAPL-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 110262,
-        "last_updated": "2026-11-07T23:34:30.939089+00:00"
+        "size_bytes": 110195,
+        "last_updated": "2026-11-08T23:34:18.570946+00:00"
       },
       "2025": {
         "path": "data/tickers/AAPL/AAPL-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 110110,
-        "last_updated": "2026-11-07T23:34:30.944855+00:00"
+        "size_bytes": 110119,
+        "last_updated": "2026-11-08T23:34:18.575502+00:00"
       },
       "2026": {
         "path": "data/tickers/AAPL/AAPL-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 100384,
-        "last_updated": "2026-11-07T23:34:30.950586+00:00"
+        "size_bytes": 100411,
+        "last_updated": "2026-11-08T23:34:18.580009+00:00"
       }
     }
   },
@@ -220,95 +220,95 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:30.953777+00:00",
+    "last_updated": "2026-11-08T23:34:18.582340+00:00",
     "files": {
       "2014": {
         "path": "data/tickers/ALLY/ALLY-2014.parquet",
         "min_date": "2014-01-28",
         "max_date": "2014-12-31",
         "row_count": 235,
-        "size_bytes": 85976,
-        "last_updated": "2026-11-07T23:34:30.959429+00:00"
+        "size_bytes": 85891,
+        "last_updated": "2026-11-08T23:34:18.586742+00:00"
       },
       "2015": {
         "path": "data/tickers/ALLY/ALLY-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 99314,
-        "last_updated": "2026-11-07T23:34:30.965192+00:00"
+        "size_bytes": 99286,
+        "last_updated": "2026-11-08T23:34:18.591237+00:00"
       },
       "2016": {
         "path": "data/tickers/ALLY/ALLY-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 102755,
-        "last_updated": "2026-11-07T23:34:30.970930+00:00"
+        "size_bytes": 102764,
+        "last_updated": "2026-11-08T23:34:18.595745+00:00"
       },
       "2017": {
         "path": "data/tickers/ALLY/ALLY-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 107147,
-        "last_updated": "2026-11-07T23:34:30.976760+00:00"
+        "size_bytes": 107197,
+        "last_updated": "2026-11-08T23:34:18.600262+00:00"
       },
       "2018": {
         "path": "data/tickers/ALLY/ALLY-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 104893,
-        "last_updated": "2026-11-07T23:34:30.982651+00:00"
+        "size_bytes": 104854,
+        "last_updated": "2026-11-08T23:34:18.604763+00:00"
       },
       "2019": {
         "path": "data/tickers/ALLY/ALLY-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 106223,
-        "last_updated": "2026-11-07T23:34:30.988474+00:00"
+        "size_bytes": 106255,
+        "last_updated": "2026-11-08T23:34:18.609559+00:00"
       },
       "2020": {
         "path": "data/tickers/ALLY/ALLY-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 111504,
-        "last_updated": "2026-11-07T23:34:30.994288+00:00"
+        "size_bytes": 111502,
+        "last_updated": "2026-11-08T23:34:18.614072+00:00"
       },
       "2021": {
         "path": "data/tickers/ALLY/ALLY-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 109207,
-        "last_updated": "2026-11-07T23:34:31.000153+00:00"
+        "size_bytes": 109243,
+        "last_updated": "2026-11-08T23:34:18.618543+00:00"
       },
       "2022": {
         "path": "data/tickers/ALLY/ALLY-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 110394,
-        "last_updated": "2026-11-07T23:34:31.005934+00:00"
+        "size_bytes": 110327,
+        "last_updated": "2026-11-08T23:34:18.623021+00:00"
       },
       "2023": {
         "path": "data/tickers/ALLY/ALLY-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 108733,
-        "last_updated": "2026-11-07T23:34:31.011719+00:00"
+        "size_bytes": 108742,
+        "last_updated": "2026-11-08T23:34:18.627473+00:00"
       },
       "2024": {
         "path": "data/tickers/ALLY/ALLY-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 108634,
-        "last_updated": "2026-11-07T23:34:31.017569+00:00"
+        "size_bytes": 108646,
+        "last_updated": "2026-11-08T23:34:18.631925+00:00"
       },
       "2025": {
         "path": "data/tickers/ALLY/ALLY-2025.parquet",
@@ -316,15 +316,15 @@
         "max_date": "2025-12-31",
         "row_count": 250,
         "size_bytes": 108301,
-        "last_updated": "2026-11-07T23:34:31.023393+00:00"
+        "last_updated": "2026-11-08T23:34:18.636353+00:00"
       },
       "2026": {
         "path": "data/tickers/ALLY/ALLY-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 99527,
-        "last_updated": "2026-11-07T23:34:31.029150+00:00"
+        "size_bytes": 99592,
+        "last_updated": "2026-11-08T23:34:18.640724+00:00"
       }
     }
   },
@@ -353,7 +353,7 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:31.033728+00:00",
+    "last_updated": "2026-11-08T23:34:18.643890+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/AMZN/AMZN-2005.parquet",
@@ -361,7 +361,7 @@
         "max_date": "2005-12-30",
         "row_count": 252,
         "size_bytes": 101763,
-        "last_updated": "2026-11-07T23:34:31.039534+00:00"
+        "last_updated": "2026-11-08T23:34:18.648357+00:00"
       },
       "2006": {
         "path": "data/tickers/AMZN/AMZN-2006.parquet",
@@ -369,7 +369,7 @@
         "max_date": "2006-12-29",
         "row_count": 251,
         "size_bytes": 103642,
-        "last_updated": "2026-11-07T23:34:31.045346+00:00"
+        "last_updated": "2026-11-08T23:34:18.652850+00:00"
       },
       "2007": {
         "path": "data/tickers/AMZN/AMZN-2007.parquet",
@@ -377,7 +377,7 @@
         "max_date": "2007-12-31",
         "row_count": 251,
         "size_bytes": 106136,
-        "last_updated": "2026-11-07T23:34:31.051198+00:00"
+        "last_updated": "2026-11-08T23:34:18.657326+00:00"
       },
       "2008": {
         "path": "data/tickers/AMZN/AMZN-2008.parquet",
@@ -385,7 +385,7 @@
         "max_date": "2008-12-31",
         "row_count": 253,
         "size_bytes": 107194,
-        "last_updated": "2026-11-07T23:34:31.057097+00:00"
+        "last_updated": "2026-11-08T23:34:18.661878+00:00"
       },
       "2009": {
         "path": "data/tickers/AMZN/AMZN-2009.parquet",
@@ -393,7 +393,7 @@
         "max_date": "2009-12-31",
         "row_count": 252,
         "size_bytes": 107343,
-        "last_updated": "2026-11-07T23:34:31.062944+00:00"
+        "last_updated": "2026-11-08T23:34:18.666391+00:00"
       },
       "2010": {
         "path": "data/tickers/AMZN/AMZN-2010.parquet",
@@ -401,7 +401,7 @@
         "max_date": "2010-12-31",
         "row_count": 252,
         "size_bytes": 105984,
-        "last_updated": "2026-11-07T23:34:31.068800+00:00"
+        "last_updated": "2026-11-08T23:34:18.670870+00:00"
       },
       "2011": {
         "path": "data/tickers/AMZN/AMZN-2011.parquet",
@@ -409,7 +409,7 @@
         "max_date": "2011-12-30",
         "row_count": 252,
         "size_bytes": 107174,
-        "last_updated": "2026-11-07T23:34:31.074650+00:00"
+        "last_updated": "2026-11-08T23:34:18.675338+00:00"
       },
       "2012": {
         "path": "data/tickers/AMZN/AMZN-2012.parquet",
@@ -417,7 +417,7 @@
         "max_date": "2012-12-31",
         "row_count": 250,
         "size_bytes": 106300,
-        "last_updated": "2026-11-07T23:34:31.080458+00:00"
+        "last_updated": "2026-11-08T23:34:18.679804+00:00"
       },
       "2013": {
         "path": "data/tickers/AMZN/AMZN-2013.parquet",
@@ -425,7 +425,7 @@
         "max_date": "2013-12-31",
         "row_count": 252,
         "size_bytes": 107503,
-        "last_updated": "2026-11-07T23:34:31.086317+00:00"
+        "last_updated": "2026-11-08T23:34:18.684244+00:00"
       },
       "2014": {
         "path": "data/tickers/AMZN/AMZN-2014.parquet",
@@ -433,7 +433,7 @@
         "max_date": "2014-12-31",
         "row_count": 252,
         "size_bytes": 107575,
-        "last_updated": "2026-11-07T23:34:31.092132+00:00"
+        "last_updated": "2026-11-08T23:34:18.688688+00:00"
       },
       "2015": {
         "path": "data/tickers/AMZN/AMZN-2015.parquet",
@@ -441,7 +441,7 @@
         "max_date": "2015-12-31",
         "row_count": 252,
         "size_bytes": 107367,
-        "last_updated": "2026-11-07T23:34:31.097972+00:00"
+        "last_updated": "2026-11-08T23:34:18.693144+00:00"
       },
       "2016": {
         "path": "data/tickers/AMZN/AMZN-2016.parquet",
@@ -449,7 +449,7 @@
         "max_date": "2016-12-30",
         "row_count": 252,
         "size_bytes": 107161,
-        "last_updated": "2026-11-07T23:34:31.103821+00:00"
+        "last_updated": "2026-11-08T23:34:18.697575+00:00"
       },
       "2017": {
         "path": "data/tickers/AMZN/AMZN-2017.parquet",
@@ -457,7 +457,7 @@
         "max_date": "2017-12-29",
         "row_count": 251,
         "size_bytes": 106130,
-        "last_updated": "2026-11-07T23:34:31.109670+00:00"
+        "last_updated": "2026-11-08T23:34:18.702016+00:00"
       },
       "2018": {
         "path": "data/tickers/AMZN/AMZN-2018.parquet",
@@ -465,7 +465,7 @@
         "max_date": "2018-12-31",
         "row_count": 251,
         "size_bytes": 107275,
-        "last_updated": "2026-11-07T23:34:31.115488+00:00"
+        "last_updated": "2026-11-08T23:34:18.706451+00:00"
       },
       "2019": {
         "path": "data/tickers/AMZN/AMZN-2019.parquet",
@@ -473,7 +473,7 @@
         "max_date": "2019-12-31",
         "row_count": 252,
         "size_bytes": 106817,
-        "last_updated": "2026-11-07T23:34:31.121317+00:00"
+        "last_updated": "2026-11-08T23:34:18.710897+00:00"
       },
       "2020": {
         "path": "data/tickers/AMZN/AMZN-2020.parquet",
@@ -481,7 +481,7 @@
         "max_date": "2020-12-31",
         "row_count": 253,
         "size_bytes": 108327,
-        "last_updated": "2026-11-07T23:34:31.127161+00:00"
+        "last_updated": "2026-11-08T23:34:18.715342+00:00"
       },
       "2021": {
         "path": "data/tickers/AMZN/AMZN-2021.parquet",
@@ -489,7 +489,7 @@
         "max_date": "2021-12-31",
         "row_count": 252,
         "size_bytes": 106604,
-        "last_updated": "2026-11-07T23:34:31.132989+00:00"
+        "last_updated": "2026-11-08T23:34:18.719807+00:00"
       },
       "2022": {
         "path": "data/tickers/AMZN/AMZN-2022.parquet",
@@ -497,7 +497,7 @@
         "max_date": "2022-12-30",
         "row_count": 251,
         "size_bytes": 107548,
-        "last_updated": "2026-11-07T23:34:31.138805+00:00"
+        "last_updated": "2026-11-08T23:34:18.724230+00:00"
       },
       "2023": {
         "path": "data/tickers/AMZN/AMZN-2023.parquet",
@@ -505,7 +505,7 @@
         "max_date": "2023-12-29",
         "row_count": 250,
         "size_bytes": 103626,
-        "last_updated": "2026-11-07T23:34:31.144631+00:00"
+        "last_updated": "2026-11-08T23:34:18.728666+00:00"
       },
       "2024": {
         "path": "data/tickers/AMZN/AMZN-2024.parquet",
@@ -513,7 +513,7 @@
         "max_date": "2024-12-31",
         "row_count": 252,
         "size_bytes": 103304,
-        "last_updated": "2026-11-07T23:34:31.150501+00:00"
+        "last_updated": "2026-11-08T23:34:18.733123+00:00"
       },
       "2025": {
         "path": "data/tickers/AMZN/AMZN-2025.parquet",
@@ -521,7 +521,7 @@
         "max_date": "2025-12-31",
         "row_count": 250,
         "size_bytes": 103920,
-        "last_updated": "2026-11-07T23:34:31.156408+00:00"
+        "last_updated": "2026-11-08T23:34:18.737582+00:00"
       },
       "2026": {
         "path": "data/tickers/AMZN/AMZN-2026.parquet",
@@ -529,7 +529,7 @@
         "max_date": "2026-11-06",
         "row_count": 214,
         "size_bytes": 96242,
-        "last_updated": "2026-11-07T23:34:31.162126+00:00"
+        "last_updated": "2026-11-08T23:34:18.741988+00:00"
       }
     }
   },
@@ -543,55 +543,55 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:31.164248+00:00",
+    "last_updated": "2026-11-08T23:34:18.743447+00:00",
     "files": {
       "2020": {
         "path": "data/tickers/FBCG/FBCG-2020.parquet",
         "min_date": "2020-06-05",
         "max_date": "2020-12-31",
         "row_count": 146,
-        "size_bytes": 81851,
-        "last_updated": "2026-11-07T23:34:31.169785+00:00"
+        "size_bytes": 81856,
+        "last_updated": "2026-11-08T23:34:18.747600+00:00"
       },
       "2021": {
         "path": "data/tickers/FBCG/FBCG-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 103230,
-        "last_updated": "2026-11-07T23:34:31.175516+00:00"
+        "size_bytes": 103238,
+        "last_updated": "2026-11-08T23:34:18.752030+00:00"
       },
       "2022": {
         "path": "data/tickers/FBCG/FBCG-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 107399,
-        "last_updated": "2026-11-07T23:34:31.181312+00:00"
+        "size_bytes": 107454,
+        "last_updated": "2026-11-08T23:34:18.756476+00:00"
       },
       "2023": {
         "path": "data/tickers/FBCG/FBCG-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 105977,
-        "last_updated": "2026-11-07T23:34:31.187109+00:00"
+        "size_bytes": 105983,
+        "last_updated": "2026-11-08T23:34:18.760974+00:00"
       },
       "2024": {
         "path": "data/tickers/FBCG/FBCG-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 107596,
-        "last_updated": "2026-11-07T23:34:31.192894+00:00"
+        "size_bytes": 107699,
+        "last_updated": "2026-11-08T23:34:18.765398+00:00"
       },
       "2025": {
         "path": "data/tickers/FBCG/FBCG-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 107936,
-        "last_updated": "2026-11-07T23:34:31.198649+00:00"
+        "size_bytes": 107948,
+        "last_updated": "2026-11-08T23:34:18.769864+00:00"
       },
       "2026": {
         "path": "data/tickers/FBCG/FBCG-2026.parquet",
@@ -599,7 +599,7 @@
         "max_date": "2026-11-06",
         "row_count": 214,
         "size_bytes": 93002,
-        "last_updated": "2026-11-07T23:34:31.204324+00:00"
+        "last_updated": "2026-11-08T23:34:18.774224+00:00"
       }
     }
   },
@@ -612,7 +612,7 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:31.206248+00:00",
+    "last_updated": "2026-11-08T23:34:18.775597+00:00",
     "files": {
       "2021": {
         "path": "data/tickers/FMAG/FMAG-2021.parquet",
@@ -620,39 +620,39 @@
         "max_date": "2021-12-31",
         "row_count": 230,
         "size_bytes": 100554,
-        "last_updated": "2026-11-07T23:34:31.211954+00:00"
+        "last_updated": "2026-11-08T23:34:18.780020+00:00"
       },
       "2022": {
         "path": "data/tickers/FMAG/FMAG-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 108381,
-        "last_updated": "2026-11-07T23:34:31.217785+00:00"
+        "size_bytes": 108420,
+        "last_updated": "2026-11-08T23:34:18.784496+00:00"
       },
       "2023": {
         "path": "data/tickers/FMAG/FMAG-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 105766,
-        "last_updated": "2026-11-07T23:34:31.223581+00:00"
+        "size_bytes": 105801,
+        "last_updated": "2026-11-08T23:34:18.788968+00:00"
       },
       "2024": {
         "path": "data/tickers/FMAG/FMAG-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 106349,
-        "last_updated": "2026-11-07T23:34:31.229389+00:00"
+        "size_bytes": 106329,
+        "last_updated": "2026-11-08T23:34:18.793416+00:00"
       },
       "2025": {
         "path": "data/tickers/FMAG/FMAG-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 102425,
-        "last_updated": "2026-11-07T23:34:31.235203+00:00"
+        "size_bytes": 102500,
+        "last_updated": "2026-11-08T23:34:18.797869+00:00"
       },
       "2026": {
         "path": "data/tickers/FMAG/FMAG-2026.parquet",
@@ -660,7 +660,7 @@
         "max_date": "2026-11-06",
         "row_count": 214,
         "size_bytes": 96630,
-        "last_updated": "2026-11-07T23:34:31.240889+00:00"
+        "last_updated": "2026-11-08T23:34:18.802227+00:00"
       }
     }
   },
@@ -689,183 +689,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:31.245400+00:00",
+    "last_updated": "2026-11-08T23:34:18.805351+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/GOOGL/GOOGL-2005.parquet",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 110163,
-        "last_updated": "2026-11-07T23:34:31.251297+00:00"
+        "size_bytes": 110241,
+        "last_updated": "2026-11-08T23:34:18.809833+00:00"
       },
       "2006": {
         "path": "data/tickers/GOOGL/GOOGL-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 110372,
-        "last_updated": "2026-11-07T23:34:31.257163+00:00"
+        "size_bytes": 110332,
+        "last_updated": "2026-11-08T23:34:18.816872+00:00"
       },
       "2007": {
         "path": "data/tickers/GOOGL/GOOGL-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 109973,
-        "last_updated": "2026-11-07T23:34:31.263000+00:00"
+        "size_bytes": 109917,
+        "last_updated": "2026-11-08T23:34:18.821324+00:00"
       },
       "2008": {
         "path": "data/tickers/GOOGL/GOOGL-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 112274,
-        "last_updated": "2026-11-07T23:34:31.268836+00:00"
+        "size_bytes": 112256,
+        "last_updated": "2026-11-08T23:34:18.825771+00:00"
       },
       "2009": {
         "path": "data/tickers/GOOGL/GOOGL-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 110665,
-        "last_updated": "2026-11-07T23:34:31.274705+00:00"
+        "size_bytes": 110669,
+        "last_updated": "2026-11-08T23:34:18.830215+00:00"
       },
       "2010": {
         "path": "data/tickers/GOOGL/GOOGL-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 110660,
-        "last_updated": "2026-11-07T23:34:31.280515+00:00"
+        "size_bytes": 110692,
+        "last_updated": "2026-11-08T23:34:18.834639+00:00"
       },
       "2011": {
         "path": "data/tickers/GOOGL/GOOGL-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 109944,
-        "last_updated": "2026-11-07T23:34:31.286344+00:00"
+        "size_bytes": 109889,
+        "last_updated": "2026-11-08T23:34:18.839102+00:00"
       },
       "2012": {
         "path": "data/tickers/GOOGL/GOOGL-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 109875,
-        "last_updated": "2026-11-07T23:34:31.292230+00:00"
+        "size_bytes": 109900,
+        "last_updated": "2026-11-08T23:34:18.843551+00:00"
       },
       "2013": {
         "path": "data/tickers/GOOGL/GOOGL-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 109558,
-        "last_updated": "2026-11-07T23:34:31.298061+00:00"
+        "size_bytes": 109621,
+        "last_updated": "2026-11-08T23:34:18.848070+00:00"
       },
       "2014": {
         "path": "data/tickers/GOOGL/GOOGL-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 109347,
-        "last_updated": "2026-11-07T23:34:31.303859+00:00"
+        "size_bytes": 109335,
+        "last_updated": "2026-11-08T23:34:18.852601+00:00"
       },
       "2015": {
         "path": "data/tickers/GOOGL/GOOGL-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 110061,
-        "last_updated": "2026-11-07T23:34:31.309704+00:00"
+        "size_bytes": 110017,
+        "last_updated": "2026-11-08T23:34:18.857155+00:00"
       },
       "2016": {
         "path": "data/tickers/GOOGL/GOOGL-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 108771,
-        "last_updated": "2026-11-07T23:34:31.315550+00:00"
+        "size_bytes": 108788,
+        "last_updated": "2026-11-08T23:34:18.861860+00:00"
       },
       "2017": {
         "path": "data/tickers/GOOGL/GOOGL-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 108537,
-        "last_updated": "2026-11-07T23:34:31.321370+00:00"
+        "size_bytes": 108645,
+        "last_updated": "2026-11-08T23:34:18.866427+00:00"
       },
       "2018": {
         "path": "data/tickers/GOOGL/GOOGL-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 109672,
-        "last_updated": "2026-11-07T23:34:31.327205+00:00"
+        "size_bytes": 109634,
+        "last_updated": "2026-11-08T23:34:18.870990+00:00"
       },
       "2019": {
         "path": "data/tickers/GOOGL/GOOGL-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 109848,
-        "last_updated": "2026-11-07T23:34:31.332981+00:00"
+        "size_bytes": 109800,
+        "last_updated": "2026-11-08T23:34:18.875513+00:00"
       },
       "2020": {
         "path": "data/tickers/GOOGL/GOOGL-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 111534,
-        "last_updated": "2026-11-07T23:34:31.338803+00:00"
+        "size_bytes": 111620,
+        "last_updated": "2026-11-08T23:34:18.880077+00:00"
       },
       "2021": {
         "path": "data/tickers/GOOGL/GOOGL-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 110694,
-        "last_updated": "2026-11-07T23:34:31.344615+00:00"
+        "size_bytes": 110653,
+        "last_updated": "2026-11-08T23:34:18.884627+00:00"
       },
       "2022": {
         "path": "data/tickers/GOOGL/GOOGL-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 111354,
-        "last_updated": "2026-11-07T23:34:31.350456+00:00"
+        "size_bytes": 111431,
+        "last_updated": "2026-11-08T23:34:18.889163+00:00"
       },
       "2023": {
         "path": "data/tickers/GOOGL/GOOGL-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 108899,
-        "last_updated": "2026-11-07T23:34:31.356280+00:00"
+        "size_bytes": 109021,
+        "last_updated": "2026-11-08T23:34:18.893667+00:00"
       },
       "2024": {
         "path": "data/tickers/GOOGL/GOOGL-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 110586,
-        "last_updated": "2026-11-07T23:34:31.362134+00:00"
+        "size_bytes": 110741,
+        "last_updated": "2026-11-08T23:34:18.898179+00:00"
       },
       "2025": {
         "path": "data/tickers/GOOGL/GOOGL-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 111488,
-        "last_updated": "2026-11-07T23:34:31.367913+00:00"
+        "size_bytes": 111560,
+        "last_updated": "2026-11-08T23:34:18.902654+00:00"
       },
       "2026": {
         "path": "data/tickers/GOOGL/GOOGL-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 100643,
-        "last_updated": "2026-11-07T23:34:31.373729+00:00"
+        "size_bytes": 100638,
+        "last_updated": "2026-11-08T23:34:18.907053+00:00"
       }
     }
   },
@@ -894,183 +894,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:31.378362+00:00",
+    "last_updated": "2026-11-08T23:34:18.910207+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/HSBC/HSBC-2005.parquet",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 103866,
-        "last_updated": "2026-11-07T23:34:31.384178+00:00"
+        "size_bytes": 103829,
+        "last_updated": "2026-11-08T23:34:18.914610+00:00"
       },
       "2006": {
         "path": "data/tickers/HSBC/HSBC-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 106766,
-        "last_updated": "2026-11-07T23:34:31.389933+00:00"
+        "size_bytes": 106753,
+        "last_updated": "2026-11-08T23:34:18.919055+00:00"
       },
       "2007": {
         "path": "data/tickers/HSBC/HSBC-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 107314,
-        "last_updated": "2026-11-07T23:34:31.395754+00:00"
+        "size_bytes": 107281,
+        "last_updated": "2026-11-08T23:34:18.923485+00:00"
       },
       "2008": {
         "path": "data/tickers/HSBC/HSBC-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 110564,
-        "last_updated": "2026-11-07T23:34:31.401655+00:00"
+        "size_bytes": 110614,
+        "last_updated": "2026-11-08T23:34:18.927968+00:00"
       },
       "2009": {
         "path": "data/tickers/HSBC/HSBC-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 110842,
-        "last_updated": "2026-11-07T23:34:31.407509+00:00"
+        "size_bytes": 110716,
+        "last_updated": "2026-11-08T23:34:18.932404+00:00"
       },
       "2010": {
         "path": "data/tickers/HSBC/HSBC-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 108198,
-        "last_updated": "2026-11-07T23:34:31.413438+00:00"
+        "size_bytes": 108251,
+        "last_updated": "2026-11-08T23:34:18.936830+00:00"
       },
       "2011": {
         "path": "data/tickers/HSBC/HSBC-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 109269,
-        "last_updated": "2026-11-07T23:34:31.419265+00:00"
+        "size_bytes": 109297,
+        "last_updated": "2026-11-08T23:34:18.941221+00:00"
       },
       "2012": {
         "path": "data/tickers/HSBC/HSBC-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 107768,
-        "last_updated": "2026-11-07T23:34:31.425030+00:00"
+        "size_bytes": 107856,
+        "last_updated": "2026-11-08T23:34:18.945655+00:00"
       },
       "2013": {
         "path": "data/tickers/HSBC/HSBC-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 106060,
-        "last_updated": "2026-11-07T23:34:31.430801+00:00"
+        "size_bytes": 106047,
+        "last_updated": "2026-11-08T23:34:18.950060+00:00"
       },
       "2014": {
         "path": "data/tickers/HSBC/HSBC-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 106365,
-        "last_updated": "2026-11-07T23:34:31.436687+00:00"
+        "size_bytes": 106357,
+        "last_updated": "2026-11-08T23:34:18.954424+00:00"
       },
       "2015": {
         "path": "data/tickers/HSBC/HSBC-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 106753,
-        "last_updated": "2026-11-07T23:34:31.442514+00:00"
+        "size_bytes": 106707,
+        "last_updated": "2026-11-08T23:34:18.958852+00:00"
       },
       "2016": {
         "path": "data/tickers/HSBC/HSBC-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 107990,
-        "last_updated": "2026-11-07T23:34:31.448319+00:00"
+        "size_bytes": 108080,
+        "last_updated": "2026-11-08T23:34:18.963231+00:00"
       },
       "2017": {
         "path": "data/tickers/HSBC/HSBC-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 102933,
-        "last_updated": "2026-11-07T23:34:31.454097+00:00"
+        "size_bytes": 102954,
+        "last_updated": "2026-11-08T23:34:18.967587+00:00"
       },
       "2018": {
         "path": "data/tickers/HSBC/HSBC-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 107600,
-        "last_updated": "2026-11-07T23:34:31.459873+00:00"
+        "size_bytes": 107604,
+        "last_updated": "2026-11-08T23:34:18.972088+00:00"
       },
       "2019": {
         "path": "data/tickers/HSBC/HSBC-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 104938,
-        "last_updated": "2026-11-07T23:34:31.465647+00:00"
+        "size_bytes": 104907,
+        "last_updated": "2026-11-08T23:34:18.976451+00:00"
       },
       "2020": {
         "path": "data/tickers/HSBC/HSBC-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 108386,
-        "last_updated": "2026-11-07T23:34:31.471458+00:00"
+        "size_bytes": 108409,
+        "last_updated": "2026-11-08T23:34:18.981221+00:00"
       },
       "2021": {
         "path": "data/tickers/HSBC/HSBC-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 105753,
-        "last_updated": "2026-11-07T23:34:31.477271+00:00"
+        "size_bytes": 105798,
+        "last_updated": "2026-11-08T23:34:18.985619+00:00"
       },
       "2022": {
         "path": "data/tickers/HSBC/HSBC-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 107082,
-        "last_updated": "2026-11-07T23:34:31.483117+00:00"
+        "size_bytes": 107116,
+        "last_updated": "2026-11-08T23:34:18.990038+00:00"
       },
       "2023": {
         "path": "data/tickers/HSBC/HSBC-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 105527,
-        "last_updated": "2026-11-07T23:34:31.488907+00:00"
+        "size_bytes": 105413,
+        "last_updated": "2026-11-08T23:34:18.994764+00:00"
       },
       "2024": {
         "path": "data/tickers/HSBC/HSBC-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 106751,
-        "last_updated": "2026-11-07T23:34:31.494712+00:00"
+        "size_bytes": 106732,
+        "last_updated": "2026-11-08T23:34:18.999196+00:00"
       },
       "2025": {
         "path": "data/tickers/HSBC/HSBC-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 109178,
-        "last_updated": "2026-11-07T23:34:31.500550+00:00"
+        "size_bytes": 109204,
+        "last_updated": "2026-11-08T23:34:19.003613+00:00"
       },
       "2026": {
         "path": "data/tickers/HSBC/HSBC-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 100599,
-        "last_updated": "2026-11-07T23:34:31.506259+00:00"
+        "size_bytes": 100544,
+        "last_updated": "2026-11-08T23:34:19.008233+00:00"
       }
     }
   },
@@ -1097,7 +1097,7 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:31.510436+00:00",
+    "last_updated": "2026-11-08T23:34:19.010994+00:00",
     "files": {
       "2007": {
         "path": "data/tickers/MGK/MGK-2007.parquet",
@@ -1105,151 +1105,151 @@
         "max_date": "2007-12-31",
         "row_count": 3,
         "size_bytes": 40579,
-        "last_updated": "2026-11-07T23:34:31.515289+00:00"
+        "last_updated": "2026-11-08T23:34:19.014587+00:00"
       },
       "2008": {
         "path": "data/tickers/MGK/MGK-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 107321,
-        "last_updated": "2026-11-07T23:34:31.521109+00:00"
+        "size_bytes": 107377,
+        "last_updated": "2026-11-08T23:34:19.018988+00:00"
       },
       "2009": {
         "path": "data/tickers/MGK/MGK-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 107470,
-        "last_updated": "2026-11-07T23:34:31.526918+00:00"
+        "size_bytes": 107479,
+        "last_updated": "2026-11-08T23:34:19.023359+00:00"
       },
       "2010": {
         "path": "data/tickers/MGK/MGK-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 107061,
-        "last_updated": "2026-11-07T23:34:31.532699+00:00"
+        "size_bytes": 107049,
+        "last_updated": "2026-11-08T23:34:19.028041+00:00"
       },
       "2011": {
         "path": "data/tickers/MGK/MGK-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 105774,
-        "last_updated": "2026-11-07T23:34:31.538540+00:00"
+        "size_bytes": 105811,
+        "last_updated": "2026-11-08T23:34:19.032430+00:00"
       },
       "2012": {
         "path": "data/tickers/MGK/MGK-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 104841,
-        "last_updated": "2026-11-07T23:34:31.544317+00:00"
+        "size_bytes": 104802,
+        "last_updated": "2026-11-08T23:34:19.037073+00:00"
       },
       "2013": {
         "path": "data/tickers/MGK/MGK-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 105899,
-        "last_updated": "2026-11-07T23:34:31.550095+00:00"
+        "size_bytes": 105898,
+        "last_updated": "2026-11-08T23:34:19.041421+00:00"
       },
       "2014": {
         "path": "data/tickers/MGK/MGK-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 105705,
-        "last_updated": "2026-11-07T23:34:31.555858+00:00"
+        "size_bytes": 105776,
+        "last_updated": "2026-11-08T23:34:19.045814+00:00"
       },
       "2015": {
         "path": "data/tickers/MGK/MGK-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 107009,
-        "last_updated": "2026-11-07T23:34:31.561667+00:00"
+        "size_bytes": 107047,
+        "last_updated": "2026-11-08T23:34:19.050444+00:00"
       },
       "2016": {
         "path": "data/tickers/MGK/MGK-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 105217,
-        "last_updated": "2026-11-07T23:34:31.567505+00:00"
+        "size_bytes": 105153,
+        "last_updated": "2026-11-08T23:34:19.054855+00:00"
       },
       "2017": {
         "path": "data/tickers/MGK/MGK-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 104810,
-        "last_updated": "2026-11-07T23:34:31.573305+00:00"
+        "size_bytes": 104780,
+        "last_updated": "2026-11-08T23:34:19.059249+00:00"
       },
       "2018": {
         "path": "data/tickers/MGK/MGK-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 107088,
-        "last_updated": "2026-11-07T23:34:31.579112+00:00"
+        "size_bytes": 107096,
+        "last_updated": "2026-11-08T23:34:19.063629+00:00"
       },
       "2019": {
         "path": "data/tickers/MGK/MGK-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 108143,
-        "last_updated": "2026-11-07T23:34:31.584859+00:00"
+        "size_bytes": 108179,
+        "last_updated": "2026-11-08T23:34:19.067998+00:00"
       },
       "2020": {
         "path": "data/tickers/MGK/MGK-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 110292,
-        "last_updated": "2026-11-07T23:34:31.590688+00:00"
+        "size_bytes": 110250,
+        "last_updated": "2026-11-08T23:34:19.072375+00:00"
       },
       "2021": {
         "path": "data/tickers/MGK/MGK-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 109161,
-        "last_updated": "2026-11-07T23:34:31.596537+00:00"
+        "size_bytes": 109137,
+        "last_updated": "2026-11-08T23:34:19.076759+00:00"
       },
       "2022": {
         "path": "data/tickers/MGK/MGK-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 109992,
-        "last_updated": "2026-11-07T23:34:31.602401+00:00"
+        "size_bytes": 109947,
+        "last_updated": "2026-11-08T23:34:19.081164+00:00"
       },
       "2023": {
         "path": "data/tickers/MGK/MGK-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 108788,
-        "last_updated": "2026-11-07T23:34:31.608227+00:00"
+        "size_bytes": 108789,
+        "last_updated": "2026-11-08T23:34:19.085536+00:00"
       },
       "2024": {
         "path": "data/tickers/MGK/MGK-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 108773,
-        "last_updated": "2026-11-07T23:34:31.614060+00:00"
+        "size_bytes": 108842,
+        "last_updated": "2026-11-08T23:34:19.089939+00:00"
       },
       "2025": {
         "path": "data/tickers/MGK/MGK-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 109414,
-        "last_updated": "2026-11-07T23:34:31.619844+00:00"
+        "size_bytes": 109528,
+        "last_updated": "2026-11-08T23:34:19.094512+00:00"
       },
       "2026": {
         "path": "data/tickers/MGK/MGK-2026.parquet",
@@ -1257,7 +1257,7 @@
         "max_date": "2026-11-06",
         "row_count": 214,
         "size_bytes": 99328,
-        "last_updated": "2026-11-07T23:34:31.625531+00:00"
+        "last_updated": "2026-11-08T23:34:19.098828+00:00"
       }
     }
   },
@@ -1286,183 +1286,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:31.630196+00:00",
+    "last_updated": "2026-11-08T23:34:19.101883+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/MSFT/MSFT-2005.parquet",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 102103,
-        "last_updated": "2026-11-07T23:34:31.636022+00:00"
+        "size_bytes": 102074,
+        "last_updated": "2026-11-08T23:34:19.106259+00:00"
       },
       "2006": {
         "path": "data/tickers/MSFT/MSFT-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 103694,
-        "last_updated": "2026-11-07T23:34:31.641795+00:00"
+        "size_bytes": 103668,
+        "last_updated": "2026-11-08T23:34:19.110666+00:00"
       },
       "2007": {
         "path": "data/tickers/MSFT/MSFT-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 106273,
-        "last_updated": "2026-11-07T23:34:31.647705+00:00"
+        "size_bytes": 106310,
+        "last_updated": "2026-11-08T23:34:19.115092+00:00"
       },
       "2008": {
         "path": "data/tickers/MSFT/MSFT-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 109835,
-        "last_updated": "2026-11-07T23:34:31.653568+00:00"
+        "size_bytes": 109794,
+        "last_updated": "2026-11-08T23:34:19.119494+00:00"
       },
       "2009": {
         "path": "data/tickers/MSFT/MSFT-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 106988,
-        "last_updated": "2026-11-07T23:34:31.659419+00:00"
+        "size_bytes": 106948,
+        "last_updated": "2026-11-08T23:34:19.123898+00:00"
       },
       "2010": {
         "path": "data/tickers/MSFT/MSFT-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 106847,
-        "last_updated": "2026-11-07T23:34:31.665236+00:00"
+        "size_bytes": 106852,
+        "last_updated": "2026-11-08T23:34:19.128265+00:00"
       },
       "2011": {
         "path": "data/tickers/MSFT/MSFT-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 105888,
-        "last_updated": "2026-11-07T23:34:31.671048+00:00"
+        "size_bytes": 105921,
+        "last_updated": "2026-11-08T23:34:19.132621+00:00"
       },
       "2012": {
         "path": "data/tickers/MSFT/MSFT-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 104763,
-        "last_updated": "2026-11-07T23:34:31.676822+00:00"
+        "size_bytes": 104752,
+        "last_updated": "2026-11-08T23:34:19.137001+00:00"
       },
       "2013": {
         "path": "data/tickers/MSFT/MSFT-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 107469,
-        "last_updated": "2026-11-07T23:34:31.682611+00:00"
+        "size_bytes": 107507,
+        "last_updated": "2026-11-08T23:34:19.141362+00:00"
       },
       "2014": {
         "path": "data/tickers/MSFT/MSFT-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 107308,
-        "last_updated": "2026-11-07T23:34:31.688432+00:00"
+        "size_bytes": 107253,
+        "last_updated": "2026-11-08T23:34:19.145728+00:00"
       },
       "2015": {
         "path": "data/tickers/MSFT/MSFT-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 107503,
-        "last_updated": "2026-11-07T23:34:31.694282+00:00"
+        "size_bytes": 107616,
+        "last_updated": "2026-11-08T23:34:19.150109+00:00"
       },
       "2016": {
         "path": "data/tickers/MSFT/MSFT-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 107058,
-        "last_updated": "2026-11-07T23:34:31.700139+00:00"
+        "size_bytes": 107046,
+        "last_updated": "2026-11-08T23:34:19.154486+00:00"
       },
       "2017": {
         "path": "data/tickers/MSFT/MSFT-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 106566,
-        "last_updated": "2026-11-07T23:34:31.705925+00:00"
+        "size_bytes": 106539,
+        "last_updated": "2026-11-08T23:34:19.158894+00:00"
       },
       "2018": {
         "path": "data/tickers/MSFT/MSFT-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 109309,
-        "last_updated": "2026-11-07T23:34:31.711740+00:00"
+        "size_bytes": 109429,
+        "last_updated": "2026-11-08T23:34:19.163305+00:00"
       },
       "2019": {
         "path": "data/tickers/MSFT/MSFT-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 109687,
-        "last_updated": "2026-11-07T23:34:31.717551+00:00"
+        "size_bytes": 109588,
+        "last_updated": "2026-11-08T23:34:19.167677+00:00"
       },
       "2020": {
         "path": "data/tickers/MSFT/MSFT-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 111191,
-        "last_updated": "2026-11-07T23:34:31.723421+00:00"
+        "size_bytes": 111228,
+        "last_updated": "2026-11-08T23:34:19.172078+00:00"
       },
       "2021": {
         "path": "data/tickers/MSFT/MSFT-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 110548,
-        "last_updated": "2026-11-07T23:34:31.729272+00:00"
+        "size_bytes": 110457,
+        "last_updated": "2026-11-08T23:34:19.176454+00:00"
       },
       "2022": {
         "path": "data/tickers/MSFT/MSFT-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 110999,
-        "last_updated": "2026-11-07T23:34:31.735139+00:00"
+        "size_bytes": 110859,
+        "last_updated": "2026-11-08T23:34:19.180882+00:00"
       },
       "2023": {
         "path": "data/tickers/MSFT/MSFT-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 110015,
-        "last_updated": "2026-11-07T23:34:31.740954+00:00"
+        "size_bytes": 110131,
+        "last_updated": "2026-11-08T23:34:19.185242+00:00"
       },
       "2024": {
         "path": "data/tickers/MSFT/MSFT-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 109381,
-        "last_updated": "2026-11-07T23:34:31.746772+00:00"
+        "size_bytes": 109405,
+        "last_updated": "2026-11-08T23:34:19.189606+00:00"
       },
       "2025": {
         "path": "data/tickers/MSFT/MSFT-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 110248,
-        "last_updated": "2026-11-07T23:34:31.752630+00:00"
+        "size_bytes": 110292,
+        "last_updated": "2026-11-08T23:34:19.194028+00:00"
       },
       "2026": {
         "path": "data/tickers/MSFT/MSFT-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 100827,
-        "last_updated": "2026-11-07T23:34:31.758339+00:00"
+        "size_bytes": 100700,
+        "last_updated": "2026-11-08T23:34:19.198339+00:00"
       }
     }
   },
@@ -1491,183 +1491,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:31.763079+00:00",
+    "last_updated": "2026-11-08T23:34:19.201397+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/NVDA/NVDA-2005.parquet",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 104382,
-        "last_updated": "2026-11-07T23:34:31.768888+00:00"
+        "size_bytes": 104358,
+        "last_updated": "2026-11-08T23:34:19.205744+00:00"
       },
       "2006": {
         "path": "data/tickers/NVDA/NVDA-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 107825,
-        "last_updated": "2026-11-07T23:34:31.774731+00:00"
+        "size_bytes": 107827,
+        "last_updated": "2026-11-08T23:34:19.210192+00:00"
       },
       "2007": {
         "path": "data/tickers/NVDA/NVDA-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 107198,
-        "last_updated": "2026-11-07T23:34:31.780591+00:00"
+        "size_bytes": 107142,
+        "last_updated": "2026-11-08T23:34:19.214586+00:00"
       },
       "2008": {
         "path": "data/tickers/NVDA/NVDA-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 109178,
-        "last_updated": "2026-11-07T23:34:31.786400+00:00"
+        "size_bytes": 109191,
+        "last_updated": "2026-11-08T23:34:19.218999+00:00"
       },
       "2009": {
         "path": "data/tickers/NVDA/NVDA-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 106363,
-        "last_updated": "2026-11-07T23:34:31.792201+00:00"
+        "size_bytes": 106354,
+        "last_updated": "2026-11-08T23:34:19.223373+00:00"
       },
       "2010": {
         "path": "data/tickers/NVDA/NVDA-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 106069,
-        "last_updated": "2026-11-07T23:34:31.797947+00:00"
+        "size_bytes": 106058,
+        "last_updated": "2026-11-08T23:34:19.227745+00:00"
       },
       "2011": {
         "path": "data/tickers/NVDA/NVDA-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 105184,
-        "last_updated": "2026-11-07T23:34:31.803739+00:00"
+        "size_bytes": 105191,
+        "last_updated": "2026-11-08T23:34:19.232151+00:00"
       },
       "2012": {
         "path": "data/tickers/NVDA/NVDA-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 99470,
-        "last_updated": "2026-11-07T23:34:31.809480+00:00"
+        "size_bytes": 99476,
+        "last_updated": "2026-11-08T23:34:19.236466+00:00"
       },
       "2013": {
         "path": "data/tickers/NVDA/NVDA-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 99478,
-        "last_updated": "2026-11-07T23:34:31.815242+00:00"
+        "size_bytes": 99515,
+        "last_updated": "2026-11-08T23:34:19.240994+00:00"
       },
       "2014": {
         "path": "data/tickers/NVDA/NVDA-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 102023,
-        "last_updated": "2026-11-07T23:34:31.821026+00:00"
+        "size_bytes": 102061,
+        "last_updated": "2026-11-08T23:34:19.245332+00:00"
       },
       "2015": {
         "path": "data/tickers/NVDA/NVDA-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 104683,
-        "last_updated": "2026-11-07T23:34:31.826837+00:00"
+        "size_bytes": 104685,
+        "last_updated": "2026-11-08T23:34:19.249935+00:00"
       },
       "2016": {
         "path": "data/tickers/NVDA/NVDA-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 108339,
-        "last_updated": "2026-11-07T23:34:31.832662+00:00"
+        "size_bytes": 108320,
+        "last_updated": "2026-11-08T23:34:19.254318+00:00"
       },
       "2017": {
         "path": "data/tickers/NVDA/NVDA-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 110041,
-        "last_updated": "2026-11-07T23:34:31.840454+00:00"
+        "size_bytes": 110071,
+        "last_updated": "2026-11-08T23:34:19.258889+00:00"
       },
       "2018": {
         "path": "data/tickers/NVDA/NVDA-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 110520,
-        "last_updated": "2026-11-07T23:34:31.846302+00:00"
+        "size_bytes": 110445,
+        "last_updated": "2026-11-08T23:34:19.263312+00:00"
       },
       "2019": {
         "path": "data/tickers/NVDA/NVDA-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 110244,
-        "last_updated": "2026-11-07T23:34:31.852158+00:00"
+        "size_bytes": 110249,
+        "last_updated": "2026-11-08T23:34:19.268058+00:00"
       },
       "2020": {
         "path": "data/tickers/NVDA/NVDA-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 112332,
-        "last_updated": "2026-11-07T23:34:31.858010+00:00"
+        "size_bytes": 112347,
+        "last_updated": "2026-11-08T23:34:19.272545+00:00"
       },
       "2021": {
         "path": "data/tickers/NVDA/NVDA-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 111698,
-        "last_updated": "2026-11-07T23:34:31.863871+00:00"
+        "size_bytes": 111679,
+        "last_updated": "2026-11-08T23:34:19.276978+00:00"
       },
       "2022": {
         "path": "data/tickers/NVDA/NVDA-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 112396,
-        "last_updated": "2026-11-07T23:34:31.869683+00:00"
+        "size_bytes": 112374,
+        "last_updated": "2026-11-08T23:34:19.281370+00:00"
       },
       "2023": {
         "path": "data/tickers/NVDA/NVDA-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 111610,
-        "last_updated": "2026-11-07T23:34:31.875603+00:00"
+        "size_bytes": 111594,
+        "last_updated": "2026-11-08T23:34:19.285751+00:00"
       },
       "2024": {
         "path": "data/tickers/NVDA/NVDA-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 112555,
-        "last_updated": "2026-11-07T23:34:31.881412+00:00"
+        "size_bytes": 112497,
+        "last_updated": "2026-11-08T23:34:19.290150+00:00"
       },
       "2025": {
         "path": "data/tickers/NVDA/NVDA-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 111111,
-        "last_updated": "2026-11-07T23:34:31.887256+00:00"
+        "size_bytes": 111214,
+        "last_updated": "2026-11-08T23:34:19.294520+00:00"
       },
       "2026": {
         "path": "data/tickers/NVDA/NVDA-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 100740,
-        "last_updated": "2026-11-07T23:34:31.893007+00:00"
+        "size_bytes": 100742,
+        "last_updated": "2026-11-08T23:34:19.298835+00:00"
       }
     }
   },
@@ -1696,183 +1696,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:31.897654+00:00",
+    "last_updated": "2026-11-08T23:34:19.301859+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/OEF/OEF-2005.parquet",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 101050,
-        "last_updated": "2026-11-07T23:34:31.903529+00:00"
+        "size_bytes": 101147,
+        "last_updated": "2026-11-08T23:34:19.306184+00:00"
       },
       "2006": {
         "path": "data/tickers/OEF/OEF-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 102994,
-        "last_updated": "2026-11-07T23:34:31.909323+00:00"
+        "size_bytes": 103055,
+        "last_updated": "2026-11-08T23:34:19.310523+00:00"
       },
       "2007": {
         "path": "data/tickers/OEF/OEF-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 105575,
-        "last_updated": "2026-11-07T23:34:31.915120+00:00"
+        "size_bytes": 105666,
+        "last_updated": "2026-11-08T23:34:19.314964+00:00"
       },
       "2008": {
         "path": "data/tickers/OEF/OEF-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 109652,
-        "last_updated": "2026-11-07T23:34:31.920905+00:00"
+        "size_bytes": 109735,
+        "last_updated": "2026-11-08T23:34:19.319401+00:00"
       },
       "2009": {
         "path": "data/tickers/OEF/OEF-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 107887,
-        "last_updated": "2026-11-07T23:34:31.926714+00:00"
+        "size_bytes": 108019,
+        "last_updated": "2026-11-08T23:34:19.323866+00:00"
       },
       "2010": {
         "path": "data/tickers/OEF/OEF-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 106202,
-        "last_updated": "2026-11-07T23:34:31.932575+00:00"
+        "size_bytes": 106239,
+        "last_updated": "2026-11-08T23:34:19.328316+00:00"
       },
       "2011": {
         "path": "data/tickers/OEF/OEF-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 106637,
-        "last_updated": "2026-11-07T23:34:31.938430+00:00"
+        "size_bytes": 106665,
+        "last_updated": "2026-11-08T23:34:19.332750+00:00"
       },
       "2012": {
         "path": "data/tickers/OEF/OEF-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 105905,
-        "last_updated": "2026-11-07T23:34:31.944230+00:00"
+        "size_bytes": 105800,
+        "last_updated": "2026-11-08T23:34:19.337454+00:00"
       },
       "2013": {
         "path": "data/tickers/OEF/OEF-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 105876,
-        "last_updated": "2026-11-07T23:34:31.950052+00:00"
+        "size_bytes": 105808,
+        "last_updated": "2026-11-08T23:34:19.341884+00:00"
       },
       "2014": {
         "path": "data/tickers/OEF/OEF-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 106820,
-        "last_updated": "2026-11-07T23:34:31.955835+00:00"
+        "size_bytes": 106783,
+        "last_updated": "2026-11-08T23:34:19.346269+00:00"
       },
       "2015": {
         "path": "data/tickers/OEF/OEF-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 106192,
-        "last_updated": "2026-11-07T23:34:31.961625+00:00"
+        "size_bytes": 106233,
+        "last_updated": "2026-11-08T23:34:19.350673+00:00"
       },
       "2016": {
         "path": "data/tickers/OEF/OEF-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 105350,
-        "last_updated": "2026-11-07T23:34:31.967393+00:00"
+        "size_bytes": 105246,
+        "last_updated": "2026-11-08T23:34:19.355122+00:00"
       },
       "2017": {
         "path": "data/tickers/OEF/OEF-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 104646,
-        "last_updated": "2026-11-07T23:34:31.973162+00:00"
+        "size_bytes": 104678,
+        "last_updated": "2026-11-08T23:34:19.359501+00:00"
       },
       "2018": {
         "path": "data/tickers/OEF/OEF-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 108015,
-        "last_updated": "2026-11-07T23:34:31.978972+00:00"
+        "size_bytes": 107882,
+        "last_updated": "2026-11-08T23:34:19.364005+00:00"
       },
       "2019": {
         "path": "data/tickers/OEF/OEF-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 107626,
-        "last_updated": "2026-11-07T23:34:31.984886+00:00"
+        "size_bytes": 107489,
+        "last_updated": "2026-11-08T23:34:19.368429+00:00"
       },
       "2020": {
         "path": "data/tickers/OEF/OEF-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 109767,
-        "last_updated": "2026-11-07T23:34:31.990744+00:00"
+        "size_bytes": 109856,
+        "last_updated": "2026-11-08T23:34:19.372889+00:00"
       },
       "2021": {
         "path": "data/tickers/OEF/OEF-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 108043,
-        "last_updated": "2026-11-07T23:34:31.996599+00:00"
+        "size_bytes": 107977,
+        "last_updated": "2026-11-08T23:34:19.377335+00:00"
       },
       "2022": {
         "path": "data/tickers/OEF/OEF-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 109704,
-        "last_updated": "2026-11-07T23:34:32.002422+00:00"
+        "size_bytes": 109691,
+        "last_updated": "2026-11-08T23:34:19.381772+00:00"
       },
       "2023": {
         "path": "data/tickers/OEF/OEF-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 108369,
-        "last_updated": "2026-11-07T23:34:32.008241+00:00"
+        "size_bytes": 108515,
+        "last_updated": "2026-11-08T23:34:19.386227+00:00"
       },
       "2024": {
         "path": "data/tickers/OEF/OEF-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 108741,
-        "last_updated": "2026-11-07T23:34:32.014045+00:00"
+        "size_bytes": 108615,
+        "last_updated": "2026-11-08T23:34:19.390688+00:00"
       },
       "2025": {
         "path": "data/tickers/OEF/OEF-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 109296,
-        "last_updated": "2026-11-07T23:34:32.019848+00:00"
+        "size_bytes": 109282,
+        "last_updated": "2026-11-08T23:34:19.395154+00:00"
       },
       "2026": {
         "path": "data/tickers/OEF/OEF-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 98704,
-        "last_updated": "2026-11-07T23:34:32.025570+00:00"
+        "size_bytes": 98733,
+        "last_updated": "2026-11-08T23:34:19.399513+00:00"
       }
     }
   },
@@ -1901,183 +1901,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:32.030210+00:00",
+    "last_updated": "2026-11-08T23:34:19.402595+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/QQQ/QQQ-2005.parquet",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 103400,
-        "last_updated": "2026-11-07T23:34:32.036012+00:00"
+        "size_bytes": 103531,
+        "last_updated": "2026-11-08T23:34:19.407009+00:00"
       },
       "2006": {
         "path": "data/tickers/QQQ/QQQ-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 104522,
-        "last_updated": "2026-11-07T23:34:32.041775+00:00"
+        "size_bytes": 104512,
+        "last_updated": "2026-11-08T23:34:19.411390+00:00"
       },
       "2007": {
         "path": "data/tickers/QQQ/QQQ-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 106192,
-        "last_updated": "2026-11-07T23:34:32.047537+00:00"
+        "size_bytes": 106063,
+        "last_updated": "2026-11-08T23:34:19.415735+00:00"
       },
       "2008": {
         "path": "data/tickers/QQQ/QQQ-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 109683,
-        "last_updated": "2026-11-07T23:34:32.053428+00:00"
+        "size_bytes": 109698,
+        "last_updated": "2026-11-08T23:34:19.420138+00:00"
       },
       "2009": {
         "path": "data/tickers/QQQ/QQQ-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 109008,
-        "last_updated": "2026-11-07T23:34:32.059250+00:00"
+        "size_bytes": 109014,
+        "last_updated": "2026-11-08T23:34:19.424498+00:00"
       },
       "2010": {
         "path": "data/tickers/QQQ/QQQ-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 107848,
-        "last_updated": "2026-11-07T23:34:32.065088+00:00"
+        "size_bytes": 107942,
+        "last_updated": "2026-11-08T23:34:19.428904+00:00"
       },
       "2011": {
         "path": "data/tickers/QQQ/QQQ-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 107342,
-        "last_updated": "2026-11-07T23:34:32.070926+00:00"
+        "size_bytes": 107416,
+        "last_updated": "2026-11-08T23:34:19.433250+00:00"
       },
       "2012": {
         "path": "data/tickers/QQQ/QQQ-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 106463,
-        "last_updated": "2026-11-07T23:34:32.076748+00:00"
+        "size_bytes": 106471,
+        "last_updated": "2026-11-08T23:34:19.437603+00:00"
       },
       "2013": {
         "path": "data/tickers/QQQ/QQQ-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 106771,
-        "last_updated": "2026-11-07T23:34:32.082555+00:00"
+        "size_bytes": 106747,
+        "last_updated": "2026-11-08T23:34:19.441974+00:00"
       },
       "2014": {
         "path": "data/tickers/QQQ/QQQ-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 107472,
-        "last_updated": "2026-11-07T23:34:32.088508+00:00"
+        "size_bytes": 107468,
+        "last_updated": "2026-11-08T23:34:19.446431+00:00"
       },
       "2015": {
         "path": "data/tickers/QQQ/QQQ-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 108822,
-        "last_updated": "2026-11-07T23:34:32.094336+00:00"
+        "size_bytes": 108804,
+        "last_updated": "2026-11-08T23:34:19.450823+00:00"
       },
       "2016": {
         "path": "data/tickers/QQQ/QQQ-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 107329,
-        "last_updated": "2026-11-07T23:34:32.100136+00:00"
+        "size_bytes": 107433,
+        "last_updated": "2026-11-08T23:34:19.455190+00:00"
       },
       "2017": {
         "path": "data/tickers/QQQ/QQQ-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 107604,
-        "last_updated": "2026-11-07T23:34:32.105955+00:00"
+        "size_bytes": 107640,
+        "last_updated": "2026-11-08T23:34:19.459602+00:00"
       },
       "2018": {
         "path": "data/tickers/QQQ/QQQ-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 109422,
-        "last_updated": "2026-11-07T23:34:32.111786+00:00"
+        "size_bytes": 109348,
+        "last_updated": "2026-11-08T23:34:19.464119+00:00"
       },
       "2019": {
         "path": "data/tickers/QQQ/QQQ-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 108987,
-        "last_updated": "2026-11-07T23:34:32.117676+00:00"
+        "size_bytes": 108968,
+        "last_updated": "2026-11-08T23:34:19.468896+00:00"
       },
       "2020": {
         "path": "data/tickers/QQQ/QQQ-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 110914,
-        "last_updated": "2026-11-07T23:34:32.123490+00:00"
+        "size_bytes": 110911,
+        "last_updated": "2026-11-08T23:34:19.473414+00:00"
       },
       "2021": {
         "path": "data/tickers/QQQ/QQQ-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 109622,
-        "last_updated": "2026-11-07T23:34:32.129299+00:00"
+        "size_bytes": 109421,
+        "last_updated": "2026-11-08T23:34:19.477992+00:00"
       },
       "2022": {
         "path": "data/tickers/QQQ/QQQ-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 111205,
-        "last_updated": "2026-11-07T23:34:32.135120+00:00"
+        "size_bytes": 111200,
+        "last_updated": "2026-11-08T23:34:19.482527+00:00"
       },
       "2023": {
         "path": "data/tickers/QQQ/QQQ-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 109457,
-        "last_updated": "2026-11-07T23:34:32.140988+00:00"
+        "size_bytes": 109440,
+        "last_updated": "2026-11-08T23:34:19.487112+00:00"
       },
       "2024": {
         "path": "data/tickers/QQQ/QQQ-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 109666,
-        "last_updated": "2026-11-07T23:34:32.146817+00:00"
+        "size_bytes": 109696,
+        "last_updated": "2026-11-08T23:34:19.491674+00:00"
       },
       "2025": {
         "path": "data/tickers/QQQ/QQQ-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 109932,
-        "last_updated": "2026-11-07T23:34:32.152693+00:00"
+        "size_bytes": 109969,
+        "last_updated": "2026-11-08T23:34:19.496242+00:00"
       },
       "2026": {
         "path": "data/tickers/QQQ/QQQ-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 100591,
-        "last_updated": "2026-11-07T23:34:32.158447+00:00"
+        "size_bytes": 100647,
+        "last_updated": "2026-11-08T23:34:19.500689+00:00"
       }
     }
   },
@@ -2091,7 +2091,7 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:32.160546+00:00",
+    "last_updated": "2026-11-08T23:34:19.502126+00:00",
     "files": {
       "2020": {
         "path": "data/tickers/QQQJ/QQQJ-2020.parquet",
@@ -2099,55 +2099,55 @@
         "max_date": "2020-12-31",
         "row_count": 56,
         "size_bytes": 56471,
-        "last_updated": "2026-11-07T23:34:32.165692+00:00"
+        "last_updated": "2026-11-08T23:34:19.506113+00:00"
       },
       "2021": {
         "path": "data/tickers/QQQJ/QQQJ-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 105266,
-        "last_updated": "2026-11-07T23:34:32.171468+00:00"
+        "size_bytes": 105152,
+        "last_updated": "2026-11-08T23:34:19.510605+00:00"
       },
       "2022": {
         "path": "data/tickers/QQQJ/QQQJ-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 109091,
-        "last_updated": "2026-11-07T23:34:32.177265+00:00"
+        "size_bytes": 109119,
+        "last_updated": "2026-11-08T23:34:19.515129+00:00"
       },
       "2023": {
         "path": "data/tickers/QQQJ/QQQJ-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 103612,
-        "last_updated": "2026-11-07T23:34:32.182996+00:00"
+        "size_bytes": 103632,
+        "last_updated": "2026-11-08T23:34:19.519596+00:00"
       },
       "2024": {
         "path": "data/tickers/QQQJ/QQQJ-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 103876,
-        "last_updated": "2026-11-07T23:34:32.188772+00:00"
+        "size_bytes": 103792,
+        "last_updated": "2026-11-08T23:34:19.524073+00:00"
       },
       "2025": {
         "path": "data/tickers/QQQJ/QQQJ-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 105641,
-        "last_updated": "2026-11-07T23:34:32.194553+00:00"
+        "size_bytes": 105638,
+        "last_updated": "2026-11-08T23:34:19.528558+00:00"
       },
       "2026": {
         "path": "data/tickers/QQQJ/QQQJ-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 97034,
-        "last_updated": "2026-11-07T23:34:32.200279+00:00"
+        "size_bytes": 96990,
+        "last_updated": "2026-11-08T23:34:19.532923+00:00"
       }
     }
   },
@@ -2157,31 +2157,31 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:32.201595+00:00",
+    "last_updated": "2026-11-08T23:34:19.533873+00:00",
     "files": {
       "2024": {
         "path": "data/tickers/QTOP/QTOP-2024.parquet",
         "min_date": "2024-10-24",
         "max_date": "2024-12-31",
         "row_count": 47,
-        "size_bytes": 53830,
-        "last_updated": "2026-11-07T23:34:32.206683+00:00"
+        "size_bytes": 53834,
+        "last_updated": "2026-11-08T23:34:19.537707+00:00"
       },
       "2025": {
         "path": "data/tickers/QTOP/QTOP-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 106782,
-        "last_updated": "2026-11-07T23:34:32.212456+00:00"
+        "size_bytes": 106718,
+        "last_updated": "2026-11-08T23:34:19.542112+00:00"
       },
       "2026": {
         "path": "data/tickers/QTOP/QTOP-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 99045,
-        "last_updated": "2026-11-07T23:34:32.218102+00:00"
+        "size_bytes": 99050,
+        "last_updated": "2026-11-08T23:34:19.546412+00:00"
       }
     }
   },
@@ -2210,183 +2210,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:32.222420+00:00",
+    "last_updated": "2026-11-08T23:34:19.549367+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/SPYM/SPYM-2005.parquet",
         "min_date": "2005-11-15",
         "max_date": "2005-12-30",
         "row_count": 32,
-        "size_bytes": 45792,
-        "last_updated": "2026-11-07T23:34:32.227565+00:00"
+        "size_bytes": 45727,
+        "last_updated": "2026-11-08T23:34:19.553164+00:00"
       },
       "2006": {
         "path": "data/tickers/SPYM/SPYM-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 86953,
-        "last_updated": "2026-11-07T23:34:32.233295+00:00"
+        "size_bytes": 86871,
+        "last_updated": "2026-11-08T23:34:19.557484+00:00"
       },
       "2007": {
         "path": "data/tickers/SPYM/SPYM-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 96258,
-        "last_updated": "2026-11-07T23:34:32.239113+00:00"
+        "size_bytes": 96233,
+        "last_updated": "2026-11-08T23:34:19.561861+00:00"
       },
       "2008": {
         "path": "data/tickers/SPYM/SPYM-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 105534,
-        "last_updated": "2026-11-07T23:34:32.244976+00:00"
+        "size_bytes": 105527,
+        "last_updated": "2026-11-08T23:34:19.566246+00:00"
       },
       "2009": {
         "path": "data/tickers/SPYM/SPYM-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 106180,
-        "last_updated": "2026-11-07T23:34:32.250821+00:00"
+        "size_bytes": 106220,
+        "last_updated": "2026-11-08T23:34:19.570593+00:00"
       },
       "2010": {
         "path": "data/tickers/SPYM/SPYM-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 105951,
-        "last_updated": "2026-11-07T23:34:32.256625+00:00"
+        "size_bytes": 105878,
+        "last_updated": "2026-11-08T23:34:19.575015+00:00"
       },
       "2011": {
         "path": "data/tickers/SPYM/SPYM-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 101576,
-        "last_updated": "2026-11-07T23:34:32.262421+00:00"
+        "size_bytes": 101548,
+        "last_updated": "2026-11-08T23:34:19.579360+00:00"
       },
       "2012": {
         "path": "data/tickers/SPYM/SPYM-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 99753,
-        "last_updated": "2026-11-07T23:34:32.268253+00:00"
+        "size_bytes": 99814,
+        "last_updated": "2026-11-08T23:34:19.583721+00:00"
       },
       "2013": {
         "path": "data/tickers/SPYM/SPYM-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 98912,
-        "last_updated": "2026-11-07T23:34:32.274019+00:00"
+        "size_bytes": 98939,
+        "last_updated": "2026-11-08T23:34:19.588380+00:00"
       },
       "2014": {
         "path": "data/tickers/SPYM/SPYM-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 97683,
-        "last_updated": "2026-11-07T23:34:32.279791+00:00"
+        "size_bytes": 97668,
+        "last_updated": "2026-11-08T23:34:19.592758+00:00"
       },
       "2015": {
         "path": "data/tickers/SPYM/SPYM-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 101978,
-        "last_updated": "2026-11-07T23:34:32.285599+00:00"
+        "size_bytes": 101944,
+        "last_updated": "2026-11-08T23:34:19.597135+00:00"
       },
       "2016": {
         "path": "data/tickers/SPYM/SPYM-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 105122,
-        "last_updated": "2026-11-07T23:34:32.291456+00:00"
+        "size_bytes": 105129,
+        "last_updated": "2026-11-08T23:34:19.601493+00:00"
       },
       "2017": {
         "path": "data/tickers/SPYM/SPYM-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 102896,
-        "last_updated": "2026-11-07T23:34:32.297250+00:00"
+        "size_bytes": 102892,
+        "last_updated": "2026-11-08T23:34:19.605840+00:00"
       },
       "2018": {
         "path": "data/tickers/SPYM/SPYM-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 104937,
-        "last_updated": "2026-11-07T23:34:32.303017+00:00"
+        "size_bytes": 104847,
+        "last_updated": "2026-11-08T23:34:19.610181+00:00"
       },
       "2019": {
         "path": "data/tickers/SPYM/SPYM-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 103862,
-        "last_updated": "2026-11-07T23:34:32.308794+00:00"
+        "size_bytes": 103810,
+        "last_updated": "2026-11-08T23:34:19.614516+00:00"
       },
       "2020": {
         "path": "data/tickers/SPYM/SPYM-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 109187,
-        "last_updated": "2026-11-07T23:34:32.314621+00:00"
+        "size_bytes": 109194,
+        "last_updated": "2026-11-08T23:34:19.618898+00:00"
       },
       "2021": {
         "path": "data/tickers/SPYM/SPYM-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 105393,
-        "last_updated": "2026-11-07T23:34:32.320450+00:00"
+        "size_bytes": 105315,
+        "last_updated": "2026-11-08T23:34:19.623245+00:00"
       },
       "2022": {
         "path": "data/tickers/SPYM/SPYM-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 108368,
-        "last_updated": "2026-11-07T23:34:32.326313+00:00"
+        "size_bytes": 108375,
+        "last_updated": "2026-11-08T23:34:19.627638+00:00"
       },
       "2023": {
         "path": "data/tickers/SPYM/SPYM-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 105429,
-        "last_updated": "2026-11-07T23:34:32.332158+00:00"
+        "size_bytes": 105278,
+        "last_updated": "2026-11-08T23:34:19.632010+00:00"
       },
       "2024": {
         "path": "data/tickers/SPYM/SPYM-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 107486,
-        "last_updated": "2026-11-07T23:34:32.337933+00:00"
+        "size_bytes": 107405,
+        "last_updated": "2026-11-08T23:34:19.636355+00:00"
       },
       "2025": {
         "path": "data/tickers/SPYM/SPYM-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 106930,
-        "last_updated": "2026-11-07T23:34:32.343740+00:00"
+        "size_bytes": 106941,
+        "last_updated": "2026-11-08T23:34:19.640724+00:00"
       },
       "2026": {
         "path": "data/tickers/SPYM/SPYM-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 97480,
-        "last_updated": "2026-11-07T23:34:32.349450+00:00"
+        "size_bytes": 97482,
+        "last_updated": "2026-11-08T23:34:19.645047+00:00"
       }
     }
   },
@@ -2396,23 +2396,23 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:32.350871+00:00",
+    "last_updated": "2026-11-08T23:34:19.645983+00:00",
     "files": {
       "2024": {
         "path": "data/tickers/TOPT/TOPT-2024.parquet",
         "min_date": "2024-10-24",
         "max_date": "2024-12-31",
         "row_count": 47,
-        "size_bytes": 53421,
-        "last_updated": "2026-11-07T23:34:32.356003+00:00"
+        "size_bytes": 53426,
+        "last_updated": "2026-11-08T23:34:19.649759+00:00"
       },
       "2025": {
         "path": "data/tickers/TOPT/TOPT-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 105518,
-        "last_updated": "2026-11-07T23:34:32.361798+00:00"
+        "size_bytes": 105480,
+        "last_updated": "2026-11-08T23:34:19.654104+00:00"
       },
       "2026": {
         "path": "data/tickers/TOPT/TOPT-2026.parquet",
@@ -2420,7 +2420,7 @@
         "max_date": "2026-11-06",
         "row_count": 214,
         "size_bytes": 95136,
-        "last_updated": "2026-11-07T23:34:32.367469+00:00"
+        "last_updated": "2026-11-08T23:34:19.658344+00:00"
       }
     }
   },
@@ -2444,7 +2444,7 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:32.371153+00:00",
+    "last_updated": "2026-11-08T23:34:19.660809+00:00",
     "files": {
       "2010": {
         "path": "data/tickers/TSLA/TSLA-2010.parquet",
@@ -2452,7 +2452,7 @@
         "max_date": "2010-12-31",
         "row_count": 130,
         "size_bytes": 74497,
-        "last_updated": "2026-11-07T23:34:32.376607+00:00"
+        "last_updated": "2026-11-08T23:34:19.664963+00:00"
       },
       "2011": {
         "path": "data/tickers/TSLA/TSLA-2011.parquet",
@@ -2460,7 +2460,7 @@
         "max_date": "2011-12-30",
         "row_count": 252,
         "size_bytes": 100535,
-        "last_updated": "2026-11-07T23:34:32.382428+00:00"
+        "last_updated": "2026-11-08T23:34:19.669323+00:00"
       },
       "2012": {
         "path": "data/tickers/TSLA/TSLA-2012.parquet",
@@ -2468,7 +2468,7 @@
         "max_date": "2012-12-31",
         "row_count": 250,
         "size_bytes": 100434,
-        "last_updated": "2026-11-07T23:34:32.388265+00:00"
+        "last_updated": "2026-11-08T23:34:19.673686+00:00"
       },
       "2013": {
         "path": "data/tickers/TSLA/TSLA-2013.parquet",
@@ -2476,7 +2476,7 @@
         "max_date": "2013-12-31",
         "row_count": 252,
         "size_bytes": 108409,
-        "last_updated": "2026-11-07T23:34:32.394162+00:00"
+        "last_updated": "2026-11-08T23:34:19.678090+00:00"
       },
       "2014": {
         "path": "data/tickers/TSLA/TSLA-2014.parquet",
@@ -2484,7 +2484,7 @@
         "max_date": "2014-12-31",
         "row_count": 252,
         "size_bytes": 107452,
-        "last_updated": "2026-11-07T23:34:32.399987+00:00"
+        "last_updated": "2026-11-08T23:34:19.682456+00:00"
       },
       "2015": {
         "path": "data/tickers/TSLA/TSLA-2015.parquet",
@@ -2492,7 +2492,7 @@
         "max_date": "2015-12-31",
         "row_count": 252,
         "size_bytes": 106959,
-        "last_updated": "2026-11-07T23:34:32.405854+00:00"
+        "last_updated": "2026-11-08T23:34:19.686878+00:00"
       },
       "2016": {
         "path": "data/tickers/TSLA/TSLA-2016.parquet",
@@ -2500,7 +2500,7 @@
         "max_date": "2016-12-30",
         "row_count": 252,
         "size_bytes": 107128,
-        "last_updated": "2026-11-07T23:34:32.411786+00:00"
+        "last_updated": "2026-11-08T23:34:19.691272+00:00"
       },
       "2017": {
         "path": "data/tickers/TSLA/TSLA-2017.parquet",
@@ -2508,7 +2508,7 @@
         "max_date": "2017-12-29",
         "row_count": 251,
         "size_bytes": 106506,
-        "last_updated": "2026-11-07T23:34:32.417638+00:00"
+        "last_updated": "2026-11-08T23:34:19.695657+00:00"
       },
       "2018": {
         "path": "data/tickers/TSLA/TSLA-2018.parquet",
@@ -2516,7 +2516,7 @@
         "max_date": "2018-12-31",
         "row_count": 251,
         "size_bytes": 107993,
-        "last_updated": "2026-11-07T23:34:32.423458+00:00"
+        "last_updated": "2026-11-08T23:34:19.700050+00:00"
       },
       "2019": {
         "path": "data/tickers/TSLA/TSLA-2019.parquet",
@@ -2524,7 +2524,7 @@
         "max_date": "2019-12-31",
         "row_count": 252,
         "size_bytes": 108446,
-        "last_updated": "2026-11-07T23:34:32.429293+00:00"
+        "last_updated": "2026-11-08T23:34:19.704440+00:00"
       },
       "2020": {
         "path": "data/tickers/TSLA/TSLA-2020.parquet",
@@ -2532,7 +2532,7 @@
         "max_date": "2020-12-31",
         "row_count": 253,
         "size_bytes": 110367,
-        "last_updated": "2026-11-07T23:34:32.435237+00:00"
+        "last_updated": "2026-11-08T23:34:19.708867+00:00"
       },
       "2021": {
         "path": "data/tickers/TSLA/TSLA-2021.parquet",
@@ -2540,7 +2540,7 @@
         "max_date": "2021-12-31",
         "row_count": 252,
         "size_bytes": 107654,
-        "last_updated": "2026-11-07T23:34:32.441116+00:00"
+        "last_updated": "2026-11-08T23:34:19.713250+00:00"
       },
       "2022": {
         "path": "data/tickers/TSLA/TSLA-2022.parquet",
@@ -2548,7 +2548,7 @@
         "max_date": "2022-12-30",
         "row_count": 251,
         "size_bytes": 107739,
-        "last_updated": "2026-11-07T23:34:32.446963+00:00"
+        "last_updated": "2026-11-08T23:34:19.717636+00:00"
       },
       "2023": {
         "path": "data/tickers/TSLA/TSLA-2023.parquet",
@@ -2556,7 +2556,7 @@
         "max_date": "2023-12-29",
         "row_count": 250,
         "size_bytes": 105839,
-        "last_updated": "2026-11-07T23:34:32.452822+00:00"
+        "last_updated": "2026-11-08T23:34:19.722042+00:00"
       },
       "2024": {
         "path": "data/tickers/TSLA/TSLA-2024.parquet",
@@ -2564,7 +2564,7 @@
         "max_date": "2024-12-31",
         "row_count": 252,
         "size_bytes": 106093,
-        "last_updated": "2026-11-07T23:34:32.458653+00:00"
+        "last_updated": "2026-11-08T23:34:19.726408+00:00"
       },
       "2025": {
         "path": "data/tickers/TSLA/TSLA-2025.parquet",
@@ -2572,7 +2572,7 @@
         "max_date": "2025-12-31",
         "row_count": 250,
         "size_bytes": 105712,
-        "last_updated": "2026-11-07T23:34:32.464514+00:00"
+        "last_updated": "2026-11-08T23:34:19.730824+00:00"
       },
       "2026": {
         "path": "data/tickers/TSLA/TSLA-2026.parquet",
@@ -2580,7 +2580,7 @@
         "max_date": "2026-11-06",
         "row_count": 214,
         "size_bytes": 95846,
-        "last_updated": "2026-11-07T23:34:32.470234+00:00"
+        "last_updated": "2026-11-08T23:34:19.735133+00:00"
       }
     }
   },
@@ -2609,183 +2609,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:32.474878+00:00",
+    "last_updated": "2026-11-08T23:34:19.738151+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/VGT/VGT-2005.parquet",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 100488,
-        "last_updated": "2026-11-07T23:34:32.480686+00:00"
+        "size_bytes": 100524,
+        "last_updated": "2026-11-08T23:34:19.742479+00:00"
       },
       "2006": {
         "path": "data/tickers/VGT/VGT-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 102830,
-        "last_updated": "2026-11-07T23:34:32.486503+00:00"
+        "size_bytes": 102729,
+        "last_updated": "2026-11-08T23:34:19.747099+00:00"
       },
       "2007": {
         "path": "data/tickers/VGT/VGT-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 105722,
-        "last_updated": "2026-11-07T23:34:32.492360+00:00"
+        "size_bytes": 105704,
+        "last_updated": "2026-11-08T23:34:19.751465+00:00"
       },
       "2008": {
         "path": "data/tickers/VGT/VGT-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 107395,
-        "last_updated": "2026-11-07T23:34:32.498206+00:00"
+        "size_bytes": 107379,
+        "last_updated": "2026-11-08T23:34:19.755854+00:00"
       },
       "2009": {
         "path": "data/tickers/VGT/VGT-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 107493,
-        "last_updated": "2026-11-07T23:34:32.504091+00:00"
+        "size_bytes": 107528,
+        "last_updated": "2026-11-08T23:34:19.760258+00:00"
       },
       "2010": {
         "path": "data/tickers/VGT/VGT-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 104995,
-        "last_updated": "2026-11-07T23:34:32.509863+00:00"
+        "size_bytes": 104958,
+        "last_updated": "2026-11-08T23:34:19.764617+00:00"
       },
       "2011": {
         "path": "data/tickers/VGT/VGT-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 104021,
-        "last_updated": "2026-11-07T23:34:32.515673+00:00"
+        "size_bytes": 104062,
+        "last_updated": "2026-11-08T23:34:19.768977+00:00"
       },
       "2012": {
         "path": "data/tickers/VGT/VGT-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 103884,
-        "last_updated": "2026-11-07T23:34:32.521468+00:00"
+        "size_bytes": 103840,
+        "last_updated": "2026-11-08T23:34:19.773319+00:00"
       },
       "2013": {
         "path": "data/tickers/VGT/VGT-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 105979,
-        "last_updated": "2026-11-07T23:34:32.527318+00:00"
+        "size_bytes": 105958,
+        "last_updated": "2026-11-08T23:34:19.777676+00:00"
       },
       "2014": {
         "path": "data/tickers/VGT/VGT-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 104859,
-        "last_updated": "2026-11-07T23:34:32.533168+00:00"
+        "size_bytes": 104913,
+        "last_updated": "2026-11-08T23:34:19.782050+00:00"
       },
       "2015": {
         "path": "data/tickers/VGT/VGT-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 107114,
-        "last_updated": "2026-11-07T23:34:32.539066+00:00"
+        "size_bytes": 107056,
+        "last_updated": "2026-11-08T23:34:19.786400+00:00"
       },
       "2016": {
         "path": "data/tickers/VGT/VGT-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 106956,
-        "last_updated": "2026-11-07T23:34:32.544847+00:00"
+        "size_bytes": 106885,
+        "last_updated": "2026-11-08T23:34:19.790807+00:00"
       },
       "2017": {
         "path": "data/tickers/VGT/VGT-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 107409,
-        "last_updated": "2026-11-07T23:34:32.550668+00:00"
+        "size_bytes": 107418,
+        "last_updated": "2026-11-08T23:34:19.795159+00:00"
       },
       "2018": {
         "path": "data/tickers/VGT/VGT-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 108777,
-        "last_updated": "2026-11-07T23:34:32.556491+00:00"
+        "size_bytes": 108878,
+        "last_updated": "2026-11-08T23:34:19.799535+00:00"
       },
       "2019": {
         "path": "data/tickers/VGT/VGT-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 109449,
-        "last_updated": "2026-11-07T23:34:32.562356+00:00"
+        "size_bytes": 109495,
+        "last_updated": "2026-11-08T23:34:19.803929+00:00"
       },
       "2020": {
         "path": "data/tickers/VGT/VGT-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 111143,
-        "last_updated": "2026-11-07T23:34:32.568212+00:00"
+        "size_bytes": 111037,
+        "last_updated": "2026-11-08T23:34:19.808316+00:00"
       },
       "2021": {
         "path": "data/tickers/VGT/VGT-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 109387,
-        "last_updated": "2026-11-07T23:34:32.574162+00:00"
+        "size_bytes": 109389,
+        "last_updated": "2026-11-08T23:34:19.812690+00:00"
       },
       "2022": {
         "path": "data/tickers/VGT/VGT-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 110347,
-        "last_updated": "2026-11-07T23:34:32.579989+00:00"
+        "size_bytes": 110332,
+        "last_updated": "2026-11-08T23:34:19.817073+00:00"
       },
       "2023": {
         "path": "data/tickers/VGT/VGT-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 109285,
-        "last_updated": "2026-11-07T23:34:32.585829+00:00"
+        "size_bytes": 109336,
+        "last_updated": "2026-11-08T23:34:19.821432+00:00"
       },
       "2024": {
         "path": "data/tickers/VGT/VGT-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 109938,
-        "last_updated": "2026-11-07T23:34:32.591647+00:00"
+        "size_bytes": 109875,
+        "last_updated": "2026-11-08T23:34:19.825840+00:00"
       },
       "2025": {
         "path": "data/tickers/VGT/VGT-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 109862,
-        "last_updated": "2026-11-07T23:34:32.597463+00:00"
+        "size_bytes": 109809,
+        "last_updated": "2026-11-08T23:34:19.830243+00:00"
       },
       "2026": {
         "path": "data/tickers/VGT/VGT-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 100334,
-        "last_updated": "2026-11-07T23:34:32.603221+00:00"
+        "size_bytes": 100348,
+        "last_updated": "2026-11-08T23:34:19.834575+00:00"
       }
     }
   },
@@ -2814,159 +2814,159 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:32.607840+00:00",
+    "last_updated": "2026-11-08T23:34:19.837636+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/VTI/VTI-2005.parquet",
         "min_date": "2005-01-03",
         "max_date": "2005-12-30",
         "row_count": 252,
-        "size_bytes": 104899,
-        "last_updated": "2026-11-07T23:34:32.613706+00:00"
+        "size_bytes": 104920,
+        "last_updated": "2026-11-08T23:34:19.841997+00:00"
       },
       "2006": {
         "path": "data/tickers/VTI/VTI-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 105563,
-        "last_updated": "2026-11-07T23:34:32.619564+00:00"
+        "size_bytes": 105528,
+        "last_updated": "2026-11-08T23:34:19.846370+00:00"
       },
       "2007": {
         "path": "data/tickers/VTI/VTI-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 107373,
-        "last_updated": "2026-11-07T23:34:32.625385+00:00"
+        "size_bytes": 107328,
+        "last_updated": "2026-11-08T23:34:19.850739+00:00"
       },
       "2008": {
         "path": "data/tickers/VTI/VTI-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 109768,
-        "last_updated": "2026-11-07T23:34:32.631272+00:00"
+        "size_bytes": 109702,
+        "last_updated": "2026-11-08T23:34:19.855134+00:00"
       },
       "2009": {
         "path": "data/tickers/VTI/VTI-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 108783,
-        "last_updated": "2026-11-07T23:34:32.637092+00:00"
+        "size_bytes": 108796,
+        "last_updated": "2026-11-08T23:34:19.859499+00:00"
       },
       "2010": {
         "path": "data/tickers/VTI/VTI-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 107247,
-        "last_updated": "2026-11-07T23:34:32.642900+00:00"
+        "size_bytes": 107252,
+        "last_updated": "2026-11-08T23:34:19.863938+00:00"
       },
       "2011": {
         "path": "data/tickers/VTI/VTI-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 107975,
-        "last_updated": "2026-11-07T23:34:32.648759+00:00"
+        "size_bytes": 108020,
+        "last_updated": "2026-11-08T23:34:19.868293+00:00"
       },
       "2012": {
         "path": "data/tickers/VTI/VTI-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 106422,
-        "last_updated": "2026-11-07T23:34:32.654607+00:00"
+        "size_bytes": 106369,
+        "last_updated": "2026-11-08T23:34:19.872637+00:00"
       },
       "2013": {
         "path": "data/tickers/VTI/VTI-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 106618,
-        "last_updated": "2026-11-07T23:34:32.660458+00:00"
+        "size_bytes": 106606,
+        "last_updated": "2026-11-08T23:34:19.877016+00:00"
       },
       "2014": {
         "path": "data/tickers/VTI/VTI-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 106613,
-        "last_updated": "2026-11-07T23:34:32.666295+00:00"
+        "size_bytes": 106651,
+        "last_updated": "2026-11-08T23:34:19.881372+00:00"
       },
       "2015": {
         "path": "data/tickers/VTI/VTI-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 105779,
-        "last_updated": "2026-11-07T23:34:32.672099+00:00"
+        "size_bytes": 105670,
+        "last_updated": "2026-11-08T23:34:19.885739+00:00"
       },
       "2016": {
         "path": "data/tickers/VTI/VTI-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 107807,
-        "last_updated": "2026-11-07T23:34:32.677891+00:00"
+        "size_bytes": 107755,
+        "last_updated": "2026-11-08T23:34:19.890399+00:00"
       },
       "2017": {
         "path": "data/tickers/VTI/VTI-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 105839,
-        "last_updated": "2026-11-07T23:34:32.683692+00:00"
+        "size_bytes": 105806,
+        "last_updated": "2026-11-08T23:34:19.894769+00:00"
       },
       "2018": {
         "path": "data/tickers/VTI/VTI-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 107266,
-        "last_updated": "2026-11-07T23:34:32.689504+00:00"
+        "size_bytes": 107231,
+        "last_updated": "2026-11-08T23:34:19.899149+00:00"
       },
       "2019": {
         "path": "data/tickers/VTI/VTI-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 107788,
-        "last_updated": "2026-11-07T23:34:32.695332+00:00"
+        "size_bytes": 107606,
+        "last_updated": "2026-11-08T23:34:19.903503+00:00"
       },
       "2020": {
         "path": "data/tickers/VTI/VTI-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 110842,
-        "last_updated": "2026-11-07T23:34:32.701270+00:00"
+        "size_bytes": 111042,
+        "last_updated": "2026-11-08T23:34:19.907935+00:00"
       },
       "2021": {
         "path": "data/tickers/VTI/VTI-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 108403,
-        "last_updated": "2026-11-07T23:34:32.707157+00:00"
+        "size_bytes": 108462,
+        "last_updated": "2026-11-08T23:34:19.912314+00:00"
       },
       "2022": {
         "path": "data/tickers/VTI/VTI-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 109936,
-        "last_updated": "2026-11-07T23:34:32.712946+00:00"
+        "size_bytes": 109808,
+        "last_updated": "2026-11-08T23:34:19.916693+00:00"
       },
       "2023": {
         "path": "data/tickers/VTI/VTI-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 107883,
-        "last_updated": "2026-11-07T23:34:32.718846+00:00"
+        "size_bytes": 107858,
+        "last_updated": "2026-11-08T23:34:19.921107+00:00"
       },
       "2024": {
         "path": "data/tickers/VTI/VTI-2024.parquet",
@@ -2974,15 +2974,15 @@
         "max_date": "2024-12-31",
         "row_count": 252,
         "size_bytes": 108060,
-        "last_updated": "2026-11-07T23:34:32.724745+00:00"
+        "last_updated": "2026-11-08T23:34:19.925509+00:00"
       },
       "2025": {
         "path": "data/tickers/VTI/VTI-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 109119,
-        "last_updated": "2026-11-07T23:34:32.730618+00:00"
+        "size_bytes": 109095,
+        "last_updated": "2026-11-08T23:34:19.929944+00:00"
       },
       "2026": {
         "path": "data/tickers/VTI/VTI-2026.parquet",
@@ -2990,7 +2990,7 @@
         "max_date": "2026-11-06",
         "row_count": 214,
         "size_bytes": 98379,
-        "last_updated": "2026-11-07T23:34:32.736311+00:00"
+        "last_updated": "2026-11-08T23:34:19.934210+00:00"
       }
     }
   },
@@ -3019,183 +3019,183 @@
       2025,
       2026
     ],
-    "last_updated": "2026-11-07T23:34:32.740878+00:00",
+    "last_updated": "2026-11-08T23:34:19.937224+00:00",
     "files": {
       "2005": {
         "path": "data/tickers/XLG/XLG-2005.parquet",
         "min_date": "2005-05-10",
         "max_date": "2005-12-30",
         "row_count": 164,
-        "size_bytes": 81686,
-        "last_updated": "2026-11-07T23:34:32.746493+00:00"
+        "size_bytes": 81693,
+        "last_updated": "2026-11-08T23:34:19.941397+00:00"
       },
       "2006": {
         "path": "data/tickers/XLG/XLG-2006.parquet",
         "min_date": "2006-01-03",
         "max_date": "2006-12-29",
         "row_count": 251,
-        "size_bytes": 105113,
-        "last_updated": "2026-11-07T23:34:32.752359+00:00"
+        "size_bytes": 105129,
+        "last_updated": "2026-11-08T23:34:19.945846+00:00"
       },
       "2007": {
         "path": "data/tickers/XLG/XLG-2007.parquet",
         "min_date": "2007-01-03",
         "max_date": "2007-12-31",
         "row_count": 251,
-        "size_bytes": 104907,
-        "last_updated": "2026-11-07T23:34:32.758140+00:00"
+        "size_bytes": 104920,
+        "last_updated": "2026-11-08T23:34:19.950565+00:00"
       },
       "2008": {
         "path": "data/tickers/XLG/XLG-2008.parquet",
         "min_date": "2008-01-02",
         "max_date": "2008-12-31",
         "row_count": 253,
-        "size_bytes": 109002,
-        "last_updated": "2026-11-07T23:34:32.763968+00:00"
+        "size_bytes": 108993,
+        "last_updated": "2026-11-08T23:34:19.954998+00:00"
       },
       "2009": {
         "path": "data/tickers/XLG/XLG-2009.parquet",
         "min_date": "2009-01-02",
         "max_date": "2009-12-31",
         "row_count": 252,
-        "size_bytes": 108878,
-        "last_updated": "2026-11-07T23:34:32.769816+00:00"
+        "size_bytes": 108879,
+        "last_updated": "2026-11-08T23:34:19.959659+00:00"
       },
       "2010": {
         "path": "data/tickers/XLG/XLG-2010.parquet",
         "min_date": "2010-01-04",
         "max_date": "2010-12-31",
         "row_count": 252,
-        "size_bytes": 105809,
-        "last_updated": "2026-11-07T23:34:32.775612+00:00"
+        "size_bytes": 105790,
+        "last_updated": "2026-11-08T23:34:19.964023+00:00"
       },
       "2011": {
         "path": "data/tickers/XLG/XLG-2011.parquet",
         "min_date": "2011-01-03",
         "max_date": "2011-12-30",
         "row_count": 252,
-        "size_bytes": 107426,
-        "last_updated": "2026-11-07T23:34:32.781441+00:00"
+        "size_bytes": 107321,
+        "last_updated": "2026-11-08T23:34:19.968736+00:00"
       },
       "2012": {
         "path": "data/tickers/XLG/XLG-2012.parquet",
         "min_date": "2012-01-03",
         "max_date": "2012-12-31",
         "row_count": 250,
-        "size_bytes": 106670,
-        "last_updated": "2026-11-07T23:34:32.787291+00:00"
+        "size_bytes": 106754,
+        "last_updated": "2026-11-08T23:34:19.973163+00:00"
       },
       "2013": {
         "path": "data/tickers/XLG/XLG-2013.parquet",
         "min_date": "2013-01-02",
         "max_date": "2013-12-31",
         "row_count": 252,
-        "size_bytes": 106322,
-        "last_updated": "2026-11-07T23:34:32.793066+00:00"
+        "size_bytes": 106327,
+        "last_updated": "2026-11-08T23:34:19.977521+00:00"
       },
       "2014": {
         "path": "data/tickers/XLG/XLG-2014.parquet",
         "min_date": "2014-01-02",
         "max_date": "2014-12-31",
         "row_count": 252,
-        "size_bytes": 107271,
-        "last_updated": "2026-11-07T23:34:32.798880+00:00"
+        "size_bytes": 107265,
+        "last_updated": "2026-11-08T23:34:19.982148+00:00"
       },
       "2015": {
         "path": "data/tickers/XLG/XLG-2015.parquet",
         "min_date": "2015-01-02",
         "max_date": "2015-12-31",
         "row_count": 252,
-        "size_bytes": 106113,
-        "last_updated": "2026-11-07T23:34:32.804680+00:00"
+        "size_bytes": 106109,
+        "last_updated": "2026-11-08T23:34:19.986531+00:00"
       },
       "2016": {
         "path": "data/tickers/XLG/XLG-2016.parquet",
         "min_date": "2016-01-04",
         "max_date": "2016-12-30",
         "row_count": 252,
-        "size_bytes": 105891,
-        "last_updated": "2026-11-07T23:34:32.810497+00:00"
+        "size_bytes": 105916,
+        "last_updated": "2026-11-08T23:34:19.990922+00:00"
       },
       "2017": {
         "path": "data/tickers/XLG/XLG-2017.parquet",
         "min_date": "2017-01-03",
         "max_date": "2017-12-29",
         "row_count": 251,
-        "size_bytes": 106008,
-        "last_updated": "2026-11-07T23:34:32.816255+00:00"
+        "size_bytes": 106015,
+        "last_updated": "2026-11-08T23:34:19.995279+00:00"
       },
       "2018": {
         "path": "data/tickers/XLG/XLG-2018.parquet",
         "min_date": "2018-01-02",
         "max_date": "2018-12-31",
         "row_count": 251,
-        "size_bytes": 107171,
-        "last_updated": "2026-11-07T23:34:32.822081+00:00"
+        "size_bytes": 107205,
+        "last_updated": "2026-11-08T23:34:19.999698+00:00"
       },
       "2019": {
         "path": "data/tickers/XLG/XLG-2019.parquet",
         "min_date": "2019-01-02",
         "max_date": "2019-12-31",
         "row_count": 252,
-        "size_bytes": 107422,
-        "last_updated": "2026-11-07T23:34:32.827910+00:00"
+        "size_bytes": 107477,
+        "last_updated": "2026-11-08T23:34:20.004081+00:00"
       },
       "2020": {
         "path": "data/tickers/XLG/XLG-2020.parquet",
         "min_date": "2020-01-02",
         "max_date": "2020-12-31",
         "row_count": 253,
-        "size_bytes": 110098,
-        "last_updated": "2026-11-07T23:34:32.833769+00:00"
+        "size_bytes": 110088,
+        "last_updated": "2026-11-08T23:34:20.008500+00:00"
       },
       "2021": {
         "path": "data/tickers/XLG/XLG-2021.parquet",
         "min_date": "2021-01-04",
         "max_date": "2021-12-31",
         "row_count": 252,
-        "size_bytes": 107659,
-        "last_updated": "2026-11-07T23:34:32.839582+00:00"
+        "size_bytes": 107684,
+        "last_updated": "2026-11-08T23:34:20.012889+00:00"
       },
       "2022": {
         "path": "data/tickers/XLG/XLG-2022.parquet",
         "min_date": "2022-01-03",
         "max_date": "2022-12-30",
         "row_count": 251,
-        "size_bytes": 109809,
-        "last_updated": "2026-11-07T23:34:32.845376+00:00"
+        "size_bytes": 109766,
+        "last_updated": "2026-11-08T23:34:20.017278+00:00"
       },
       "2023": {
         "path": "data/tickers/XLG/XLG-2023.parquet",
         "min_date": "2023-01-03",
         "max_date": "2023-12-29",
         "row_count": 250,
-        "size_bytes": 105732,
-        "last_updated": "2026-11-07T23:34:32.851158+00:00"
+        "size_bytes": 105787,
+        "last_updated": "2026-11-08T23:34:20.021631+00:00"
       },
       "2024": {
         "path": "data/tickers/XLG/XLG-2024.parquet",
         "min_date": "2024-01-02",
         "max_date": "2024-12-31",
         "row_count": 252,
-        "size_bytes": 106339,
-        "last_updated": "2026-11-07T23:34:32.856905+00:00"
+        "size_bytes": 106336,
+        "last_updated": "2026-11-08T23:34:20.026002+00:00"
       },
       "2025": {
         "path": "data/tickers/XLG/XLG-2025.parquet",
         "min_date": "2025-01-02",
         "max_date": "2025-12-31",
         "row_count": 250,
-        "size_bytes": 107521,
-        "last_updated": "2026-11-07T23:34:32.862718+00:00"
+        "size_bytes": 107536,
+        "last_updated": "2026-11-08T23:34:20.030359+00:00"
       },
       "2026": {
         "path": "data/tickers/XLG/XLG-2026.parquet",
         "min_date": "2026-01-02",
         "max_date": "2026-11-06",
         "row_count": 214,
-        "size_bytes": 96527,
-        "last_updated": "2026-11-07T23:34:32.868379+00:00"
+        "size_bytes": 96498,
+        "last_updated": "2026-11-08T23:34:20.034639+00:00"
       }
     }
   }
